@@ -1,4 +1,5 @@
 import react from "react"
+import { NavLink, Link } from "react-router-dom"
 import "../styles/Navbar.css"
 
 function Navbar () {
@@ -12,10 +13,14 @@ function Navbar () {
 
             <span id="middle">
                 <ul id="pages">
-                    <li>Home</li>
+                    <li>
+                        <NavLink to="/" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link'}>Home</NavLink>
+                    </li>
                     <li>About</li>
                     <li>Overview</li>
-                    <li>Contact</li>
+                    <li>
+                        <NavLink to="/contact" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link'}>Contact</NavLink>
+                    </li>
                     <li>Rate Us</li>
                     <li>Report a Problem</li>
                 </ul>

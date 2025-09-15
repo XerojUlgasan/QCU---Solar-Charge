@@ -30,3 +30,21 @@
     background-color: rgba(128, 128, 128, 0.301);
     cursor:pointer;
 }
+
+/* link styles */
+#navbar .nav-link{
+    display:inline-block;
+    color: aliceblue;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background-color .2s ease, color .2s ease;
+}
+#navbar .nav-link:hover{
+    background-color: rgba(128,128,128,0.25);
+}
+#navbar .nav-link.active{
+    background: #ffffff;
+    color: #000000;
+    outline: 1px solid #2a3446;
+}

@@ -1,0 +1,20 @@
+#contact-page{min-height:100vh;padding:80px 16px;color:#eaecef;background:#0b0e13}
+#contact-page .container{max-width:1100px;margin:0 auto}
+#contact-page .header{text-align:center;margin-bottom:48px}
+#contact-page .badge{display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:8px;background:#0b2a45;color:#8ec0ff;font-weight:600}
+#contact-page h1{font-size:40px;margin:0 0 16px 0}
+#contact-page .subtitle{max-width:760px;margin:0 auto;color:#9aa3b2;font-size:18px}
+#contact-page .grid{display:grid;grid-template-columns:1fr;gap:24px}
+@media(min-width:992px){#contact-page .grid{grid-template-columns:1fr 1fr}}
+#contact-page .card{background:#0f141c;border:1px solid #1e2633;border-radius:12px;padding:20px}
+#contact-page .card.left h3{margin:0 0 6px 0}
+#contact-page .card.left .desc{color:#9aa3b2;margin:0 0 16px 0}
+#contact-page .login-box{border:1px solid #2a3446;border-radius:10px;padding:20px;text-align:center;background:#0c121a}
+#contact-page .muted{color:#9aa3b2}
+#contact-page .google-btn{margin-top:12px;width:100%;padding:12px 14px;border-radius:10px;background:#121a24;color:#eaecef;border:1px solid #2a3446;cursor:pointer}
+#contact-page .google-btn:hover{background:#0f161f}
+#contact-page .google-icon{margin-right:8px}
+#contact-page .info{display:flex;gap:12px}
+#contact-page .info-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(90deg,#22c55e,#3b82f6);display:flex;align-items:center;justify-content:center}
+#contact-page h4{margin:0 0 6px 0}
+
