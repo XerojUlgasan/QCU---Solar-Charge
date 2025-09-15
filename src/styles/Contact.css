@@ -4,9 +4,12 @@
 #contact-page .badge{display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:8px;background:#0b2a45;color:#8ec0ff;font-weight:600}
 #contact-page h1{font-size:40px;margin:0 0 16px 0}
 #contact-page .subtitle{max-width:760px;margin:0 auto;color:#9aa3b2;font-size:18px}
-#contact-page .grid{display:grid;grid-template-columns:1fr;gap:24px}
+#contact-page .grid{display:grid;grid-template-columns:1fr;gap:24px;align-items:start}
 @media(min-width:992px){#contact-page .grid{grid-template-columns:1fr 1fr}}
+#contact-page .right-col{display:flex;flex-direction:column;gap:24px}
 #contact-page .card{background:#0f141c;border:1px solid #1e2633;border-radius:12px;padding:20px}
+#contact-page .card.right{min-height:auto}
+#contact-page .card.right:first-of-type{min-height:220px}
 #contact-page .card.left h3{margin:0 0 6px 0}
 #contact-page .card.left .desc{color:#9aa3b2;margin:0 0 16px 0}
 #contact-page .login-box{border:1px solid #2a3446;border-radius:10px;padding:20px;text-align:center;background:#0c121a}
@@ -17,4 +20,17 @@
 #contact-page .info{display:flex;gap:12px}
 #contact-page .info-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(90deg,#22c55e,#3b82f6);display:flex;align-items:center;justify-content:center}
 #contact-page h4{margin:0 0 6px 0}
+/* logged-in state */
+#contact-page .user-box{display:flex;gap:12px;align-items:center;background:#06110a;border:1px solid #16391f;padding:12px;border-radius:10px;margin-bottom:14px}
+#contact-page .user-box img{width:40px;height:40px;border-radius:999px}
+#contact-page .user-name{margin:0;font-weight:600}
+
+/* form */
+#contact-page .contact-form{display:block}
+#contact-page .contact-form .form-field{margin-bottom:12px}
+#contact-page .contact-form label{display:block;margin-bottom:6px;font-size:14px}
+#contact-page .contact-form input,#contact-page .contact-form textarea{width:100%;box-sizing:border-box;background:#0b1119;border:1px solid #2a3446;color:#eaecef;border-radius:10px;padding:10px 12px}
+#contact-page .contact-form input:focus,#contact-page .contact-form textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.2)}
+#contact-page .submit-btn{width:100%;padding:12px 14px;border-radius:10px;background:#0f1a28;color:#eaecef;border:1px solid #2a3446;cursor:pointer}
+#contact-page .submit-btn:hover{background:#0c1622}
 
