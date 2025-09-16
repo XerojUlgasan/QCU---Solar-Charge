@@ -42,16 +42,11 @@ h1, h2, h3, h3, h4{
 
 .box#left h1 {
     font-size: 50px;
+    font-weight: 1000;
 }
 
 .box#left div {
 
-}
-
-.box#right {
-    /* display: flex;
-    align-items: center;
-    justify-content: center; */
 }
 
 .box#right img {
@@ -73,10 +68,12 @@ h1, h2, h3, h3, h4{
 }
 
 #l2 {
-    height: 80vh;
+    height: 70vh;
     width: 100%;
     border: 1px solid white;
     padding: 0px 10%;
+    display: flex;
+    flex-direction: column;
 }
 
 #l2 #idk {
@@ -106,6 +103,7 @@ h1, h2, h3, h3, h4{
     justify-content: space-between;
     width: 80%;
     margin: auto;
+    flex-wrap: wrap;
 }
 
 #words {
