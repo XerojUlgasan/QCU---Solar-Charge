@@ -45,9 +45,7 @@ h1, h2, h3, h3, h4{
     font-weight: 1000;
 }
 
-.box#left div {
 
-}
 
 .box#right img {
     border: 1px solid white;
@@ -137,4 +135,8 @@ h1, h2, h3, h3, h4{
 #l3-buttons button{
     padding: 5px;
     margin-right: 5px;
+}
+
+.light #l3-buttons .bg-green-500 {
+    color: #000000 !important;
 }

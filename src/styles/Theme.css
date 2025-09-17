@@ -54,6 +54,17 @@
     color: #374151 !important;
 }
 
+.light p {
+    color: #1f2937 !important;
+}
+
+.light .bg-gray-900,
+.light .bg-gray-800,
+.light .bg-gray-800\/90 {
+    background-color: #f9fafb !important;
+    color: #1f2937 !important;
+}
+
 /* Badge colors for dark mode */
 .badge-green {
     background-color: #0f2a0f !important;
@@ -95,3 +106,4 @@
     background-color: #fef2f2 !important;
     color: #991b1b !important;
 }
+
