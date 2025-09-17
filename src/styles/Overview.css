@@ -1,0 +1,322 @@
+#overview-page {
+    min-height: 100vh;
+    padding: 80px 16px;
+    color: #eaecef;
+    background: #0b0e13;
+}
+
+#overview-page .container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+#overview-page .header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+#overview-page .badge {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #0b2a45;
+    color: #8ec0ff;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+#overview-page h1 {
+    font-size: 40px;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+}
+
+#overview-page .subtitle {
+    max-width: 760px;
+    margin: 0 auto;
+    color: #9aa3b2;
+    font-size: 18px;
+}
+
+/* Stats Grid */
+#overview-page .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+@media (min-width: 768px) {
+    #overview-page .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+#overview-page .stat-card {
+    background: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+#overview-page .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+#overview-page .stat-label {
+    color: #9aa3b2;
+    font-size: 16px;
+}
+
+/* Section Headers */
+#overview-page .section-header {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 32px;
+}
+
+#overview-page .section-header.center {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+/* Stations Grid */
+#overview-page .stations-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 64px;
+}
+
+@media (min-width: 768px) {
+    #overview-page .stations-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+#overview-page .station-card {
+    background: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+#overview-page .station-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+#overview-page .station-info h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#overview-page .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+#overview-page .status-dot.active {
+    background: #22c55e;
+}
+
+#overview-page .status-dot.maintenance {
+    background: #f59e0b;
+}
+
+#overview-page .status-dot.offline {
+    background: #ef4444;
+}
+
+#overview-page .station-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #9aa3b2;
+    font-size: 14px;
+}
+
+#overview-page .station-id {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #1e2633;
+    color: #9aa3b2;
+    font-size: 12px;
+}
+
+#overview-page .station-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#overview-page .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+#overview-page .detail-row .label {
+    color: #9aa3b2;
+}
+
+#overview-page .detail-row .value {
+    font-weight: 500;
+}
+
+#overview-page .usage-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#overview-page .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #1e2633;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#overview-page .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #3b82f6);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+#overview-page .last-updated {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #9aa3b2;
+    font-size: 14px;
+}
+
+/* Features Grid */
+#overview-page .features-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 64px;
+}
+
+@media (min-width: 768px) {
+    #overview-page .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    #overview-page .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+#overview-page .feature-card {
+    background: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+#overview-page .feature-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#overview-page .feature-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #22c55e, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+#overview-page .feature-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+#overview-page .feature-description {
+    color: #9aa3b2;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Technical Specifications */
+#overview-page .tech-specs {
+    background: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+}
+
+#overview-page .tech-specs h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 32px 0;
+}
+
+#overview-page .specs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    #overview-page .specs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    #overview-page .specs-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+#overview-page .spec-item h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+#overview-page .spec-value {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+}
+
+#overview-page .spec-description {
+    color: #9aa3b2;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Color classes for different spec values */
+#overview-page .spec-value.green { color: #22c55e; }
+#overview-page .spec-value.blue { color: #3b82f6; }
+#overview-page .spec-value.purple { color: #8b5cf6; }
+#overview-page .spec-value.yellow { color: #f59e0b; }
+#overview-page .spec-value.red { color: #ef4444; }
+#overview-page .spec-value.indigo { color: #6366f1; }

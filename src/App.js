@@ -3,6 +3,7 @@ import Homepage from './pages/Homepage';
 import Contact from './pages/Contact';
 import Navbar from './components/Navbar';
 import About from './pages/About';
+import Overview from './pages/Overview';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path='/' element={<Homepage/>}/>
           <Route path='/about' element={<About/>}/>
           <Route path='/contact' element={<Contact/>}/>
+          <Route path='/overview' element={<Overview/>}/>
         </Routes>
       </main>
 
