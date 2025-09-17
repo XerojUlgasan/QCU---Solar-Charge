@@ -24,7 +24,7 @@ function Contact() {
 			<div className="container">
 				<div className="header">
 					<span className="badge">Get In Touch</span>
-					<h1>Contact Us</h1>
+					<h1 className="font-bold mb-6" style={{fontSize: '40px'}}>Contact Us</h1>
 					<p className="subtitle">Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.</p>
         </div>
 
@@ -70,7 +70,12 @@ function Contact() {
 					<div className="right-col">
 						<div className="card">
 							<div className="info">
-								<div className="info-icon">📍</div>
+								<div className="info-icon">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+										<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+										<circle cx="12" cy="10" r="3"></circle>
+									</svg>
+								</div>
 								<div>
 									<h4>Campus Location</h4>
 									<p className="muted">Quezon City University</p>
@@ -83,7 +88,11 @@ function Contact() {
 
 						<div className="card">
 							<div className="info">
-								<div className="info-icon">📞</div>
+								<div className="info-icon">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+										<path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
+									</svg>
+								</div>
 								<div>
 									<h4>Phone Support</h4>
 									<p className="muted">+63 (2) 8806-3549</p>

@@ -74,15 +74,22 @@ function About() {
   ];
 
   return (
-    <div className="min-h-screen py-20 px-4 bg-gray-900 text-white">
+    <div className="min-h-screen py-20 px-4 text-white" style={{backgroundColor: '#0b0e13'}}>
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <span className="inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap mb-4 bg-green-100 text-green-800 border-transparent">
+          <span className="inline-block mb-4 w-fit" style={{
+            padding: '6px 10px',
+            borderRadius: '8px',
+            backgroundColor: '#0b2a45',
+            color: '#8ec0ff',
+            fontWeight: '600',
+            fontSize: '12px'
+          }}>
             About QCU EcoCharge
           </span>
-          <h1 className="text-4xl font-bold mb-6">Powering Tomorrow with Clean Energy</h1>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+          <h1 className="font-bold mb-6" style={{fontSize: '40px'}}>Powering Tomorrow with Clean Energy</h1>
+          <p className="max-w-3xl mx-auto" style={{color: '#9aa3b2', fontSize: '18px'}}>
             QCU EcoCharge Station represents our commitment to sustainable technology and environmental 
             responsibility. We're transforming how students and faculty charge their devices on campus.
           </p>
@@ -91,12 +98,12 @@ function About() {
         {/* Mission Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
-            <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
-            <p className="text-lg text-gray-400 mb-6">
+            <h2 className="font-bold mb-6" style={{fontSize: '32px'}}>Our Mission</h2>
+            <p className="mb-6" style={{color: '#9aa3b2', fontSize: '18px'}}>
               To provide sustainable, accessible, and convenient charging solutions that reduce our 
               environmental impact while meeting the growing energy needs of our campus community.
             </p>
-            <p className="text-lg text-gray-400 mb-6">
+            <p className="mb-6" style={{color: '#9aa3b2', fontSize: '18px'}}>
               Through innovative solar technology and smart RFID systems, we're creating a network 
               of charging stations that not only serve our immediate needs but also contribute to 
               a more sustainable future.
@@ -127,15 +134,15 @@ function About() {
 
         {/* Values Section */}
         <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12">Our Core Values</h2>
+          <h2 className="font-bold text-center mb-12" style={{fontSize: '32px'}}>Our Core Values</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((value, index) => (
-              <div key={index} className="bg-gray-800 text-white flex flex-col rounded-xl border border-gray-700 text-center hover:shadow-lg transition-shadow p-6">
-                <div className="mx-auto w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center text-white mb-4">
+              <div key={index} className="text-white flex flex-col rounded-xl text-center hover:shadow-lg transition-shadow" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633', padding: '20px'}}>
+                <div className="mx-auto rounded-lg flex items-center justify-center text-white mb-4" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)', width: '40px', height: '40px'}}>
                   {value.icon}
                 </div>
-                <h4 className="text-lg font-semibold mb-2">{value.title}</h4>
-                <p className="text-gray-400">{value.description}</p>
+                <h4 className="font-semibold mb-2" style={{fontSize: '18px'}}>{value.title}</h4>
+                <p style={{color: '#9aa3b2', fontSize: '16px'}}>{value.description}</p>
               </div>
             ))}
           </div>
@@ -143,36 +150,36 @@ function About() {
 
         {/* Team Section */}
         <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
+          <h2 className="font-bold text-center mb-12" style={{fontSize: '32px'}}>Meet Our Team</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member, index) => (
-              <div key={index} className="bg-gray-800 text-white flex flex-col rounded-xl border border-gray-700 text-center p-6">
-                <div className="mx-auto w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+              <div key={index} className="text-white flex flex-col rounded-xl text-center" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633', padding: '20px'}}>
+                <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
                   {member.initials}
                 </div>
-                <h4 className="text-lg font-semibold mb-1">{member.name}</h4>
-                <p className="font-medium text-green-500 mb-3">{member.role}</p>
-                <p className="text-sm text-gray-400">{member.description}</p>
+                <h4 className="font-semibold mb-1" style={{fontSize: '18px'}}>{member.name}</h4>
+                <p className="font-medium text-green-500 mb-3" style={{fontSize: '16px'}}>{member.role}</p>
+                <p style={{color: '#9aa3b2', fontSize: '16px'}}>{member.description}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Impact Section */}
-        <div className="bg-gray-800 rounded-2xl p-8 text-center border border-gray-700">
-          <h2 className="text-3xl font-bold mb-6">Our Environmental Impact</h2>
+        <div className="rounded-2xl p-8 text-center" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633'}}>
+          <h2 className="font-bold mb-6" style={{fontSize: '32px'}}>Our Environmental Impact</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="text-4xl font-bold text-green-600 mb-2">500kg</div>
-              <div className="text-gray-400">CO₂ Emissions Saved</div>
+              <div className="font-bold text-green-600 mb-2" style={{fontSize: '28px'}}>500kg</div>
+              <div style={{color: '#9aa3b2', fontSize: '16px'}}>CO₂ Emissions Saved</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-blue-600 mb-2">2.5MWh</div>
-              <div className="text-gray-400">Clean Energy Generated</div>
+              <div className="font-bold text-blue-600 mb-2" style={{fontSize: '28px'}}>2.5MWh</div>
+              <div style={{color: '#9aa3b2', fontSize: '16px'}}>Clean Energy Generated</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-purple-600 mb-2">1,200+</div>
-              <div className="text-gray-400">Students Served</div>
+              <div className="font-bold text-purple-600 mb-2" style={{fontSize: '28px'}}>1,200+</div>
+              <div style={{color: '#9aa3b2', fontSize: '16px'}}>Students Served</div>
             </div>
           </div>
         </div>

@@ -50,19 +50,26 @@ function Homepage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
+        <div className="min-h-screen text-white" style={{backgroundColor: '#0b0e13'}}>
             {/* Hero Section */}
             <section className="relative py-20 px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <span className="inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap mb-4 bg-green-100 text-green-800 border-transparent">
+                            <span className="inline-block mb-4 w-fit" style={{
+                                padding: '6px 10px',
+                                borderRadius: '8px',
+                                backgroundColor: '#0b2a45',
+                                color: '#8ec0ff',
+                                fontWeight: '600',
+                                fontSize: '12px'
+                            }}>
                                 Sustainable Technology
                             </span>
-                            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                            <h1 className="font-bold mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent" style={{fontSize: '40px'}}>
                                 QCU EcoCharge Station
                             </h1>
-                            <p className="text-xl text-gray-400 mb-8">
+                            <p className="mb-8" style={{color: '#9aa3b2', fontSize: '18px'}}>
                                 Charge your devices with clean, renewable solar energy. Our innovative charging stations 
                                 provide convenient, eco-friendly power solutions across campus.
                             </p>
@@ -101,13 +108,13 @@ function Homepage() {
             </section>
 
             {/* Stats Section */}
-            <section className="py-12 bg-gray-800">
+            <section className="py-12" style={{backgroundColor: '#0f141c'}}>
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         {stats.map((stat, index) => (
                             <div key={index} className="text-center">
-                                <div className="text-3xl font-bold text-green-500 mb-2">{stat.value}</div>
-                                <div className="text-sm text-gray-400">{stat.label}</div>
+                                <div className="font-bold text-green-500 mb-2" style={{fontSize: '28px'}}>{stat.value}</div>
+                                <div style={{color: '#9aa3b2', fontSize: '16px'}}>{stat.label}</div>
                             </div>
                         ))}
                     </div>
@@ -118,8 +125,8 @@ function Homepage() {
             <section className="py-20 px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold mb-4">Why Choose QCU EcoCharge?</h2>
-                        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                        <h2 className="font-bold mb-4" style={{fontSize: '32px'}}>Why Choose QCU EcoCharge?</h2>
+                        <p className="max-w-2xl mx-auto" style={{color: '#9aa3b2', fontSize: '18px'}}>
                             Our solar-powered charging stations combine sustainability with convenience, 
                             offering a reliable and eco-friendly way to keep your devices powered.
                         </p>
@@ -127,12 +134,12 @@ function Homepage() {
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {features.map((feature, index) => (
-                            <div key={index} className="bg-gray-800 text-white flex flex-col rounded-xl border border-gray-700 text-center hover:shadow-lg transition-shadow p-6">
-                                <div className="mx-auto w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center text-white mb-4">
+                            <div key={index} className="text-white flex flex-col rounded-xl text-center hover:shadow-lg transition-shadow" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633', padding: '20px'}}>
+                                <div className="mx-auto rounded-lg flex items-center justify-center text-white mb-4" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)', width: '40px', height: '40px'}}>
                                     {feature.icon}
                                 </div>
-                                <h4 className="text-lg font-semibold mb-2">{feature.title}</h4>
-                                <p className="text-gray-400">{feature.description}</p>
+                                <h4 className="font-semibold mb-2" style={{fontSize: '18px'}}>{feature.title}</h4>
+                                <p style={{color: '#9aa3b2', fontSize: '16px'}}>{feature.description}</p>
                             </div>
                         ))}
                     </div>
@@ -142,8 +149,8 @@ function Homepage() {
             {/* CTA Section */}
             <section className="py-20 px-4 bg-gradient-to-r from-green-600 to-blue-600 text-white">
                 <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl font-bold mb-4">Ready to Start Charging Sustainably?</h2>
-                    <p className="text-xl mb-8 opacity-90">
+                    <h2 className="font-bold mb-4" style={{fontSize: '32px'}}>Ready to Start Charging Sustainably?</h2>
+                    <p className="mb-8 opacity-90" style={{fontSize: '18px'}}>
                         Join thousands of users who have made the switch to eco-friendly charging.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">

@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from 'react-router-dom';
 
 function Navbar() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
 
     const navItems = [
@@ -29,9 +30,23 @@ function Navbar() {
         return location.pathname === route;
     };
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY;
+            setIsScrolled(scrollTop > 10);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-gray-700">
+        <header className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-gray-700 transition-all duration-300 ${
+            isScrolled 
+                ? 'bg-gray-900/80' 
+                : 'bg-gray-900'
+        }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
