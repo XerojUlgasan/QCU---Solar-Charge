@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 
 function Homepage() {
     const features = [
@@ -72,19 +73,19 @@ function Homepage() {
                                 provide convenient, eco-friendly power solutions across campus.
                             </p>
                             <div className="flex flex-wrap gap-4">
-                                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 text-white h-10 rounded-md px-6 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                                <Link to="/overview#station-status" className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 text-white h-10 rounded-md px-6 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-2">
                                         <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                         <circle cx="12" cy="10" r="3"></circle>
                                     </svg>
                                     Find Stations
-                                </button>
-                                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-transparent text-white hover:bg-gray-800 h-10 rounded-md px-6 border-gray-600">
+                                </Link>
+                                <Link to="/about" className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-transparent text-white hover:bg-gray-800 h-10 rounded-md px-6 border-gray-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-2">
                                         <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
                                     </svg>
                                     Learn More
-                                </button>
+                                </Link>
                             </div>
                         </div>
                         <div className="relative">
@@ -152,12 +153,12 @@ function Homepage() {
                         Join thousands of users who have made the switch to eco-friendly charging.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
-                        <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 bg-white text-green-600 hover:bg-gray-100 h-10 rounded-md px-6">
+                        <Link to="/rfid" className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 bg-white text-green-600 hover:bg-gray-100 h-10 rounded-md px-6">
                             Get Your RFID Card
-                        </button>
-                        <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border text-white border-white hover:bg-white hover:text-green-600 h-10 rounded-md px-6">
+                        </Link>
+                        <Link to="/overview#station-status" className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border text-white border-white hover:bg-white hover:text-green-600 h-10 rounded-md px-6">
                             View Locations
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </section>

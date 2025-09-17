@@ -159,7 +159,7 @@ function Overview() {
                 </div>
 
                 {/* Station Status */}
-                <div>
+                <div id="station-status">
                     <h2 className="section-header">Station Status</h2>
                     <div className="stations-grid">
                         {stations.map((station, index) => (
