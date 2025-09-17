@@ -1,7 +1,7 @@
 #contact-page{min-height:100vh;padding:80px 16px;color:#eaecef;background:#0b0e13}
 #contact-page .container{max-width:1100px;margin:0 auto}
 #contact-page .header{text-align:center;margin-bottom:48px}
-#contact-page .badge{display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:8px;background:#0b2a45;color:#8ec0ff;font-weight:600}
+#contact-page .badge-blue{display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:8px;font-weight:600}
 #contact-page h1{font-size:40px;margin:0 0 16px 0}
 #contact-page .subtitle{max-width:760px;margin:0 auto;color:#9aa3b2;font-size:18px}
 #contact-page .grid{display:grid;grid-template-columns:1fr;gap:24px;align-items:start}
@@ -33,4 +33,68 @@
 #contact-page .contact-form input:focus,#contact-page .contact-form textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.2)}
 #contact-page .submit-btn{width:100%;padding:12px 14px;border-radius:10px;background:#0f1a28;color:#eaecef;border:1px solid #2a3446;cursor:pointer}
 #contact-page .submit-btn:hover{background:#0c1622}
+
+/* Light mode styles */
+.light #contact-page {
+    background: #ffffff;
+    color: #1f2937;
+}
+
+
+.light #contact-page .subtitle {
+    color: #6b7280;
+}
+
+.light #contact-page .card {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.light #contact-page .card-description,
+.light #contact-page .muted {
+    color: #6b7280;
+}
+
+.light #contact-page .login-box {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.light #contact-page .google-btn {
+    background: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.light #contact-page .google-btn:hover {
+    background: #f9fafb;
+}
+
+.light #contact-page .user-box {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.light #contact-page .form-field input,
+.light #contact-page .form-field textarea {
+    background: #ffffff;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.light #contact-page .form-field input:focus,
+.light #contact-page .form-field textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.light #contact-page .submit-btn {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.light #contact-page .submit-btn:hover {
+    background: #2563eb;
+}
 

@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
 
 function Navbar() {
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const { isDarkMode, toggleTheme } = useTheme();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
@@ -18,9 +19,6 @@ function Navbar() {
         { route: '/admin', label: 'Admin', isAdmin: true }
     ];
 
-    const toggleDarkMode = () => {
-        setIsDarkMode(!isDarkMode);
-    };
 
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
@@ -42,11 +40,15 @@ function Navbar() {
 
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-gray-700 transition-all duration-300 ${
-            isScrolled 
-                ? 'bg-gray-900/80' 
-                : 'bg-gray-900'
-        }`}>
+            <header className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b transition-all duration-300 ${
+                isScrolled
+                    ? isDarkMode 
+                        ? 'bg-gray-900/80 border-gray-700' 
+                        : 'bg-white/80 border-gray-200'
+                    : isDarkMode
+                        ? 'bg-gray-900 border-gray-700'
+                        : 'bg-white border-gray-200'
+            }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
@@ -56,7 +58,7 @@ function Navbar() {
                                 <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
                             </svg>
                         </div>
-                        <span className="font-semibold text-lg text-white">QCU EcoCharge</span>
+                        <span className={`font-semibold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>QCU EcoCharge</span>
                     </Link>
 
 
@@ -69,7 +71,9 @@ function Navbar() {
                                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center space-x-1 ${
                                     isCurrentRoute(item.route)
                                         ? 'bg-green-600 text-white hover:bg-green-700'
-                                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                        : isDarkMode
+                                            ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                 }`}
                             >
                                 {item.isAdmin && (
@@ -91,8 +95,12 @@ function Navbar() {
                     <div className="flex items-center space-x-2">
                         {/* Dark mode toggle */}
                         <button
-                            onClick={toggleDarkMode}
-                            className="p-2 rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all"
+                            onClick={toggleTheme}
+                            className={`p-2 rounded-md transition-all ${
+                                isDarkMode 
+                                    ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
+                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            }`}
                         >
                             {isDarkMode ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">

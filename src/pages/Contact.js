@@ -23,7 +23,7 @@ function Contact() {
 		<div id="contact-page">
 			<div className="container">
 				<div className="header">
-					<span className="badge">Get In Touch</span>
+					<span className="badge-blue">Get In Touch</span>
 					<h1 className="font-bold mb-6" style={{fontSize: '40px'}}>Contact Us</h1>
 					<p className="subtitle">Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.</p>
         </div>

@@ -4,10 +4,13 @@ import Contact from './pages/Contact';
 import Navbar from './components/Navbar';
 import About from './pages/About';
 import Overview from './pages/Overview';
+import RateUs from './pages/RateUs';
+import ReportProblem from './pages/ReportProblem';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <Navbar/>
 
       <main className="pt-16">
@@ -16,10 +19,11 @@ function App() {
           <Route path='/about' element={<About/>}/>
           <Route path='/contact' element={<Contact/>}/>
           <Route path='/overview' element={<Overview/>}/>
+          <Route path='/rate-us' element={<RateUs/>}/>
+          <Route path='/report-problem' element={<ReportProblem/>}/>
         </Routes>
       </main>
-
-    </>
+    </ThemeProvider>
   );
 }
 

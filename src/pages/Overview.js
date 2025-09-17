@@ -130,7 +130,7 @@ function Overview() {
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className="badge">System Overview</span>
+                    <span className="badge-blue">System Overview</span>
                     <h1>QCU EcoCharge Network</h1>
                     <p className="subtitle">
                         Monitor the real-time status of our solar-powered charging stations across campus. 

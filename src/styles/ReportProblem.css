@@ -1,0 +1,443 @@
+#report-problem-page {
+    min-height: 100vh;
+    padding: 80px 16px;
+    color: #eaecef;
+    background: #0b0e13;
+}
+
+#report-problem-page .container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+#report-problem-page .header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+#report-problem-page .badge-red {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+#report-problem-page h1 {
+    font-size: 40px;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+}
+
+#report-problem-page .subtitle {
+    max-width: 760px;
+    margin: 0 auto;
+    color: #9aa3b2;
+    font-size: 18px;
+}
+
+/* Main Grid Layout */
+#report-problem-page .main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+}
+
+@media (min-width: 1024px) {
+    #report-problem-page .main-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Card Styles */
+#report-problem-page .card {
+    background: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+#report-problem-page .card-header {
+    padding: 20px 20px 0 20px;
+}
+
+#report-problem-page .card-content {
+    padding: 20px;
+}
+
+#report-problem-page .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+}
+
+#report-problem-page .card-description {
+    color: #9aa3b2;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Login Prompt */
+#report-problem-page .login-prompt {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+#report-problem-page .login-text {
+    color: #9aa3b2;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+#report-problem-page .google-login-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background: #121a24;
+    color: #eaecef;
+    border: 1px solid #2a3446;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#report-problem-page .google-login-btn:hover {
+    background: #0f161f;
+}
+
+/* User Info */
+#report-problem-page .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #06110a;
+    border: 1px solid #16391f;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#report-problem-page .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+#report-problem-page .user-name {
+    font-weight: 600;
+    margin: 0 0 2px 0;
+    font-size: 16px;
+}
+
+#report-problem-page .user-email {
+    color: #9aa3b2;
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Form Styles */
+#report-problem-page .report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#report-problem-page .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#report-problem-page .form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #eaecef;
+}
+
+#report-problem-page .form-select,
+#report-problem-page .form-textarea {
+    background: #0b1119;
+    border: 1px solid #2a3446;
+    color: #eaecef;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+#report-problem-page .form-select:focus,
+#report-problem-page .form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+#report-problem-page .form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+#report-problem-page .submit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background: linear-gradient(90deg, #22c55e, #3b82f6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+#report-problem-page .submit-button:hover {
+    opacity: 0.9;
+}
+
+/* Response Card */
+#report-problem-page .response-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
+    border: 1px solid #1e2633;
+}
+
+#report-problem-page .response-times {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#report-problem-page .response-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#report-problem-page .response-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#report-problem-page .response-badge.critical {
+    background: #ef4444;
+}
+
+#report-problem-page .response-badge.high {
+    background: #f59e0b;
+}
+
+#report-problem-page .response-badge.normal {
+    background: #22c55e;
+}
+
+/* Reports List */
+#report-problem-page .reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#report-problem-page .report-item {
+    border: 1px solid #1e2633;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+#report-problem-page .report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+#report-problem-page .report-issue {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+#report-problem-page .report-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #9aa3b2;
+    font-size: 14px;
+}
+
+#report-problem-page .report-meta {
+    color: #9aa3b2;
+    font-size: 14px;
+}
+
+/* Status Badges */
+#report-problem-page .status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+#report-problem-page .status-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#report-problem-page .status-resolved {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+#report-problem-page .status-investigating {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+#report-problem-page .status-scheduled {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+#report-problem-page .status-default {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Emergency Card */
+#report-problem-page .emergency-card {
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+#report-problem-page .emergency-title {
+    color: #ef4444;
+}
+
+#report-problem-page .emergency-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#report-problem-page .emergency-text {
+    font-weight: 500;
+    margin: 0;
+}
+
+#report-problem-page .emergency-number {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+#report-problem-page .emergency-note {
+    color: #9aa3b2;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #report-problem-page .report-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    #report-problem-page .response-item {
+        gap: 8px;
+    }
+    
+    #report-problem-page .response-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+    }
+}
+
+/* Light mode styles */
+.light #report-problem-page {
+    background: #ffffff;
+    color: #1f2937;
+}
+
+
+.light #report-problem-page .subtitle {
+    color: #6b7280;
+}
+
+.light #report-problem-page .card {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.light #report-problem-page .card-description,
+.light #report-problem-page .login-text,
+.light #report-problem-page .form-label,
+.light #report-problem-page .report-meta,
+.light #report-problem-page .emergency-note {
+    color: #6b7280;
+}
+
+.light #report-problem-page .google-login-btn {
+    background: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.light #report-problem-page .google-login-btn:hover {
+    background: #f9fafb;
+}
+
+.light #report-problem-page .user-info {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.light #report-problem-page .form-select,
+.light #report-problem-page .form-textarea {
+    background: #ffffff;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.light #report-problem-page .form-select:focus,
+.light #report-problem-page .form-textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.light #report-problem-page .response-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
+    border-color: #e5e7eb;
+}
+
+.light #report-problem-page .report-item {
+    border-color: #e5e7eb;
+}
+
+.light #report-problem-page .emergency-card {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.light #report-problem-page .emergency-title {
+    color: #dc2626;
+}
+
+.light #report-problem-page .emergency-number {
+    color: #dc2626;
+}

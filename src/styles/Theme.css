@@ -1,0 +1,97 @@
+/* Light mode styles for Homepage and About pages */
+.light .min-h-screen {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+.light .bg-gray-900 {
+    background-color: #f9fafb !important;
+}
+
+.light .text-gray-400 {
+    color: #4b5563 !important;
+}
+
+.light .bg-gray-800 {
+    background-color: #f3f4f6 !important;
+}
+
+.light .border-gray-700 {
+    border-color: #e5e7eb !important;
+}
+
+.light .text-gray-300 {
+    color: #374151 !important;
+}
+
+.light .hover\:bg-gray-800:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.light .hover\:text-white:hover {
+    color: #1f2937 !important;
+}
+
+/* Fix card backgrounds for light mode */
+.light .bg-gray-800\/90 {
+    background-color: rgba(249, 250, 251, 0.9) !important;
+}
+
+.light .bg-gray-800 {
+    background-color: #f9fafb !important;
+}
+
+/* Fix text colors for better readability */
+.light .text-gray-400 {
+    color: #4b5563 !important;
+}
+
+.light .text-gray-500 {
+    color: #374151 !important;
+}
+
+.light .text-gray-600 {
+    color: #374151 !important;
+}
+
+/* Badge colors for dark mode */
+.badge-green {
+    background-color: #0f2a0f !important;
+    color: #86efac !important;
+}
+
+.badge-blue {
+    background-color: #0b2a45 !important;
+    color: #8ec0ff !important;
+}
+
+.badge-yellow {
+    background-color: #2a1f0a !important;
+    color: #fbbf24 !important;
+}
+
+.badge-red {
+    background-color: #450a0a !important;
+    color: #fca5a5 !important;
+}
+
+/* Badge colors for light mode */
+.light .badge-green {
+    background-color: #f0fdf4 !important;
+    color: #166534 !important;
+}
+
+.light .badge-blue {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+.light .badge-yellow {
+    background-color: #fef3c7 !important;
+    color: #d97706 !important;
+}
+
+.light .badge-red {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+}

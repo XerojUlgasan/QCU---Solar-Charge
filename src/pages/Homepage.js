@@ -56,11 +56,9 @@ function Homepage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <span className="inline-block mb-4 w-fit" style={{
+                            <span className="badge-green inline-block mb-4 w-fit" style={{
                                 padding: '6px 10px',
                                 borderRadius: '8px',
-                                backgroundColor: '#0b2a45',
-                                color: '#8ec0ff',
                                 fontWeight: '600',
                                 fontSize: '12px'
                             }}>
