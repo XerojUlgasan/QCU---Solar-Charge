@@ -1,6 +1,140 @@
+h1, h2, h3, h3, h4{
+    margin: 0;
+}
+
 #homepage {
     background-color: #081010;
-    height: 100vh;
     color: aliceblue;
-    padding: 50px 10%;
+    display: flex;
+    flex-direction: column;
+}
+
+#l1 {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 50px);
+        padding: 50px 10%;
+}
+
+.box {
+    height: 100%;
+    width: 50%; 
+    border: 1px solid white;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.box#left span{
+    background-color: #0e5429;
+    width: fit-content;
+    padding: 3px 6px;
+    font-size: small;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.l1-buttons {
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.box#left h1 {
+    font-size: 50px;
+    font-weight: 1000;
+}
+
+.box#left div {
+
+}
+
+.box#right img {
+    border: 1px solid white;
+    height: 80%;
+    width: 80%;
+    margin: 0px auto;
+}
+
+.box#right span {
+    position: relative;
+    bottom:5%;
+    height: 15%;
+    width: 30%;
+    border: 1px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#l2 {
+    height: 70vh;
+    width: 100%;
+    border: 1px solid white;
+    padding: 0px 10%;
+    display: flex;
+    flex-direction: column;
+}
+
+#l2 #idk {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin: auto;
+}
+
+#l2 #idk span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#l2 #idk span h1 {
+    margin: 0;
+}
+
+#l2 p , #h2 h4{
+    text-align: center;
+}
+
+#l2 #cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 80%;
+    margin: auto;
+    flex-wrap: wrap;
+}
+
+#words {
+    text-align: center;
+    margin: 50px auto;
+}
+
+#l2 #cards div {
+    text-align: center;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+    border-radius: 15px;
+}
+
+#l3 {
+    height: 30vh;
+    width: 100%;
+    border: 1px solid white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#l3-buttons button{
+    padding: 5px;
+    margin-right: 5px;
 }
