@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, 
@@ -13,48 +13,68 @@ import {
   X
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotification } from '../contexts/NotificationContext';
 import '../styles/AdminHeader.css';
 
 const AdminHeader = ({ title, navigate }) => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { showSuccess } = useNotification();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigateToRoute = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      setIsScrolled(scrollTop > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     // Clear admin login state
     localStorage.removeItem('adminLoggedIn');
+    // Show success notification
+    showSuccess('Successfully logged out!');
     // Navigate to admin login page
     navigateToRoute('/admin');
+  };
+
+  const handleLogoClick = () => {
+    // Navigate to home page
+    navigateToRoute('/');
   };
 
   const menuItems = [
     {
       route: 'admin-dashboard',
       label: 'Dashboard',
-      icon: <Home className="w-4 h-4" />
+      icon: <Home className="w-5 h-5" />
     },
     {
       route: 'admin-devices',
       label: 'Devices',
-      icon: <Smartphone className="w-4 h-4" />
+      icon: <Smartphone className="w-5 h-5" />
     },
     {
       route: 'admin-problems',
       label: 'Problem Reports',
-      icon: <AlertTriangle className="w-4 h-4" />
+      icon: <AlertTriangle className="w-5 h-5" />
     }
   ];
 
   return (
-    <header id="admin-header">
+    <header id="admin-header" className={isScrolled ? 'scrolled' : ''}>
       <div className="header-container">
         {/* Logo & Title */}
         <div className="logo-section">
           <div className="logo-group">
-            <div className="logo-icon-container">
+            <div className="logo-icon-container" onClick={handleLogoClick}>
               <Zap className="logo-icon" />
             </div>
-            <span className="logo-text">QCU EcoCharge</span>
+            <span className="logo-text" onClick={handleLogoClick}>QCU EcoCharge</span>
             <div className="admin-badge">
               Admin
             </div>
@@ -85,20 +105,20 @@ const AdminHeader = ({ title, navigate }) => {
             onClick={toggleTheme}
           >
             {isDarkMode ? (
-              <Sun className="h-4 w-4" />
+              <Sun className="h-5 w-5" />
             ) : (
-              <Moon className="h-4 w-4" />
+              <Moon className="h-5 w-5" />
             )}
           </button>
 
           {/* Settings */}
           <button className="action-button">
-            <Settings className="h-4 w-4" />
+            <Settings className="h-5 w-5" />
           </button>
 
           {/* Logout */}
           <button className="action-button" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
           </button>
 
           {/* Mobile menu toggle */}
@@ -107,9 +127,9 @@ const AdminHeader = ({ title, navigate }) => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             )}
           </button>
         </div>

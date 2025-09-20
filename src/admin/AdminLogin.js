@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 import '../styles/AdminLogin.css';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -19,16 +21,19 @@ const AdminLogin = () => {
     // Mock authentication - in real app, this would call an API
     setTimeout(() => {
       if (formData.username === 'admin' && formData.password === 'ecocharge2024') {
-        // toast.success('Welcome to EcoCharge Admin Panel!');
-        alert('Welcome to EcoCharge Admin Panel!');
+        showSuccess('Welcome to EcoCharge Admin Panel!');
         localStorage.setItem('adminLoggedIn', 'true');
         navigate('/admin/dashboard');
       } else {
-        // toast.error('Invalid credentials. Please try again.');
-        alert('Invalid credentials. Please try again.');
+        showError('Invalid credentials. Please try again.');
       }
       setIsLoading(false);
     }, 1000);
+  };
+
+  const handleLogoClick = () => {
+    // Navigate to home page
+    navigate('/');
   };
 
   return (
@@ -37,10 +42,10 @@ const AdminLogin = () => {
         <div className="container">
           {/* Logo/Header */}
           <div className="header">
-            <div className="logo-container">
+            <div className="logo-container" onClick={handleLogoClick}>
               <Zap className="logo-icon" />
             </div>
-            <h1 className="title">QCU EcoCharge</h1>
+            <h1 className="title" onClick={handleLogoClick}>QCU EcoCharge</h1>
             <div className="badge">
               <Shield className="badge-icon" />
               Admin Portal

@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
+import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import "../styles/ReportProblem.css";
 
 function ReportProblem() {
+    const { showSuccess, showError } = useNotification();
+    const { openModal } = useGoogleLogin();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
     const [formData, setFormData] = useState({
@@ -10,6 +14,60 @@ function ReportProblem() {
         description: '',
         urgency: ''
     });
+
+    // Check if user is already logged in on component mount
+    useEffect(() => {
+        const checkLoginState = () => {
+            const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            
+            if (userLoggedIn || adminLoggedIn) {
+                const mockUser = {
+                    id: 'user_123',
+                    email: 'student@qcu.edu.ph',
+                    name: 'John Doe',
+                    picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
+                };
+                setUser(mockUser);
+                setIsAuthenticated(true);
+            }
+        };
+        
+        checkLoginState();
+        
+        // Listen for storage changes (when user logs in/out from navbar)
+        const handleStorageChange = () => {
+            checkLoginState();
+        };
+        
+        // Also listen for custom logout events
+        const handleLogoutEvent = () => {
+            setUser(null);
+            setIsAuthenticated(false);
+        };
+
+        // Listen for custom login events
+        const handleLoginEvent = () => {
+            const mockUser = {
+                id: 'user_123',
+                email: 'student@qcu.edu.ph',
+                name: 'John Doe',
+                picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
+            };
+            setUser(mockUser);
+            setIsAuthenticated(true);
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('userLoggedOut', handleLogoutEvent);
+        window.addEventListener('userLoggedIn', handleLoginEvent);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('userLoggedOut', handleLogoutEvent);
+            window.removeEventListener('userLoggedIn', handleLoginEvent);
+        };
+    }, []);
 
     const stations = [
         { id: 'QCU-001', name: 'Main Library', location: '1st Floor, Main Entrance' },
@@ -36,33 +94,34 @@ function ReportProblem() {
         { value: 'critical', label: 'Critical - Safety concern', color: 'red-dark' }
     ];
 
-    const handleGoogleLogin = () => {
-        // Mock Google login
-        const mockUser = {
-            id: 'user_123',
-            email: 'student@qcu.edu.ph',
-            name: 'John Doe',
-            picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
-        };
-        setUser(mockUser);
-        setIsAuthenticated(true);
-        alert('Successfully logged in with Google!');
+
+    const handleGoogleLoginClick = () => {
+        openModal(() => {
+            const mockUser = {
+                id: 'user_123',
+                email: 'student@qcu.edu.ph',
+                name: 'John Doe',
+                picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
+            };
+            setUser(mockUser);
+            setIsAuthenticated(true);
+        });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!isAuthenticated) {
-            alert('Please log in to report a problem');
+            showError('Please log in to report a problem');
             return;
         }
 
         if (!formData.station || !formData.problemType || !formData.description || !formData.urgency) {
-            alert('Please fill in all required fields');
+            showError('Please fill in all required fields');
             return;
         }
         
         // Mock form submission
-        alert('Problem report submitted successfully! We\'ll investigate this issue promptly.');
+        showSuccess('Problem report submitted successfully! We\'ll investigate this issue promptly.');
         setFormData({ station: '', problemType: '', description: '', urgency: '' });
     };
 
@@ -174,11 +233,12 @@ function ReportProblem() {
                                 {!isAuthenticated ? (
                                     <div className="login-prompt">
                                         <p className="login-text">Please log in to report a problem</p>
-                                        <button onClick={handleGoogleLogin} className="google-login-btn">
+                                        <button onClick={handleGoogleLoginClick} className="google-login-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                                                <path d="M21.2 8.4c.1.2.1.4.1.6 0 6.5-4.9 11.4-11.4 11.4-2.1 0-4.1-.6-5.8-1.6.3.1.6.1.9.1 1.8 0 3.5-.6 4.8-1.6-1.7 0-3.1-1.1-3.6-2.6.2.1.5.1.8.1.4 0 .8-.1 1.2-.2-1.8-.4-3.1-1.9-3.1-3.8v-.1c.5.3 1.1.5 1.8.5-1.1-.7-1.8-1.9-1.8-3.2 0-.7.2-1.3.5-1.9 1.9 2.3 4.7 3.8 7.9 4-.1-.3-.1-.6-.1-.9 0-2.1 1.7-3.8 3.8-3.8 1.1 0 2.1.5 2.8 1.2.9-.2 1.7-.5 2.4-.9-.3.9-.9 1.7-1.7 2.2.8-.1 1.5-.3 2.2-.6-.5.8-1.2 1.5-2 2z"></path>
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
                                             </svg>
-                                            Continue with Google
+                                            Login
                                         </button>
                                     </div>
                                 ) : (
@@ -367,6 +427,7 @@ function ReportProblem() {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

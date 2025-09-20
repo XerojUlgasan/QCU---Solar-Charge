@@ -1,0 +1,708 @@
+/* Admin Problems Styles */
+#admin-problems {
+    min-height: 100vh;
+    background-color: #0b0e13;
+    color: #ffffff;
+}
+
+#admin-problems .problems-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Stats Grid */
+#admin-problems .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+#admin-problems .stat-card {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+#admin-problems .stat-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+#admin-problems .stat-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #9aa3b2;
+}
+
+#admin-problems .stat-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #9aa3b2;
+}
+
+#admin-problems .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+#admin-problems .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+#admin-problems .stat-yellow {
+    color: #f59e0b;
+}
+
+#admin-problems .stat-green {
+    color: #22c55e;
+}
+
+#admin-problems .stat-red {
+    color: #ef4444;
+}
+
+#admin-problems .stat-description {
+    font-size: 0.75rem;
+    color: #9aa3b2;
+}
+
+/* Filters Section */
+#admin-problems .filters-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+#admin-problems .search-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+}
+
+#admin-problems .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 24rem;
+}
+
+#admin-problems .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: #9aa3b2;
+}
+
+#admin-problems .search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #1e2633;
+    color: #ffffff;
+    font-size: 0.875rem;
+}
+
+#admin-problems .search-input:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+#admin-problems .search-input::placeholder {
+    color: #9aa3b2;
+}
+
+#admin-problems .filter-select {
+    width: 9.375rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #1e2633;
+    color: #ffffff;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+#admin-problems .filter-select:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+/* Reports List */
+#admin-problems .reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#admin-problems .report-card {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.2s;
+}
+
+#admin-problems .report-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+#admin-problems .report-header {
+    padding: 1.5rem 1.5rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+#admin-problems .report-info {
+    flex: 1;
+}
+
+#admin-problems .report-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#admin-problems .report-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#admin-problems .report-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#admin-problems .urgency-badge,
+#admin-problems .status-badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+#admin-problems .urgency-critical {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+#admin-problems .urgency-high {
+    background-color: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+}
+
+#admin-problems .urgency-medium {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+#admin-problems .urgency-low {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+#admin-problems .urgency-default {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #9ca3af;
+}
+
+#admin-problems .status-resolved {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+#admin-problems .status-investigating {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+#admin-problems .status-scheduled {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+#admin-problems .status-pending {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #9ca3af;
+}
+
+#admin-problems .status-default {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #9ca3af;
+}
+
+#admin-problems .report-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #9aa3b2;
+}
+
+#admin-problems .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+#admin-problems .detail-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+#admin-problems .report-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#admin-problems .view-details-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #1e2633;
+    border-radius: 0.375rem;
+    background: none;
+    color: #9aa3b2;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-problems .view-details-button:hover {
+    background-color: #1e2633;
+    color: #ffffff;
+}
+
+#admin-problems .report-content {
+    padding: 0 1.5rem 1.5rem;
+}
+
+#admin-problems .report-description {
+    font-size: 0.875rem;
+    color: #9aa3b2;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#admin-problems .status-info {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+#admin-problems .status-blue {
+    color: #3b82f6;
+}
+
+#admin-problems .status-yellow {
+    color: #f59e0b;
+}
+
+#admin-problems .status-green {
+    color: #22c55e;
+}
+
+/* Dialog Styles */
+#admin-problems .dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+#admin-problems .dialog-content {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.5rem;
+    width: 100%;
+    max-width: 48rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#admin-problems .dialog-header {
+    padding: 1.5rem 1.5rem 0;
+    position: relative;
+}
+
+#admin-problems .dialog-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+#admin-problems .dialog-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#admin-problems .dialog-description {
+    font-size: 0.875rem;
+    color: #9aa3b2;
+}
+
+#admin-problems .dialog-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    background: none;
+    color: #9aa3b2;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+#admin-problems .dialog-close:hover {
+    background-color: #1e2633;
+    color: #ffffff;
+}
+
+#admin-problems .dialog-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+#admin-problems .problem-section,
+#admin-problems .solution-section,
+#admin-problems .response-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#admin-problems .section-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+#admin-problems .problem-description,
+#admin-problems .solution-content {
+    font-size: 0.875rem;
+    color: #9aa3b2;
+    padding: 0.75rem;
+    background-color: rgba(107, 114, 128, 0.1);
+    border-radius: 0.5rem;
+    line-height: 1.5;
+}
+
+#admin-problems .solution-content {
+    background-color: rgba(34, 197, 94, 0.1);
+}
+
+#admin-problems .solution-date {
+    font-size: 0.75rem;
+    color: #9aa3b2;
+    margin-top: 0.5rem;
+}
+
+#admin-problems .details-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+#admin-problems .detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#admin-problems .detail-content {
+    font-size: 0.875rem;
+    color: #9aa3b2;
+}
+
+#admin-problems .detail-content p {
+    margin: 0;
+}
+
+#admin-problems .response-textarea {
+    width: 100%;
+    min-height: 6.25rem;
+    padding: 0.75rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #1e2633;
+    color: #ffffff;
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+#admin-problems .response-textarea:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+#admin-problems .response-textarea::placeholder {
+    color: #9aa3b2;
+}
+
+#admin-problems .send-response-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: #22c55e;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-problems .send-response-button:hover {
+    background-color: #16a34a;
+}
+
+#admin-problems .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#admin-problems .action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #1e2633;
+    border-radius: 0.375rem;
+    background: none;
+    color: #9aa3b2;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-problems .action-button:hover {
+    background-color: #1e2633;
+    color: #ffffff;
+}
+
+#admin-problems .button-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* No Reports */
+#admin-problems .no-reports {
+    text-align: center;
+    padding: 3rem;
+    color: #9aa3b2;
+}
+
+#admin-problems .no-reports-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    color: #9aa3b2;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+    #admin-problems .search-filter-group {
+        flex-direction: row;
+    }
+}
+
+@media (min-width: 768px) {
+    #admin-problems .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    #admin-problems .report-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    #admin-problems .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Light mode styles */
+.light #admin-problems {
+    background-color: #ffffff;
+    color: #1f2937;
+}
+
+.light #admin-problems .stat-card,
+.light #admin-problems .report-card {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.light #admin-problems .stat-title {
+    color: #6b7280;
+}
+
+.light #admin-problems .stat-icon {
+    color: #6b7280;
+}
+
+.light #admin-problems .stat-value {
+    color: #1f2937;
+}
+
+.light #admin-problems .stat-description {
+    color: #6b7280;
+}
+
+.light #admin-problems .search-input,
+.light #admin-problems .filter-select {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.light #admin-problems .search-input:focus,
+.light #admin-problems .filter-select:focus {
+    border-color: #22c55e;
+    background-color: #ffffff;
+}
+
+.light #admin-problems .search-input::placeholder {
+    color: #6b7280;
+}
+
+.light #admin-problems .report-title {
+    color: #1f2937;
+}
+
+.light #admin-problems .report-details {
+    color: #6b7280;
+}
+
+.light #admin-problems .view-details-button {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.light #admin-problems .view-details-button:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light #admin-problems .report-description {
+    color: #6b7280;
+}
+
+.light #admin-problems .dialog-content {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.light #admin-problems .dialog-title {
+    color: #1f2937;
+}
+
+.light #admin-problems .dialog-description {
+    color: #6b7280;
+}
+
+.light #admin-problems .dialog-close {
+    color: #6b7280;
+}
+
+.light #admin-problems .dialog-close:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light #admin-problems .section-title {
+    color: #1f2937;
+}
+
+.light #admin-problems .problem-description {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.light #admin-problems .solution-content {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #6b7280;
+}
+
+.light #admin-problems .solution-date {
+    color: #6b7280;
+}
+
+.light #admin-problems .detail-content {
+    color: #6b7280;
+}
+
+.light #admin-problems .response-textarea {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.light #admin-problems .response-textarea:focus {
+    border-color: #22c55e;
+    background-color: #ffffff;
+}
+
+.light #admin-problems .response-textarea::placeholder {
+    color: #6b7280;
+}
+
+.light #admin-problems .action-button {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.light #admin-problems .action-button:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light #admin-problems .no-reports {
+    color: #6b7280;
+}
+
+.light #admin-problems .no-reports-icon {
+    color: #6b7280;
+}

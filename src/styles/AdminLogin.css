@@ -24,6 +24,12 @@
     background: linear-gradient(90deg, #22c55e, #3b82f6);
     border-radius: 1rem;
     margin: 0 auto 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-login-page .logo-container:hover {
+    transform: scale(1.05);
 }
 
 #admin-login-page .logo-icon {
@@ -37,6 +43,12 @@
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-login-page .title:hover {
+    color: #22c55e;
 }
 
 #admin-login-page .badge {
@@ -287,4 +299,8 @@
 
 .light #admin-login-page .security-notice {
     color: #6b7280;
+}
+
+.light #admin-login-page .title:hover {
+    color: #22c55e;
 }

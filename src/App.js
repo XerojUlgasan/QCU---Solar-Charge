@@ -10,17 +10,23 @@ import AdminLogin from './admin/AdminLogin';
 import AdminDashboard from './admin/AdminDashboard';
 import AdminDevices from './admin/AdminDevices';
 import DeviceDetail from './admin/DeviceDetail';
+import AdminProblems from './admin/AdminProblems';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { GoogleLoginProvider } from './contexts/GoogleLoginContext';
+import GoogleLoginModal from './components/GoogleLoginModal';
 
 function App() {
   return (
     <ThemeProvider>
-      <Routes>
+      <NotificationProvider>
+        <GoogleLoginProvider>
+          <Routes>
         {/* Admin routes without navbar */}
         <Route path='/admin' element={<AdminLogin />}/>
         <Route path='/admin/dashboard' element={<AdminDashboard />}/>
         <Route path='/admin/devices' element={<AdminDevices />}/>
-        <Route path='/admin/problems' element={<div>Admin Problems Page (Coming Soon)</div>}/>
+        <Route path='/admin/problems' element={<AdminProblems />}/>
         <Route path='/admin/device/:deviceId' element={<DeviceDetail />}/>
         
         {/* Regular routes with navbar */}
@@ -39,9 +45,12 @@ function App() {
             </main>
           </>
         }/>
-      </Routes>
+        </Routes>
+        <GoogleLoginModal />
+        </GoogleLoginProvider>
+      </NotificationProvider>
     </ThemeProvider>
-  );
-}
+    );
+  }
 
 export default App;

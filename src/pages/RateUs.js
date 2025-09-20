@@ -1,9 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
+import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import "../styles/RateUs.css";
 
 function RateUs() {
+    const { showSuccess } = useNotification();
+    const { openModal } = useGoogleLogin();
     const [selectedRating, setSelectedRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
+    const [feedback, setFeedback] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // Check if user is already logged in on component mount
+    useEffect(() => {
+        const checkLoginState = () => {
+            const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            
+            if (userLoggedIn || adminLoggedIn) {
+                setIsLoggedIn(true);
+            }
+        };
+        
+        checkLoginState();
+        
+        // Listen for storage changes (when user logs in/out from navbar)
+        const handleStorageChange = () => {
+            checkLoginState();
+        };
+        
+        // Also listen for custom logout events
+        const handleLogoutEvent = () => {
+            setIsLoggedIn(false);
+        };
+
+        // Listen for custom login events
+        const handleLoginEvent = () => {
+            setIsLoggedIn(true);
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('userLoggedOut', handleLogoutEvent);
+        window.addEventListener('userLoggedIn', handleLoginEvent);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('userLoggedOut', handleLogoutEvent);
+            window.removeEventListener('userLoggedIn', handleLoginEvent);
+        };
+    }, []);
 
     const recentReviews = [
         {
@@ -52,10 +97,19 @@ function RateUs() {
     const handleSubmitRating = () => {
         if (selectedRating === 0) return;
         
+        if (!isLoggedIn) {
+            openModal(() => {
+                setIsLoggedIn(true);
+            });
+            return;
+        }
+        
         // Mock rating submission
-        alert(`Thank you for rating us ${selectedRating} star${selectedRating > 1 ? 's' : ''}!`);
+        showSuccess(`Thank you for rating us ${selectedRating} star${selectedRating > 1 ? 's' : ''}!`);
         setSelectedRating(0);
+        setFeedback('');
     };
+
 
     const renderStars = (rating, interactive = false) => {
         return [...Array(5)].map((_, index) => {
@@ -165,6 +219,20 @@ function RateUs() {
                                             <p className="rating-selected">
                                                 You selected {selectedRating} star{selectedRating > 1 ? 's' : ''}
                                             </p>
+                                            
+                                            <div className="feedback-section">
+                                                <label className="feedback-label">
+                                                    Share your experience (optional)
+                                                </label>
+                                                <textarea
+                                                    className="feedback-textarea"
+                                                    placeholder="Tell us about your experience with QCU EcoCharge..."
+                                                    value={feedback}
+                                                    onChange={(e) => setFeedback(e.target.value)}
+                                                    rows="4"
+                                                />
+                                            </div>
+                                            
                                             <button onClick={handleSubmitRating} className="submit-button">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                                                     <path d="M7 10v12"></path>
@@ -244,6 +312,7 @@ function RateUs() {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

@@ -12,10 +12,12 @@ import {
   Filter
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
+import { useNotification } from '../contexts/NotificationContext';
 import '../styles/AdminDevices.css';
 
 const AdminDevices = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -122,12 +124,12 @@ const AdminDevices = () => {
   const handleAddDevice = (e) => {
     e.preventDefault();
     if (!newDevice.name || !newDevice.location || !newDevice.building) {
-      alert('Please fill in all fields');
+      showError('Please fill in all fields');
       return;
     }
     
     // Mock device addition
-    alert(`Device "${newDevice.name}" added successfully!`);
+    showSuccess(`Device "${newDevice.name}" added successfully!`);
     setNewDevice({ name: '', location: '', building: '' });
     setIsAddDialogOpen(false);
   };

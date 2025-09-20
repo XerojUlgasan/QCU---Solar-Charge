@@ -23,6 +23,7 @@ const DeviceDetail = () => {
   const navigate = useNavigate();
   const { deviceId } = useParams();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState('realtime');
 
   // Mock device data - in real app, this would be fetched based on deviceId
   const device = {
@@ -227,14 +228,34 @@ const DeviceDetail = () => {
 
         <div className="tabs-container">
           <div className="tabs-list">
-            <button className="tab-trigger active">Real-time</button>
-            <button className="tab-trigger">Sessions</button>
-            <button className="tab-trigger">Maintenance</button>
-            <button className="tab-trigger">Analytics</button>
+            <button 
+              className={`tab-trigger ${activeTab === 'realtime' ? 'active' : ''}`}
+              onClick={() => setActiveTab('realtime')}
+            >
+              Real-time
+            </button>
+            <button 
+              className={`tab-trigger ${activeTab === 'sessions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('sessions')}
+            >
+              Sessions
+            </button>
+            <button 
+              className={`tab-trigger ${activeTab === 'maintenance' ? 'active' : ''}`}
+              onClick={() => setActiveTab('maintenance')}
+            >
+              Maintenance
+            </button>
+            <button 
+              className={`tab-trigger ${activeTab === 'analytics' ? 'active' : ''}`}
+              onClick={() => setActiveTab('analytics')}
+            >
+              Analytics
+            </button>
           </div>
 
           {/* Real-time Tab */}
-          <div className="tab-content active">
+          <div className={`tab-content ${activeTab === 'realtime' ? 'active' : ''}`}>
             <div className="tab-grid">
               {/* Technical Metrics */}
               <div className="detail-card">
@@ -363,7 +384,7 @@ const DeviceDetail = () => {
           </div>
 
           {/* Sessions Tab */}
-          <div className="tab-content">
+          <div className={`tab-content ${activeTab === 'sessions' ? 'active' : ''}`}>
             <div className="sessions-card">
               <div className="card-header">
                 <div className="card-title">Recent Charging Sessions</div>
@@ -402,7 +423,7 @@ const DeviceDetail = () => {
           </div>
 
           {/* Maintenance Tab */}
-          <div className="tab-content">
+          <div className={`tab-content ${activeTab === 'maintenance' ? 'active' : ''}`}>
             <div className="maintenance-grid">
               <div className="maintenance-card">
                 <div className="card-header">
@@ -458,7 +479,7 @@ const DeviceDetail = () => {
           </div>
 
           {/* Analytics Tab */}
-          <div className="tab-content">
+          <div className={`tab-content ${activeTab === 'analytics' ? 'active' : ''}`}>
             <div className="analytics-grid">
               <div className="analytics-card">
                 <div className="card-header">

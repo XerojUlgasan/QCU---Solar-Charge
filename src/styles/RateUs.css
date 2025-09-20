@@ -192,6 +192,7 @@
 
 #rate-us-page .rating-submit {
     text-align: center;
+    width: 100%;
 }
 
 #rate-us-page .rating-selected {
@@ -456,4 +457,191 @@
 .light #rate-us-page .stats-card {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
     border-color: #e5e7eb;
+}
+
+/* Feedback Section */
+#rate-us-page .feedback-section {
+    margin: 1.5rem 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+#rate-us-page .feedback-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #9aa3b2;
+    margin-bottom: 0.5rem;
+}
+
+#rate-us-page .feedback-textarea {
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+    border: 2px solid #1e2633;
+    border-radius: 0.75rem;
+    background-color: #0f141c;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+#rate-us-page .feedback-textarea:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15), 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+#rate-us-page .feedback-textarea::placeholder {
+    color: #6b7280;
+    font-style: italic;
+}
+
+#rate-us-page .feedback-textarea:hover {
+    border-color: #374151;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Styles */
+#rate-us-page .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+#rate-us-page .modal-content {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 1rem;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+#rate-us-page .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+#rate-us-page .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+#rate-us-page .modal-close {
+    background: none;
+    border: none;
+    color: #9aa3b2;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+#rate-us-page .modal-close:hover {
+    background-color: #1e2633;
+    color: #ffffff;
+}
+
+#rate-us-page .modal-body {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+}
+
+#rate-us-page .modal-description {
+    color: #9aa3b2;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+#rate-us-page .google-login-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: #ffffff;
+    color: #1f2937;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#rate-us-page .google-login-btn:hover {
+    background-color: #f9fafb;
+    transform: translateY(-1px);
+}
+
+/* Light Mode Styles for Feedback and Modal */
+.light #rate-us-page .feedback-label {
+    color: #6b7280;
+}
+
+.light #rate-us-page .feedback-textarea {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #1f2937;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light #rate-us-page .feedback-textarea:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.light #rate-us-page .feedback-textarea::placeholder {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.light #rate-us-page .feedback-textarea:hover {
+    border-color: #9ca3af;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.light #rate-us-page .modal-content {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.light #rate-us-page .modal-title {
+    color: #1f2937;
+}
+
+.light #rate-us-page .modal-close {
+    color: #6b7280;
+}
+
+.light #rate-us-page .modal-close:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light #rate-us-page .modal-description {
+    color: #6b7280;
 }

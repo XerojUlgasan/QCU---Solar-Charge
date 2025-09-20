@@ -250,7 +250,9 @@
 }
 
 #device-detail .tab-content.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 /* Detail Cards */
@@ -797,6 +799,11 @@
 .light #device-detail .device-id-badge {
     border-color: #d1d5db;
     color: #6b7280;
+}
+
+.light #device-detail .tabs-list {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
 }
 
 .light #device-detail .tab-trigger {

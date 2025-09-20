@@ -1,22 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
+import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import "../styles/Contact.css";
 
 function Contact() {
+	const { showSuccess } = useNotification();
+	const { openModal } = useGoogleLogin();
 	const [user, setUser] = useState(null);
 	const [formData, setFormData] = useState({ subject: "", message: "" });
 
-	function handleGoogleLogin(){
-		setUser({
-			name: "John Doe",
-			email: "student@qcu.edu.ph",
-			avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
+	// Check if user is already logged in on component mount
+	useEffect(() => {
+		const checkLoginState = () => {
+			const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+			const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+			
+			if (userLoggedIn || adminLoggedIn) {
+				setUser({
+					name: "John Doe",
+					email: "student@qcu.edu.ph",
+					avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
+				});
+			}
+		};
+		
+		checkLoginState();
+		
+		// Listen for storage changes (when user logs in/out from navbar)
+		const handleStorageChange = () => {
+			checkLoginState();
+		};
+		
+		// Also listen for custom logout events
+		const handleLogoutEvent = () => {
+			setUser(null);
+		};
+
+		// Listen for custom login events
+		const handleLoginEvent = () => {
+			setUser({
+				name: "John Doe",
+				email: "student@qcu.edu.ph",
+				avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
+			});
+		};
+		
+		window.addEventListener('storage', handleStorageChange);
+		window.addEventListener('userLoggedOut', handleLogoutEvent);
+		window.addEventListener('userLoggedIn', handleLoginEvent);
+		
+		return () => {
+			window.removeEventListener('storage', handleStorageChange);
+			window.removeEventListener('userLoggedOut', handleLogoutEvent);
+			window.removeEventListener('userLoggedIn', handleLoginEvent);
+		};
+	}, []);
+
+
+	function handleGoogleLoginClick() {
+		openModal(() => {
+			setUser({
+				name: "John Doe",
+				email: "student@qcu.edu.ph",
+				avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
+			});
 		});
 	}
 
 	function handleSubmit(e){
 		e.preventDefault();
 		// mock submit
-		alert("Message sent! We'll get back to you soon.");
+		showSuccess("Message sent! We'll get back to you soon.");
 		setFormData({ subject: "", message: "" });
 	}
   return (
@@ -35,9 +89,12 @@ function Contact() {
 						{!user && (
 							<div className="login-box">
 								<p className="muted">Please log in to send us a message</p>
-								<button className="google-btn" onClick={handleGoogleLogin}>
-									<span className="google-icon">◎</span>
-                      Continue with Google
+								<button className="google-btn" onClick={handleGoogleLoginClick}>
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+										<circle cx="12" cy="7" r="4"></circle>
+									</svg>
+                      Login
 								</button>
                   </div>
 						)}
@@ -101,11 +158,47 @@ function Contact() {
 								</div>
 							</div>
 						</div>
+
+						<div className="card">
+							<div className="info">
+								<div className="info-icon">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+										<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+										<polyline points="22,6 12,13 2,6"></polyline>
+									</svg>
+								</div>
+								<div>
+									<h4>Email Support</h4>
+									<p className="muted">ecocharge@qcu.edu.ph</p>
+									<p className="muted">support@qcu.edu.ph</p>
+									<p className="muted">Response time: 2-4 hours</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="card">
+							<div className="info">
+								<div className="info-icon">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+										<circle cx="12" cy="12" r="10"></circle>
+										<polyline points="12,6 12,12 16,14"></polyline>
+									</svg>
+								</div>
+								<div>
+									<h4>Operating Hours</h4>
+									<p className="muted">Charging Stations: 24/7</p>
+									<p className="muted">Technical Support:</p>
+									<p className="muted">Mon-Fri: 8:00 AM - 5:00 PM</p>
+									<p className="muted">Sat: 9:00 AM - 3:00 PM</p>
+								</div>
+							</div>
+						</div>
+          </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
 
-export default Contact;
+      </div>
+    );
+  }
+  
+  export default Contact;
