@@ -14,14 +14,17 @@ import AdminProblems from './admin/AdminProblems';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { GoogleLoginProvider } from './contexts/GoogleLoginContext';
+import { LogoutProvider } from './contexts/LogoutContext';
 import GoogleLoginModal from './components/GoogleLoginModal';
+import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 
 function App() {
   return (
     <ThemeProvider>
       <NotificationProvider>
         <GoogleLoginProvider>
-          <Routes>
+          <LogoutProvider>
+            <Routes>
         {/* Admin routes without navbar */}
         <Route path='/admin' element={<AdminLogin />}/>
         <Route path='/admin/dashboard' element={<AdminDashboard />}/>
@@ -47,6 +50,8 @@ function App() {
         }/>
         </Routes>
         <GoogleLoginModal />
+        <LogoutConfirmationModal />
+          </LogoutProvider>
         </GoogleLoginProvider>
       </NotificationProvider>
     </ThemeProvider>

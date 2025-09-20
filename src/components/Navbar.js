@@ -4,11 +4,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
+import { useLogout } from '../contexts/LogoutContext';
 
 function Navbar() {
     const { isDarkMode, toggleTheme } = useTheme();
     const { showSuccess } = useNotification();
     const { openModal } = useGoogleLogin();
+    const { openModal: openLogoutModal } = useLogout();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -40,14 +42,16 @@ function Navbar() {
     };
 
     const handleLogout = () => {
-        setIsLoggedIn(false);
         setProfileDropdownOpen(false);
-        // Clear both user and admin login states
-        localStorage.removeItem('userLoggedIn');
-        localStorage.removeItem('adminLoggedIn');
-        // Dispatch custom event to notify all pages
-        window.dispatchEvent(new CustomEvent('userLoggedOut'));
-        showSuccess('Successfully logged out!');
+        openLogoutModal(() => {
+            setIsLoggedIn(false);
+            // Clear both user and admin login states
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('adminLoggedIn');
+            // Dispatch custom event to notify all pages
+            window.dispatchEvent(new CustomEvent('userLoggedOut'));
+            showSuccess('Successfully logged out!');
+        });
     };
 
     const isCurrentRoute = (route) => {

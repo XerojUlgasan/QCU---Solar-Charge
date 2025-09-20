@@ -14,11 +14,13 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { useLogout } from '../contexts/LogoutContext';
 import '../styles/AdminHeader.css';
 
 const AdminHeader = ({ title, navigate }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { showSuccess } = useNotification();
+  const { openModal: openLogoutModal } = useLogout();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigateToRoute = useNavigate();
@@ -34,12 +36,14 @@ const AdminHeader = ({ title, navigate }) => {
   }, []);
 
   const handleLogout = () => {
-    // Clear admin login state
-    localStorage.removeItem('adminLoggedIn');
-    // Show success notification
-    showSuccess('Successfully logged out!');
-    // Navigate to admin login page
-    navigateToRoute('/admin');
+    openLogoutModal(() => {
+      // Clear admin login state
+      localStorage.removeItem('adminLoggedIn');
+      // Show success notification
+      showSuccess('Successfully logged out!');
+      // Navigate to admin login page
+      navigateToRoute('/admin');
+    });
   };
 
   const handleLogoClick = () => {
