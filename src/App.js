@@ -7,6 +7,9 @@ import Overview from './pages/Overview';
 import RateUs from './pages/RateUs';
 import ReportProblem from './pages/ReportProblem';
 import AdminLogin from './admin/AdminLogin';
+import AdminDashboard from './admin/AdminDashboard';
+import AdminDevices from './admin/AdminDevices';
+import DeviceDetail from './admin/DeviceDetail';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
@@ -14,7 +17,11 @@ function App() {
     <ThemeProvider>
       <Routes>
         {/* Admin routes without navbar */}
-        <Route path='/admin' element={<AdminLogin onLogin={() => console.log('Admin logged in')} />}/>
+        <Route path='/admin' element={<AdminLogin />}/>
+        <Route path='/admin/dashboard' element={<AdminDashboard />}/>
+        <Route path='/admin/devices' element={<AdminDevices />}/>
+        <Route path='/admin/problems' element={<div>Admin Problems Page (Coming Soon)</div>}/>
+        <Route path='/admin/device/:deviceId' element={<DeviceDetail />}/>
         
         {/* Regular routes with navbar */}
         <Route path='/*' element={

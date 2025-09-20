@@ -1,0 +1,651 @@
+/* Admin Devices Styles */
+#admin-devices {
+    min-height: 100vh;
+    background-color: #0b0e13;
+    color: #ffffff;
+}
+
+#admin-devices .devices-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Stats Grid */
+#admin-devices .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+#admin-devices .stat-card {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+#admin-devices .stat-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+#admin-devices .stat-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #9aa3b2;
+}
+
+#admin-devices .stat-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #9aa3b2;
+}
+
+#admin-devices .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+#admin-devices .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+#admin-devices .stat-description {
+    font-size: 0.75rem;
+    color: #9aa3b2;
+}
+
+/* Controls Section */
+#admin-devices .controls-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+#admin-devices .search-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+}
+
+#admin-devices .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 24rem;
+}
+
+#admin-devices .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: #9aa3b2;
+}
+
+#admin-devices .search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #1e2633;
+    color: #ffffff;
+    font-size: 0.875rem;
+}
+
+#admin-devices .search-input:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+#admin-devices .search-input::placeholder {
+    color: #9aa3b2;
+}
+
+#admin-devices .filter-select {
+    width: 11.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #1e2633;
+    color: #ffffff;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+#admin-devices .filter-select:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+#admin-devices .add-device-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: #22c55e;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-devices .add-device-button:hover {
+    background-color: #16a34a;
+}
+
+#admin-devices .button-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Dialog Styles */
+#admin-devices .dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+#admin-devices .dialog-content {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.5rem;
+    width: 90%;
+    max-width: 28rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#admin-devices .dialog-header {
+    padding: 1.5rem 1.5rem 0;
+}
+
+#admin-devices .dialog-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+#admin-devices .dialog-description {
+    font-size: 0.875rem;
+    color: #9aa3b2;
+}
+
+#admin-devices .dialog-form {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#admin-devices .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#admin-devices .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+#admin-devices .form-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #1e2633;
+    color: #ffffff;
+    font-size: 0.875rem;
+}
+
+#admin-devices .form-input:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+#admin-devices .form-input::placeholder {
+    color: #9aa3b2;
+}
+
+#admin-devices .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+#admin-devices .cancel-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #1e2633;
+    border-radius: 0.375rem;
+    background: none;
+    color: #9aa3b2;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-devices .cancel-button:hover {
+    background-color: #1e2633;
+    color: #ffffff;
+}
+
+#admin-devices .submit-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: #22c55e;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-devices .submit-button:hover {
+    background-color: #16a34a;
+}
+
+/* Devices Grid */
+#admin-devices .devices-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+#admin-devices .device-card {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#admin-devices .device-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+#admin-devices .device-header {
+    padding: 1.5rem 1.5rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+#admin-devices .device-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+#admin-devices .device-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#admin-devices .device-location {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: #9aa3b2;
+}
+
+#admin-devices .location-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+#admin-devices .device-status-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+#admin-devices .status-badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+#admin-devices .status-active {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+#admin-devices .status-maintenance {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+#admin-devices .status-offline {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+#admin-devices .status-unknown {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #9ca3af;
+}
+
+#admin-devices .device-id {
+    font-size: 0.75rem;
+    color: #9aa3b2;
+}
+
+#admin-devices .device-content {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Metrics Grid */
+#admin-devices .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+#admin-devices .metric-item {
+    text-align: center;
+    padding: 0.5rem;
+    background-color: rgba(107, 114, 128, 0.1);
+    border-radius: 0.375rem;
+}
+
+#admin-devices .metric-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+#admin-devices .metric-blue {
+    color: #3b82f6;
+}
+
+#admin-devices .metric-green {
+    color: #22c55e;
+}
+
+#admin-devices .metric-label {
+    font-size: 0.75rem;
+    color: #9aa3b2;
+}
+
+/* Technical Details */
+#admin-devices .technical-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#admin-devices .detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #ffffff;
+}
+
+#admin-devices .detail-value {
+    font-weight: 500;
+}
+
+/* Battery Section */
+#admin-devices .battery-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#admin-devices .battery-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #ffffff;
+}
+
+#admin-devices .battery-value {
+    font-weight: 500;
+}
+
+#admin-devices .battery-high {
+    color: #22c55e;
+}
+
+#admin-devices .battery-medium {
+    color: #f59e0b;
+}
+
+#admin-devices .battery-low {
+    color: #ef4444;
+}
+
+#admin-devices .battery-bar {
+    width: 100%;
+    height: 0.5rem;
+    background-color: #1e2633;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+#admin-devices .battery-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 0.25rem;
+    transition: width 0.3s ease;
+}
+
+/* Usage Stats */
+#admin-devices .usage-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+#admin-devices .usage-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #9aa3b2;
+}
+
+#admin-devices .usage-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+#admin-devices .last-updated {
+    font-size: 0.75rem;
+    color: #9aa3b2;
+    border-top: 1px solid #1e2633;
+    padding-top: 0.5rem;
+}
+
+/* No Devices */
+#admin-devices .no-devices {
+    text-align: center;
+    padding: 3rem;
+    color: #9aa3b2;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+    #admin-devices .controls-section {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    #admin-devices .search-filter-group {
+        flex-direction: row;
+    }
+}
+
+@media (min-width: 768px) {
+    #admin-devices .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    #admin-devices .devices-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    #admin-devices .devices-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Light mode styles */
+.light #admin-devices {
+    background-color: #ffffff;
+    color: #1f2937;
+}
+
+.light #admin-devices .stat-card,
+.light #admin-devices .device-card {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.light #admin-devices .stat-title {
+    color: #6b7280;
+}
+
+.light #admin-devices .stat-icon {
+    color: #6b7280;
+}
+
+.light #admin-devices .stat-value {
+    color: #1f2937;
+}
+
+.light #admin-devices .stat-description {
+    color: #6b7280;
+}
+
+.light #admin-devices .search-input,
+.light #admin-devices .filter-select {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.light #admin-devices .search-input:focus,
+.light #admin-devices .filter-select:focus {
+    border-color: #22c55e;
+    background-color: #ffffff;
+}
+
+.light #admin-devices .search-input::placeholder {
+    color: #6b7280;
+}
+
+.light #admin-devices .dialog-content {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.light #admin-devices .dialog-title {
+    color: #1f2937;
+}
+
+.light #admin-devices .dialog-description {
+    color: #6b7280;
+}
+
+.light #admin-devices .form-label {
+    color: #1f2937;
+}
+
+.light #admin-devices .form-input {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.light #admin-devices .form-input:focus {
+    border-color: #22c55e;
+    background-color: #ffffff;
+}
+
+.light #admin-devices .form-input::placeholder {
+    color: #6b7280;
+}
+
+.light #admin-devices .cancel-button {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.light #admin-devices .cancel-button:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light #admin-devices .device-name {
+    color: #1f2937;
+}
+
+.light #admin-devices .device-location {
+    color: #6b7280;
+}
+
+.light #admin-devices .device-id {
+    color: #6b7280;
+}
+
+.light #admin-devices .detail-row {
+    color: #1f2937;
+}
+
+.light #admin-devices .battery-header {
+    color: #1f2937;
+}
+
+.light #admin-devices .usage-item {
+    color: #6b7280;
+}
+
+.light #admin-devices .last-updated {
+    color: #6b7280;
+    border-top-color: #e5e7eb;
+}
+
+.light #admin-devices .no-devices {
+    color: #6b7280;
+}

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap } from 'lucide-react';
 import '../styles/AdminLogin.css';
 
-const AdminLogin = ({ onLogin }) => {
+const AdminLogin = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -19,7 +21,8 @@ const AdminLogin = ({ onLogin }) => {
       if (formData.username === 'admin' && formData.password === 'ecocharge2024') {
         // toast.success('Welcome to EcoCharge Admin Panel!');
         alert('Welcome to EcoCharge Admin Panel!');
-        onLogin();
+        localStorage.setItem('adminLoggedIn', 'true');
+        navigate('/admin/dashboard');
       } else {
         // toast.error('Invalid credentials. Please try again.');
         alert('Invalid credentials. Please try again.');
