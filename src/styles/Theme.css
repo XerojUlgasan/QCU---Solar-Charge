@@ -43,14 +43,21 @@
 
 /* Fix text colors for better readability */
 .light .text-gray-400 {
-    color: #4b5563 !important;
-}
-
-.light .text-gray-500 {
     color: #374151 !important;
 }
 
+.light .text-gray-500 {
+    color: #1f2937 !important;
+}
+
 .light .text-gray-600 {
+    color: #1f2937 !important;
+}
+
+/* Fix specific rgb(154, 163, 178) text color in light mode */
+.light p[style*="color: rgb(154, 163, 178)"],
+.light div[style*="color: rgb(154, 163, 178)"],
+.light span[style*="color: rgb(154, 163, 178)"] {
     color: #374151 !important;
 }
 
@@ -120,4 +127,24 @@
 
 .light div[style*="background-color: rgb(11, 14, 19)"] {
     background-color: #ffffff !important;
+}
+
+/* Fix homepage find stations button text in light mode */
+.light .bg-gradient-to-r.from-green-600.to-blue-600 {
+    color: #000000 !important;
+}
+
+/* Fix card backgrounds for Homepage and About pages in light mode */
+.light div[style*="background-color: rgb(15, 20, 28)"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    color: #1f2937 !important;
+}
+
+.light div[style*="background-color: rgb(15, 20, 28)"] p {
+    color: #374151 !important;
+}
+
+.light div[style*="background-color: rgb(15, 20, 28)"] h4 {
+    color: #1f2937 !important;
 }
