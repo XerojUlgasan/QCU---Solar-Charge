@@ -10,8 +10,34 @@ function RateUs() {
     const [hoveredRating, setHoveredRating] = useState(0);
     const [feedback, setFeedback] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Check if user is already logged in on component mount
+    // Fetch reviews from API
+    const fetchReviews = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch('https://api-qcusolarcharge.up.railway.app/rates/getRates');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            // Handle API response structure - data might be wrapped in 'value' property
+            const reviewsData = data.value || data;
+            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+        } catch (err) {
+            console.error('Error fetching reviews:', err);
+            setError('Failed to load reviews. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Check if user is already logged in on component mount and fetch reviews
     useEffect(() => {
         const checkLoginState = () => {
             const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
@@ -23,6 +49,7 @@ function RateUs() {
         };
         
         checkLoginState();
+        fetchReviews();
         
         // Listen for storage changes (when user logs in/out from navbar)
         const handleStorageChange = () => {
@@ -50,49 +77,165 @@ function RateUs() {
         };
     }, []);
 
-    const recentReviews = [
-        {
-            user: "Sarah M.",
-            rating: 5,
-            comment: "Excellent service! The solar charging station saved my day when my phone was dying. Very convenient and eco-friendly.",
-            station: "Main Library",
-            date: "2 days ago"
-        },
-        {
-            user: "Mike L.",
-            rating: 4,
-            comment: "Great concept and works well. Only wish there were more stations around campus.",
-            station: "Student Center",
-            date: "5 days ago"
-        },
-        {
-            user: "Anna K.",
-            rating: 5,
-            comment: "Love the RFID feature! One hour of free charging per week is amazing for students.",
-            station: "Engineering Building",
-            date: "1 week ago"
-        },
-        {
-            user: "John D.",
-            rating: 4,
-            comment: "Reliable charging and fast service. The app integration makes it easy to find available stations.",
-            station: "Sports Complex",
-            date: "1 week ago"
+    // Calculate rating distribution from API data
+    const calculateRatingDistribution = () => {
+        if (!reviews || reviews.length === 0) {
+            return [
+                { stars: 5, count: 0, percentage: 0 },
+                { stars: 4, count: 0, percentage: 0 },
+                { stars: 3, count: 0, percentage: 0 },
+                { stars: 2, count: 0, percentage: 0 },
+                { stars: 1, count: 0, percentage: 0 }
+            ];
         }
-    ];
 
-    const ratingDistribution = [
-        { stars: 5, count: 234, percentage: 68 },
-        { stars: 4, count: 89, percentage: 26 },
-        { stars: 3, count: 15, percentage: 4 },
-        { stars: 2, count: 5, percentage: 1 },
-        { stars: 1, count: 2, percentage: 1 }
-    ];
+        const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        
+        reviews.forEach(review => {
+            if (review.rate >= 1 && review.rate <= 5) {
+                distribution[review.rate]++;
+            }
+        });
 
-    const totalReviews = ratingDistribution.reduce((sum, item) => sum + item.count, 0);
-    const averageRating = (
-        ratingDistribution.reduce((sum, item) => sum + (item.stars * item.count), 0) / totalReviews
-    ).toFixed(1);
+        const totalReviews = reviews.length;
+        
+        return [5, 4, 3, 2, 1].map(stars => ({
+            stars,
+            count: distribution[stars],
+            percentage: totalReviews > 0 ? Math.round((distribution[stars] / totalReviews) * 100) : 0
+        }));
+    };
+
+    const ratingDistribution = calculateRatingDistribution();
+    const totalReviews = reviews.length;
+    const averageRating = totalReviews > 0 
+        ? (reviews.reduce((sum, review) => sum + (review.rate || 0), 0) / totalReviews).toFixed(1)
+        : '0.0';
+
+    // Format reviews for display
+    const formatReviews = () => {
+        if (!reviews || reviews.length === 0) return [];
+        
+        return reviews.map(review => ({
+            user: review.name || 'Anonymous',
+            rating: review.rate || 0,
+            comment: review.comment || 'No comment provided',
+            station: review.location || 'Unknown Location',
+            date: formatDate(review.dateTime)
+        }));
+    };
+
+    // Format date for display
+    const formatDate = (dateTime) => {
+        if (!dateTime) return 'Unknown date';
+        
+        try {
+            let date;
+            
+            // Handle Firestore timestamp format
+            if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
+                // Firestore timestamp: { seconds: number, nanoseconds: number }
+                date = new Date(dateTime.seconds * 1000);
+            } else if (typeof dateTime === 'string') {
+                // ISO string format
+                date = new Date(dateTime);
+            } else if (dateTime instanceof Date) {
+                // Already a Date object
+                date = dateTime;
+            } else {
+                // Try to parse as regular date
+                date = new Date(dateTime);
+            }
+            
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                return 'Unknown date';
+            }
+            
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffMinutes = Math.floor(diffTime / (1000 * 60));
+            const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            // More granular time display
+            if (diffMinutes < 1) return 'Just now';
+            if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays === 1) return '1 day ago';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 14) return '1 week ago';
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+            if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+            return `${Math.floor(diffDays / 365)} years ago`;
+        } catch (error) {
+            console.error('Date formatting error:', error, dateTime);
+            return 'Unknown date';
+        }
+    };
+
+    const recentReviews = formatReviews();
+
+    // Calculate community impact statistics from API data
+    const calculateCommunityStats = () => {
+        if (!reviews || reviews.length === 0) {
+            return {
+                satisfactionRate: 0,
+                totalUsers: 0,
+                averageResponseTime: 'N/A',
+                improvementsCount: 0
+            };
+        }
+
+        // Calculate satisfaction rate (4-5 star ratings)
+        const satisfiedReviews = reviews.filter(review => review.rate >= 4);
+        const satisfactionRate = Math.round((satisfiedReviews.length / reviews.length) * 100);
+
+        // Count unique users (by email)
+        const uniqueUsers = new Set(reviews.map(review => review.email)).size;
+
+        // Calculate average response time (mock calculation based on review recency)
+        const now = new Date();
+        const responseTimes = reviews.map(review => {
+            try {
+                let reviewDate;
+                
+                // Handle Firestore timestamp format
+                if (review.dateTime && typeof review.dateTime === 'object' && review.dateTime.seconds) {
+                    reviewDate = new Date(review.dateTime.seconds * 1000);
+                } else if (typeof review.dateTime === 'string') {
+                    reviewDate = new Date(review.dateTime);
+                } else {
+                    reviewDate = new Date(review.dateTime);
+                }
+                
+                // Check if date is valid
+                if (isNaN(reviewDate.getTime())) {
+                    return 24; // Default 24 hours
+                }
+                
+                const diffHours = Math.abs(now - reviewDate) / (1000 * 60 * 60);
+                return Math.min(diffHours, 72); // Cap at 72 hours
+            } catch {
+                return 24; // Default 24 hours
+            }
+        });
+        const avgResponseTime = responseTimes.length > 0 
+            ? Math.round(responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length)
+            : 24;
+
+        // Count improvements (reviews with comments)
+        const improvementsCount = reviews.filter(review => review.comment && review.comment.trim().length > 0).length;
+
+        return {
+            satisfactionRate,
+            totalUsers: uniqueUsers,
+            averageResponseTime: avgResponseTime < 24 ? `${avgResponseTime}h` : `${Math.round(avgResponseTime / 24)}d`,
+            improvementsCount
+        };
+    };
+
+    const communityStats = calculateCommunityStats();
 
     const handleSubmitRating = () => {
         if (selectedRating === 0) return;
@@ -154,6 +297,26 @@ function RateUs() {
                     </p>
                 </div>
 
+                {/* Loading State */}
+                {loading && (
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
+                        <p>Loading reviews...</p>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                    <div className="error-container">
+                        <p className="error-message">{error}</p>
+                        <button onClick={fetchReviews} className="retry-button">
+                            Try Again
+                        </button>
+                    </div>
+                )}
+
+                {/* Main Content - only show when not loading and no error */}
+                {!loading && !error && (
                 <div className="main-grid">
                     {/* Rating Section */}
                     <div className="rating-section">
@@ -280,37 +443,38 @@ function RateUs() {
                             ))}
                         </div>
 
-                        {/* Feedback Stats */}
+                        {/* Community Impact Stats */}
                         <div className="stats-card">
                             <div className="stats-header">
                                 <h3 className="stats-title">Community Impact</h3>
                                 <p className="stats-description">
-                                    Your feedback helps us serve the QCU community better
+                                    Real-time statistics from our QCU EcoCharge community
                                 </p>
                             </div>
                             <div className="stats-content">
                                 <div className="stats-grid">
                                     <div className="stat-item">
-                                        <div className="stat-value green">98%</div>
+                                        <div className="stat-value green">{communityStats.satisfactionRate}%</div>
                                         <div className="stat-label">Satisfaction Rate</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value blue">24h</div>
-                                        <div className="stat-label">Response Time</div>
+                                        <div className="stat-value blue">{communityStats.averageResponseTime}</div>
+                                        <div className="stat-label">Avg Response Time</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value purple">15</div>
-                                        <div className="stat-label">Improvements Made</div>
+                                        <div className="stat-value purple">{communityStats.improvementsCount}</div>
+                                        <div className="stat-label">Feedback Provided</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value yellow">1,200+</div>
-                                        <div className="stat-label">Happy Users</div>
+                                        <div className="stat-value yellow">{communityStats.totalUsers}</div>
+                                        <div className="stat-label">Active Users</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                )}
             </div>
 
         </div>
