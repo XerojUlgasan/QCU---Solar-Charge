@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
+import { useAuth } from '../contexts/AuthContext';
+import { authenticatedGet, authenticatedPost } from '../utils/api';
 import "../styles/RateUs.css";
 
 function RateUs() {
-    const { showSuccess } = useNotification();
+    const { showSuccess, showError } = useNotification();
     const { openModal } = useGoogleLogin();
+    const { user, idToken, isAuthenticated } = useAuth();
     const [selectedRating, setSelectedRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [feedback, setFeedback] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [submittingRating, setSubmittingRating] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState('QCU Campus');
 
     // Fetch reviews from API
     const fetchReviews = async () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetch('https://api-qcusolarcharge.up.railway.app/rates/getRates');
+            
+            const response = await authenticatedGet('https://api-qcusolarcharge.up.railway.app/rates/getRates');
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,45 +42,10 @@ function RateUs() {
         }
     };
 
-    // Check if user is already logged in on component mount and fetch reviews
+    // Fetch reviews when component mounts or when authentication state changes
     useEffect(() => {
-        const checkLoginState = () => {
-            const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-            const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-            
-            if (userLoggedIn || adminLoggedIn) {
-                setIsLoggedIn(true);
-            }
-        };
-        
-        checkLoginState();
         fetchReviews();
-        
-        // Listen for storage changes (when user logs in/out from navbar)
-        const handleStorageChange = () => {
-            checkLoginState();
-        };
-        
-        // Also listen for custom logout events
-        const handleLogoutEvent = () => {
-            setIsLoggedIn(false);
-        };
-
-        // Listen for custom login events
-        const handleLoginEvent = () => {
-            setIsLoggedIn(true);
-        };
-        
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('userLoggedOut', handleLogoutEvent);
-        window.addEventListener('userLoggedIn', handleLoginEvent);
-        
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('userLoggedOut', handleLogoutEvent);
-            window.removeEventListener('userLoggedIn', handleLoginEvent);
-        };
-    }, []);
+    }, [idToken]); // Refetch when token changes
 
     // Calculate rating distribution from API data
     const calculateRatingDistribution = () => {
@@ -121,8 +91,22 @@ function RateUs() {
             rating: review.rate || 0,
             comment: review.comment || 'No comment provided',
             station: review.location || 'Unknown Location',
-            date: formatDate(review.dateTime)
+            date: formatDate(review.dateTime),
+            avatar: getUserAvatar(review)
         }));
+    };
+
+    // Get user's profile picture or fallback to generated avatar
+    const getUserAvatar = (review) => {
+        // First check if the review has a photo field (from API)
+        if (review?.photo) {
+            return review.photo;
+        }
+        
+        // Fallback to generated avatar based on name
+        const displayName = review?.name || 'Anonymous';
+        const encodedName = encodeURIComponent(displayName);
+        return `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
     };
 
     // Format date for display
@@ -237,20 +221,57 @@ function RateUs() {
 
     const communityStats = calculateCommunityStats();
 
-    const handleSubmitRating = () => {
+    const handleSubmitRating = async () => {
         if (selectedRating === 0) return;
         
-        if (!isLoggedIn) {
-            openModal(() => {
-                setIsLoggedIn(true);
-            });
+        if (!isAuthenticated) {
+            openModal();
             return;
         }
         
-        // Mock rating submission
+        setSubmittingRating(true);
+        
+        try {
+            // Prepare rating data (excluding dateTime as API handles it)
+            const ratingData = {
+                name: user?.displayName || 'Anonymous',
+                email: user?.email || '',
+                rate: selectedRating,
+                comment: feedback || '',
+                location: selectedLocation,
+                photo_url: user?.photoURL || null
+            };
+            
+            console.log('Submitting rating data:', ratingData);
+            console.log('User token available:', !!idToken);
+            
+            // Use the correct endpoint for posting ratings
+            const endpoint = 'https://api-qcusolarcharge.up.railway.app/rates/postRates';
+            
+            console.log(`Submitting to endpoint: ${endpoint}`);
+            const response = await authenticatedPost(endpoint, ratingData);
+            console.log(`Response from ${endpoint}:`, response.status, response.ok);
+            
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log('Success response:', responseData);
         showSuccess(`Thank you for rating us ${selectedRating} star${selectedRating > 1 ? 's' : ''}!`);
         setSelectedRating(0);
         setFeedback('');
+                
+                // Refresh reviews to show the new rating
+                fetchReviews();
+            } else {
+                const errorText = await response.text();
+                console.log(`Error from ${endpoint}:`, errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Error submitting rating:', error);
+            showError(`Failed to submit rating: ${error.message}`);
+        } finally {
+            setSubmittingRating(false);
+        }
     };
 
 
@@ -385,6 +406,24 @@ function RateUs() {
                                             
                                             <div className="feedback-section">
                                                 <label className="feedback-label">
+                                                    Location
+                                                </label>
+                                                <select
+                                                    className="feedback-textarea"
+                                                    value={selectedLocation}
+                                                    onChange={(e) => setSelectedLocation(e.target.value)}
+                                                >
+                                                    <option value="QCU Campus">QCU Campus</option>
+                                                    <option value="Main Library">Main Library</option>
+                                                    <option value="Student Center">Student Center</option>
+                                                    <option value="Engineering Building">Engineering Building</option>
+                                                    <option value="Sports Complex">Sports Complex</option>
+                                                    <option value="Academic Building">Academic Building</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div className="feedback-section">
+                                                <label className="feedback-label">
                                                     Share your experience (optional)
                                                 </label>
                                                 <textarea
@@ -396,13 +435,26 @@ function RateUs() {
                                                 />
                                             </div>
                                             
-                                            <button onClick={handleSubmitRating} className="submit-button">
+                                            <button 
+                                                onClick={handleSubmitRating} 
+                                                disabled={submittingRating}
+                                                className={`submit-button ${submittingRating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            >
+                                                {submittingRating ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                                        Submitting...
+                                                    </>
+                                                ) : (
+                                                    <>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                                                     <path d="M7 10v12"></path>
                                                     <path d="M15 5.88 10 9 5 5.88V10h10V5.88z"></path>
                                                     <path d="M13 15h3a3 3 0 0 1 0 6h-3"></path>
                                                 </svg>
                                                 Submit Rating
+                                                    </>
+                                                )}
                                             </button>
                                         </div>
                                     )}
@@ -419,6 +471,18 @@ function RateUs() {
                                 <div key={index} className="review-card">
                                     <div className="review-header">
                                         <div className="review-user">
+                                            <div className="review-user-info">
+                                                <img 
+                                                    src={review.avatar} 
+                                                    alt={review.user}
+                                                    className="review-avatar"
+                                                    onError={(e) => {
+                                                        // Fallback to default avatar if image fails to load
+                                                        const encodedName = encodeURIComponent(review.user);
+                                                        e.target.src = `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+                                                    }}
+                                                />
+                                                <div className="review-user-details">
                                             <h4 className="review-name">{review.user}</h4>
                                             <div className="review-meta">
                                                 <div className="review-stars">
@@ -426,6 +490,8 @@ function RateUs() {
                                                 </div>
                                                 <span className="review-separator">•</span>
                                                 <span className="review-date">{review.date}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

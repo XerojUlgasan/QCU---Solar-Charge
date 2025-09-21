@@ -1,76 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
+import { useAuth } from '../contexts/AuthContext';
 import "../styles/Contact.css";
 
 function Contact() {
 	const { showSuccess } = useNotification();
 	const { openModal } = useGoogleLogin();
-	const [user, setUser] = useState(null);
+	const { user, isAuthenticated, signInWithGoogle } = useAuth();
 	const [formData, setFormData] = useState({ subject: "", message: "" });
 
-	// Check if user is already logged in on component mount
-	useEffect(() => {
-		const checkLoginState = () => {
-			const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-			const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-			
-			if (userLoggedIn || adminLoggedIn) {
-				setUser({
-					name: "John Doe",
-					email: "student@qcu.edu.ph",
-					avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
-				});
-			}
-		};
-		
-		checkLoginState();
-		
-		// Listen for storage changes (when user logs in/out from navbar)
-		const handleStorageChange = () => {
-			checkLoginState();
-		};
-		
-		// Also listen for custom logout events
-		const handleLogoutEvent = () => {
-			setUser(null);
-		};
-
-		// Listen for custom login events
-		const handleLoginEvent = () => {
-			setUser({
-				name: "John Doe",
-				email: "student@qcu.edu.ph",
-				avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
-			});
-		};
-		
-		window.addEventListener('storage', handleStorageChange);
-		window.addEventListener('userLoggedOut', handleLogoutEvent);
-		window.addEventListener('userLoggedIn', handleLoginEvent);
-		
-		return () => {
-			window.removeEventListener('storage', handleStorageChange);
-			window.removeEventListener('userLoggedOut', handleLogoutEvent);
-			window.removeEventListener('userLoggedIn', handleLoginEvent);
-		};
-	}, []);
+	// Get user's profile picture or fallback to generated avatar
+	const getUserAvatar = (user) => {
+		// Use Google profile picture if available
+		if (user?.photoURL) {
+			return user.photoURL;
+		}
+		// Fallback to generated avatar from display name
+		if (user?.displayName) {
+			const encodedName = encodeURIComponent(user.displayName);
+			return `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+		}
+		return null;
+	};
 
 
 	function handleGoogleLoginClick() {
-		openModal(() => {
-			setUser({
-				name: "John Doe",
-				email: "student@qcu.edu.ph",
-				avatar: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff"
-			});
-		});
+		openModal();
 	}
 
 	function handleSubmit(e){
 		e.preventDefault();
-		// mock submit
-		showSuccess("Message sent! We'll get back to you soon.");
+		// mock submit - in the future this could send to an API with user's email
+		const userEmail = user?.email || 'Unknown';
+		showSuccess(`Message sent from ${userEmail}! We'll get back to you soon.`);
 		setFormData({ subject: "", message: "" });
 	}
   return (
@@ -86,7 +49,7 @@ function Contact() {
 					<div className="card left">
 						<h3>Send us a Message</h3>
 						<p className="desc">Fill out the form below and we'll get back to you as soon as possible.</p>
-						{!user && (
+						{!isAuthenticated && (
 							<div className="login-box">
 								<p className="muted">Please log in to send us a message</p>
 								<button className="google-btn" onClick={handleGoogleLoginClick}>
@@ -99,12 +62,22 @@ function Contact() {
                   </div>
 						)}
 
-						{user && (
+						{isAuthenticated && user && (
 							<>
 								<div className="user-box">
-									<img src={user.avatar} alt={user.name} />
+									<img 
+										src={getUserAvatar(user)} 
+										alt={user.displayName}
+										onError={(e) => {
+											// Fallback to generated avatar if profile picture fails to load
+											if (user?.displayName) {
+												const encodedName = encodeURIComponent(user.displayName);
+												e.target.src = `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+											}
+										}}
+									/>
                       <div>
-										<p className="user-name">{user.name}</p>
+										<p className="user-name">{user.displayName}</p>
 										<p className="muted">{user.email}</p>
                       </div>
                     </div>

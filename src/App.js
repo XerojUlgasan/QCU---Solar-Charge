@@ -15,6 +15,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { GoogleLoginProvider } from './contexts/GoogleLoginContext';
 import { LogoutProvider } from './contexts/LogoutContext';
+import { AuthProvider } from './contexts/AuthContext';
 import GoogleLoginModal from './components/GoogleLoginModal';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 
@@ -22,8 +23,9 @@ function App() {
   return (
     <ThemeProvider>
       <NotificationProvider>
-        <GoogleLoginProvider>
-          <LogoutProvider>
+        <AuthProvider>
+          <GoogleLoginProvider>
+            <LogoutProvider>
             <Routes>
         {/* Admin routes without navbar */}
         <Route path='/admin' element={<AdminLogin />}/>
@@ -51,8 +53,9 @@ function App() {
         </Routes>
         <GoogleLoginModal />
         <LogoutConfirmationModal />
-          </LogoutProvider>
-        </GoogleLoginProvider>
+            </LogoutProvider>
+          </GoogleLoginProvider>
+        </AuthProvider>
       </NotificationProvider>
     </ThemeProvider>
     );

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
+import { useAuth } from '../contexts/AuthContext';
 import "../styles/ReportProblem.css";
 
 function ReportProblem() {
     const { showSuccess, showError } = useNotification();
     const { openModal } = useGoogleLogin();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
+    const { user, isAuthenticated, signInWithGoogle } = useAuth();
     const [formData, setFormData] = useState({
         station: '',
         problemType: '',
@@ -15,59 +15,19 @@ function ReportProblem() {
         urgency: ''
     });
 
-    // Check if user is already logged in on component mount
-    useEffect(() => {
-        const checkLoginState = () => {
-            const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-            const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-            
-            if (userLoggedIn || adminLoggedIn) {
-                const mockUser = {
-                    id: 'user_123',
-                    email: 'student@qcu.edu.ph',
-                    name: 'John Doe',
-                    picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
-                };
-                setUser(mockUser);
-                setIsAuthenticated(true);
-            }
-        };
-        
-        checkLoginState();
-        
-        // Listen for storage changes (when user logs in/out from navbar)
-        const handleStorageChange = () => {
-            checkLoginState();
-        };
-        
-        // Also listen for custom logout events
-        const handleLogoutEvent = () => {
-            setUser(null);
-            setIsAuthenticated(false);
-        };
-
-        // Listen for custom login events
-        const handleLoginEvent = () => {
-            const mockUser = {
-                id: 'user_123',
-                email: 'student@qcu.edu.ph',
-                name: 'John Doe',
-                picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
-            };
-            setUser(mockUser);
-            setIsAuthenticated(true);
-        };
-        
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('userLoggedOut', handleLogoutEvent);
-        window.addEventListener('userLoggedIn', handleLoginEvent);
-        
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('userLoggedOut', handleLogoutEvent);
-            window.removeEventListener('userLoggedIn', handleLoginEvent);
-        };
-    }, []);
+    // Get user's profile picture or fallback to generated avatar
+    const getUserAvatar = (user) => {
+        // Use Google profile picture if available
+        if (user?.photoURL) {
+            return user.photoURL;
+        }
+        // Fallback to generated avatar from display name
+        if (user?.displayName) {
+            const encodedName = encodeURIComponent(user.displayName);
+            return `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+        }
+        return null;
+    };
 
     const stations = [
         { id: 'QCU-001', name: 'Main Library', location: '1st Floor, Main Entrance' },
@@ -96,16 +56,7 @@ function ReportProblem() {
 
 
     const handleGoogleLoginClick = () => {
-        openModal(() => {
-            const mockUser = {
-                id: 'user_123',
-                email: 'student@qcu.edu.ph',
-                name: 'John Doe',
-                picture: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'
-            };
-            setUser(mockUser);
-            setIsAuthenticated(true);
-        });
+        openModal();
     };
 
     const handleSubmit = (e) => {
@@ -120,8 +71,9 @@ function ReportProblem() {
             return;
         }
         
-        // Mock form submission
-        showSuccess('Problem report submitted successfully! We\'ll investigate this issue promptly.');
+        // Mock form submission - in the future this could send to an API with user's email
+        const userEmail = user?.email || 'Unknown';
+        showSuccess(`Problem report submitted successfully from ${userEmail}! We'll investigate this issue promptly.`);
         setFormData({ station: '', problemType: '', description: '', urgency: '' });
     };
 
@@ -245,12 +197,19 @@ function ReportProblem() {
                                     <>
                                         <div className="user-info">
                                             <img 
-                                                src={user?.picture || 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff'} 
-                                                alt={user?.name}
+                                                src={getUserAvatar(user)} 
+                                                alt={user?.displayName}
                                                 className="user-avatar"
+                                                onError={(e) => {
+                                                    // Fallback to generated avatar if profile picture fails to load
+                                                    if (user?.displayName) {
+                                                        const encodedName = encodeURIComponent(user.displayName);
+                                                        e.target.src = `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+                                                    }
+                                                }}
                                             />
                                             <div className="user-details">
-                                                <p className="user-name">{user?.name}</p>
+                                                <p className="user-name">{user?.displayName}</p>
                                                 <p className="user-email">{user?.email}</p>
                                             </div>
                                         </div>

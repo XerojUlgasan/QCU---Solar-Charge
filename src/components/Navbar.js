@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useLogout } from '../contexts/LogoutContext';
 
 function Navbar() {
@@ -11,10 +12,10 @@ function Navbar() {
     const { showSuccess } = useNotification();
     const { openModal } = useGoogleLogin();
     const { openModal: openLogoutModal } = useLogout();
+    const { user, isAuthenticated, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const location = useLocation();
 
     const navItems = [
@@ -43,50 +44,19 @@ function Navbar() {
 
     const handleLogout = () => {
         setProfileDropdownOpen(false);
-        openLogoutModal(() => {
-            setIsLoggedIn(false);
-            // Clear both user and admin login states
-            localStorage.removeItem('userLoggedIn');
-            localStorage.removeItem('adminLoggedIn');
-            // Dispatch custom event to notify all pages
-            window.dispatchEvent(new CustomEvent('userLoggedOut'));
-            showSuccess('Successfully logged out!');
+        openLogoutModal(async () => {
+            try {
+                await logout();
+                showSuccess('Successfully logged out!');
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
         });
     };
 
     const isCurrentRoute = (route) => {
         return location.pathname === route;
     };
-
-    // Check for existing login state on component mount
-    useEffect(() => {
-        const checkLoginState = () => {
-            // Check if user is logged in from localStorage or other sources
-            const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-            const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-            setIsLoggedIn(userLoggedIn || adminLoggedIn);
-        };
-        
-        checkLoginState();
-        
-        // Listen for storage changes (when user logs in/out from other pages)
-        const handleStorageChange = () => {
-            checkLoginState();
-        };
-
-        // Listen for custom login events from pages
-        const handleLoginEvent = () => {
-            setIsLoggedIn(true);
-        };
-        
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('userLoggedIn', handleLoginEvent);
-        
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('userLoggedIn', handleLoginEvent);
-        };
-    }, []);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -219,7 +189,7 @@ function Navbar() {
                                         : 'bg-white border border-gray-200'
                                 }`}>
                                     <div className="py-1">
-                                        {!isLoggedIn ? (
+                                        {!isAuthenticated ? (
                                             <button
                                                 onClick={handleLogin}
                                                 className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
@@ -231,16 +201,26 @@ function Navbar() {
                                                 Login
                                             </button>
                                         ) : (
-                                            <button
-                                                onClick={handleLogout}
-                                                className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                                            <>
+                                                <div className={`px-4 py-2 text-sm border-b ${
                                                     isDarkMode 
-                                                        ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-                                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                                }`}
-                                            >
-                                                Log out
-                                            </button>
+                                                        ? 'border-gray-700 text-gray-300' 
+                                                        : 'border-gray-200 text-gray-700'
+                                                }`}>
+                                                    <div className="font-medium">{user?.displayName || 'User'}</div>
+                                                    <div className="text-xs opacity-75">{user?.email}</div>
+                                                </div>
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                                                        isDarkMode 
+                                                            ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
+                                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                                    }`}
+                                                >
+                                                    Log out
+                                                </button>
+                                            </>
                                         )}
                                     </div>
                                 </div>
