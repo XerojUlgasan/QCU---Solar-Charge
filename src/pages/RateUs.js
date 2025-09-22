@@ -16,7 +16,11 @@ function RateUs() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [submittingRating, setSubmittingRating] = useState(false);
-    const [selectedLocation, setSelectedLocation] = useState('QCU Campus');
+    const [selectedLocation, setSelectedLocation] = useState('');
+    const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
+    const [sortBy, setSortBy] = useState('newest'); // 'newest' or 'ratings'
+    const [starFilter, setStarFilter] = useState('all'); // 'all', '1', '2', '3', '4', '5'
+    const [locationError, setLocationError] = useState('');
 
     // Fetch reviews from API
     const fetchReviews = async () => {
@@ -86,14 +90,39 @@ function RateUs() {
     const formatReviews = () => {
         if (!reviews || reviews.length === 0) return [];
         
-        return reviews.map(review => ({
-            user: review.name || 'Anonymous',
-            rating: review.rate || 0,
-            comment: review.comment || 'No comment provided',
-            station: review.location || 'Unknown Location',
-            date: formatDate(review.dateTime),
-            avatar: getUserAvatar(review)
-        }));
+        return reviews
+            .map(review => ({
+                user: review.name || 'Anonymous',
+                rating: review.rate || 0,
+                comment: review.comment || 'No comment provided',
+                station: review.location || 'Unknown Location',
+                date: formatDate(review.dateTime),
+                avatar: getUserAvatar(review),
+                rawDateTime: review.dateTime // Keep original dateTime for sorting
+            }))
+            .sort((a, b) => {
+                // Sort by dateTime in descending order (latest first)
+                if (!a.rawDateTime || !b.rawDateTime) return 0;
+                
+                // Handle Firestore timestamp format
+                if (a.rawDateTime.seconds && b.rawDateTime.seconds) {
+                    return b.rawDateTime.seconds - a.rawDateTime.seconds;
+                }
+                
+                // Handle regular Date objects or ISO strings
+                const dateA = new Date(a.rawDateTime);
+                const dateB = new Date(b.rawDateTime);
+                return dateB - dateA;
+            })
+            .map(review => ({
+                // Remove rawDateTime from final output
+                user: review.user,
+                rating: review.rating,
+                comment: review.comment,
+                station: review.station,
+                date: review.date,
+                avatar: review.avatar
+            }));
     };
 
     // Get user's profile picture or fallback to generated avatar
@@ -158,7 +187,29 @@ function RateUs() {
         }
     };
 
-    const recentReviews = formatReviews();
+    const allReviews = formatReviews();
+    const recentReviews = allReviews.slice(0, 5); // Show only first 5 reviews
+
+    // Filter and sort reviews for modal
+    const getFilteredReviews = () => {
+        let filtered = [...allReviews];
+
+        // Filter by star rating
+        if (starFilter !== 'all') {
+            filtered = filtered.filter(review => review.rating === parseInt(starFilter));
+        }
+
+        // Sort reviews
+        if (sortBy === 'newest') {
+            // Already sorted by newest in formatReviews, so no change needed
+        } else if (sortBy === 'ratings') {
+            filtered = filtered.sort((a, b) => b.rating - a.rating);
+        }
+
+        return filtered;
+    };
+
+    const filteredReviews = getFilteredReviews();
 
     // Calculate community impact statistics from API data
     const calculateCommunityStats = () => {
@@ -223,6 +274,14 @@ function RateUs() {
 
     const handleSubmitRating = async () => {
         if (selectedRating === 0) return;
+        
+        // Validate location
+        if (!selectedLocation) {
+            setLocationError('Please select an item in the list.');
+            return;
+        } else {
+            setLocationError('');
+        }
         
         if (!isAuthenticated) {
             openModal();
@@ -341,6 +400,36 @@ function RateUs() {
                 <div className="main-grid">
                     {/* Rating Section */}
                     <div className="rating-section">
+                        {/* Community Impact Stats */}
+                        <div className="stats-card">
+                            <div className="stats-header">
+                                <h3 className="stats-title">Community Impact</h3>
+                                <p className="stats-description">
+                                    Real-time statistics from our QCU EcoCharge community
+                                </p>
+                            </div>
+                            <div className="stats-content">
+                                <div className="stats-grid">
+                                    <div className="stat-item">
+                                        <div className="stat-value green">{communityStats.satisfactionRate}%</div>
+                                        <div className="stat-label">Satisfaction Rate</div>
+                                    </div>
+                                    <div className="stat-item">
+                                        <div className="stat-value blue">{communityStats.averageResponseTime}</div>
+                                        <div className="stat-label">Avg Response Time</div>
+                                    </div>
+                                    <div className="stat-item">
+                                        <div className="stat-value purple">{communityStats.improvementsCount}</div>
+                                        <div className="stat-label">Feedback Provided</div>
+                                    </div>
+                                    <div className="stat-item">
+                                        <div className="stat-value yellow">{communityStats.totalUsers}</div>
+                                        <div className="stat-label">Active Users</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Overall Rating */}
                         <div className="card">
                             <div className="card-header text-center">
@@ -409,10 +498,16 @@ function RateUs() {
                                                     Location
                                                 </label>
                                                 <select
-                                                    className="feedback-textarea"
+                                                    className={`feedback-textarea ${locationError ? 'error' : ''}`}
                                                     value={selectedLocation}
-                                                    onChange={(e) => setSelectedLocation(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setSelectedLocation(e.target.value);
+                                                        if (e.target.value) {
+                                                            setLocationError('');
+                                                        }
+                                                    }}
                                                 >
+                                                    <option value="">Select location</option>
                                                     <option value="QCU Campus">QCU Campus</option>
                                                     <option value="Main Library">Main Library</option>
                                                     <option value="Student Center">Student Center</option>
@@ -420,6 +515,12 @@ function RateUs() {
                                                     <option value="Sports Complex">Sports Complex</option>
                                                     <option value="Academic Building">Academic Building</option>
                                                 </select>
+                                                {locationError && (
+                                                    <div className="error-message-container">
+                                                        <div className="error-icon">!</div>
+                                                        <span className="error-text">{locationError}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                             
                                             <div className="feedback-section">
@@ -465,7 +566,18 @@ function RateUs() {
 
                     {/* Recent Reviews */}
                     <div className="reviews-section">
+                        <div className="reviews-header">
                         <h2 className="section-title">Recent Reviews</h2>
+                            <button 
+                                className="view-all-reviews-btn"
+                                onClick={() => setShowAllReviewsModal(true)}
+                            >
+                                View All
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 18l6-6-6-6"/>
+                                </svg>
+                            </button>
+                        </div>
                         <div className="reviews-list">
                             {recentReviews.map((review, index) => (
                                 <div key={index} className="review-card">
@@ -508,43 +620,117 @@ function RateUs() {
                                 </div>
                             ))}
                         </div>
+                                    </div>
+                                </div>
+                )}
+            </div>
 
-                        {/* Community Impact Stats */}
-                        <div className="stats-card">
-                            <div className="stats-header">
-                                <h3 className="stats-title">Community Impact</h3>
-                                <p className="stats-description">
-                                    Real-time statistics from our QCU EcoCharge community
-                                </p>
+            {/* All Reviews Modal */}
+            {showAllReviewsModal && (
+                <div className="reviews-modal-overlay" onClick={() => setShowAllReviewsModal(false)}>
+                    <div className="reviews-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-app-info">
+                                <div className="modal-app-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
+                                    </svg>
+                                </div>
+                                <div className="modal-app-details">
+                                    <h3 className="modal-app-name">QCU EcoCharge</h3>
+                                    <p className="modal-app-subtitle">Ratings and reviews</p>
+                                </div>
                             </div>
-                            <div className="stats-content">
-                                <div className="stats-grid">
-                                    <div className="stat-item">
-                                        <div className="stat-value green">{communityStats.satisfactionRate}%</div>
-                                        <div className="stat-label">Satisfaction Rate</div>
+                            <button 
+                                className="modal-close-btn"
+                                onClick={() => setShowAllReviewsModal(false)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M18 6L6 18"/>
+                                    <path d="M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="modal-filters">
+                            <div className="filter-dropdown-container">
+                                <select 
+                                    value={sortBy} 
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="filter-select"
+                                >
+                                    <option value="newest">Newest</option>
+                                    <option value="ratings">Ratings</option>
+                                </select>
+                            </div>
+                            <div className="filter-dropdown-container">
+                                <select 
+                                    value={starFilter} 
+                                    onChange={(e) => setStarFilter(e.target.value)}
+                                    className="filter-select"
+                                >
+                                    <option value="all">Star rating</option>
+                                    <option value="5">5 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="1">1 Star</option>
+                                </select>
                                     </div>
-                                    <div className="stat-item">
-                                        <div className="stat-value blue">{communityStats.averageResponseTime}</div>
-                                        <div className="stat-label">Avg Response Time</div>
                                     </div>
-                                    <div className="stat-item">
-                                        <div className="stat-value purple">{communityStats.improvementsCount}</div>
-                                        <div className="stat-label">Feedback Provided</div>
+
+                        <div className="modal-reviews-list">
+                            {filteredReviews.map((review, index) => (
+                                <div key={index} className="modal-review-card">
+                                    <div className="modal-review-header">
+                                        <div className="modal-review-user">
+                                            <img 
+                                                src={review.avatar} 
+                                                alt={review.user}
+                                                className="modal-review-avatar"
+                                                onError={(e) => {
+                                                    const encodedName = encodeURIComponent(review.user);
+                                                    e.target.src = `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+                                                }}
+                                            />
+                                            <div className="modal-review-user-info">
+                                                <h4 className="modal-review-name">{review.user}</h4>
+                                                <div className="modal-review-meta">
+                                                    <div className="modal-review-stars">
+                                                        {renderStars(review.rating)}
                                     </div>
-                                    <div className="stat-item">
-                                        <div className="stat-value yellow">{communityStats.totalUsers}</div>
-                                        <div className="stat-label">Active Users</div>
+                                                    <span className="modal-review-date">{review.date}</span>
                                     </div>
                                 </div>
                             </div>
+                                        <button className="modal-review-more-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="1"/>
+                                                <circle cx="19" cy="12" r="1"/>
+                                                <circle cx="5" cy="12" r="1"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div className="modal-review-content">
+                                        <p className="modal-review-text">{review.comment}</p>
+                                        <div className="modal-review-location">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+                                                <circle cx="12" cy="10" r="3"/>
+                                            </svg>
+                                            <span>{review.station}</span>
                         </div>
+                            </div>
+                        </div>
+                            ))}
                     </div>
                 </div>
-                )}
             </div>
+            )}
 
         </div>
     );
 }
 
 export default RateUs;
+

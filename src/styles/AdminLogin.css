@@ -196,26 +196,27 @@
     }
 }
 
-#admin-login-page .demo-credentials {
+#admin-login-page .admin-notice {
     margin-top: 1.5rem;
     padding: 1rem;
-    background-color: #1e2633;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 0.5rem;
 }
 
-#admin-login-page .demo-title {
+#admin-login-page .notice-title {
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #ffffff;
+    color: #ef4444;
 }
 
-#admin-login-page .demo-text {
-    font-size: 0.875rem;
-    color: #9aa3b2;
+#admin-login-page .notice-text {
+    font-size: 0.75rem;
+    color: #9ca3af;
 }
 
-#admin-login-page .demo-text p {
+#admin-login-page .notice-text p {
     margin-bottom: 0.25rem;
 }
 
@@ -285,16 +286,17 @@
     background-color: #374151;
 }
 
-.light #admin-login-page .demo-credentials {
-    background-color: #f9fafb;
+.light #admin-login-page .admin-notice {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
 }
 
-.light #admin-login-page .demo-title {
-    color: #1f2937;
+.light #admin-login-page .notice-title {
+    color: #dc2626;
 }
 
-.light #admin-login-page .demo-text {
-    color: #374151;
+.light #admin-login-page .notice-text {
+    color: #6b7280;
 }
 
 .light #admin-login-page .security-notice {

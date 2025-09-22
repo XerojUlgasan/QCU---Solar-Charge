@@ -16,6 +16,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { GoogleLoginProvider } from './contexts/GoogleLoginContext';
 import { LogoutProvider } from './contexts/LogoutContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { AdminAuthProvider } from './contexts/AdminAuthContext';
 import GoogleLoginModal from './components/GoogleLoginModal';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 
@@ -28,11 +29,31 @@ function App() {
             <LogoutProvider>
             <Routes>
         {/* Admin routes without navbar */}
-        <Route path='/admin' element={<AdminLogin />}/>
-        <Route path='/admin/dashboard' element={<AdminDashboard />}/>
-        <Route path='/admin/devices' element={<AdminDevices />}/>
-        <Route path='/admin/problems' element={<AdminProblems />}/>
-        <Route path='/admin/device/:deviceId' element={<DeviceDetail />}/>
+        <Route path='/admin' element={
+          <AdminAuthProvider>
+            <AdminLogin />
+          </AdminAuthProvider>
+        }/>
+        <Route path='/admin/dashboard' element={
+          <AdminAuthProvider>
+            <AdminDashboard />
+          </AdminAuthProvider>
+        }/>
+        <Route path='/admin/devices' element={
+          <AdminAuthProvider>
+            <AdminDevices />
+          </AdminAuthProvider>
+        }/>
+        <Route path='/admin/problems' element={
+          <AdminAuthProvider>
+            <AdminProblems />
+          </AdminAuthProvider>
+        }/>
+        <Route path='/admin/device/:deviceId' element={
+          <AdminAuthProvider>
+            <DeviceDetail />
+          </AdminAuthProvider>
+        }/>
         
         {/* Regular routes with navbar */}
         <Route path='/*' element={
