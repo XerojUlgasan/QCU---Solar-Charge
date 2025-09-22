@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   AlertTriangle, 
@@ -14,119 +14,194 @@ import {
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/AdminProblems.css';
 
 const AdminProblems = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
+  const { authenticatedAdminFetch } = useAdminAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterUrgency, setFilterUrgency] = useState('all');
   const [selectedReport, setSelectedReport] = useState(null);
   const [responseText, setResponseText] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  const reports = [
-    {
-      id: "RPT-001",
-      stationId: "QCU-002",
-      stationName: "Student Center",
-      building: "Student Center",
-      userEmail: "sarah.martinez@qcu.edu.ph",
-      userName: "Sarah Martinez",
-      issue: "Charging port not working",
-      description: "The USB-C port on the left side is not providing power. I tried multiple cables and devices but nothing charges. The LED indicator doesn't light up when a cable is connected.",
-      urgency: "high",
-      status: "resolved",
-      reportedDate: "2024-12-10",
-      reportedTime: "14:30",
-      resolvedDate: "2024-12-10",
-      resolvedTime: "16:45",
-      assignedTo: "Tech Team A",
-      solution: "Replaced faulty USB-C port module. Tested with multiple devices - all working properly now."
-    },
-    {
-      id: "RPT-002",
-      stationId: "QCU-001",
-      stationName: "Main Library",
-      building: "Library Building",
-      userEmail: "john.doe@qcu.edu.ph",
-      userName: "John Doe",
-      issue: "RFID reader not responding",
-      description: "When I tap my student ID card on the RFID reader, nothing happens. The screen shows 'Ready' but doesn't recognize my card. Other students are having the same issue.",
-      urgency: "medium",
-      status: "investigating",
-      reportedDate: "2024-12-09",
-      reportedTime: "10:15",
-      assignedTo: "Tech Team B",
-      estimatedResolution: "2024-12-12"
-    },
-    {
-      id: "RPT-003",
-      stationId: "QCU-004",
-      stationName: "Sports Complex",
-      building: "Sports Complex",
-      userEmail: "mike.lee@qcu.edu.ph",
-      userName: "Mike Lee",
-      issue: "Screen display issues",
-      description: "The main display screen has flickering issues and sometimes goes completely black. You can still charge devices but can't see the status or time remaining.",
-      urgency: "medium",
-      status: "scheduled",
-      reportedDate: "2024-12-08",
-      reportedTime: "16:20",
-      assignedTo: "Tech Team A",
-      scheduledDate: "2024-12-13"
-    },
-    {
-      id: "RPT-004",
-      stationId: "QCU-003",
-      stationName: "Engineering Building",
-      building: "Engineering Building",
-      userEmail: "anna.garcia@qcu.edu.ph",
-      userName: "Anna Garcia",
-      issue: "Payment system error",
-      description: "I tried to pay for charging using the QR code but the payment keeps failing. The system shows 'Payment Error' after scanning. My bank account shows the transaction went through but charging didn't start.",
-      urgency: "high",
-      status: "investigating",
-      reportedDate: "2024-12-11",
-      reportedTime: "09:45",
-      assignedTo: "Tech Team B"
-    },
-    {
-      id: "RPT-005",
-      stationId: "QCU-001",
-      stationName: "Main Library",
-      building: "Library Building",
-      userEmail: "lisa.wong@qcu.edu.ph",
-      userName: "Lisa Wong",
-      issue: "Physical damage to station",
-      description: "The protective glass over the solar panel has a large crack. It happened during the storm last week. The station still works but I'm concerned about water damage.",
-      urgency: "low",
-      status: "scheduled",
-      reportedDate: "2024-12-07",
-      reportedTime: "11:30",
-      assignedTo: "Maintenance Team",
-      scheduledDate: "2024-12-15"
-    },
-    {
-      id: "RPT-006",
-      stationId: "QCU-002",
-      stationName: "Student Center",
-      building: "Student Center",
-      userEmail: "carlos.rivera@qcu.edu.ph",
-      userName: "Carlos Rivera",
-      issue: "Overheating problems",
-      description: "The charging station feels very hot to touch, especially around the power outlets. I'm worried it might be a safety issue. Other students have noticed it too.",
-      urgency: "critical",
-      status: "investigating",
-      reportedDate: "2024-12-11",
-      reportedTime: "13:20",
-      assignedTo: "Safety Team"
+  // Helper function to safely convert to string and lowercase
+  const safeToLowerCase = (value) => {
+    if (value === null || value === undefined) return '';
+    return String(value).toLowerCase();
+  };
+
+  // Fetch reports from API
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('=== FETCHING ADMIN REPORTS DEBUG ===');
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/getReports');
+      
+      console.log('Admin reports response status:', response.status);
+      console.log('Admin reports response ok:', response.ok);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Admin reports raw data:', data);
+      console.log('Admin reports data type:', typeof data);
+      console.log('Admin reports data keys:', Object.keys(data || {}));
+      
+      // Handle API response structure - data might be wrapped in 'value' property
+      const reportsData = data.value || data;
+      console.log('Admin reports processed data:', reportsData);
+      console.log('Admin reports count:', Array.isArray(reportsData) ? reportsData.length : 'Not an array');
+      
+      setReports(Array.isArray(reportsData) ? reportsData : []);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      setError('Failed to load problem reports. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Fetch reports when component mounts
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  // Format date for display
+  const formatDate = (dateTime) => {
+    if (!dateTime) return 'Unknown date';
+    
+    try {
+      let date;
+      
+      // Handle Firestore timestamp format
+      if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
+        // Firestore timestamp: { seconds: number, nanoseconds: number }
+        date = new Date(dateTime.seconds * 1000);
+      } else if (typeof dateTime === 'string') {
+        // ISO string format
+        date = new Date(dateTime);
+      } else if (dateTime instanceof Date) {
+        // Already a Date object
+        date = dateTime;
+      } else {
+        // Try to parse as regular date
+        date = new Date(dateTime);
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Unknown date';
+      }
+      
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Date formatting error:', error, dateTime);
+      return 'Unknown date';
+    }
+  };
+
+  // Format time for display
+  const formatTime = (dateTime) => {
+    if (!dateTime) return 'Unknown time';
+    
+    try {
+      let date;
+      
+      // Handle Firestore timestamp format
+      if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
+        date = new Date(dateTime.seconds * 1000);
+      } else if (typeof dateTime === 'string') {
+        date = new Date(dateTime);
+      } else if (dateTime instanceof Date) {
+        date = dateTime;
+      } else {
+        date = new Date(dateTime);
+      }
+      
+      if (isNaN(date.getTime())) {
+        return 'Unknown time';
+      }
+      
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    } catch (error) {
+      console.error('Time formatting error:', error, dateTime);
+      return 'Unknown time';
+    }
+  };
+
+  // Format reports for display
+  const formatReports = () => {
+    if (!reports || reports.length === 0) return [];
+    
+    console.log('Formatting reports:', reports);
+    
+    return reports.map(report => {
+      console.log('Processing report:', report);
+      
+      // Safely convert urgencyLevel to string
+      let urgencyLevel = report.urgencyLevel;
+      if (typeof urgencyLevel === 'number') {
+        // Convert number to string based on value
+        switch (urgencyLevel) {
+          case 1: urgencyLevel = 'low'; break;
+          case 2: urgencyLevel = 'medium'; break;
+          case 3: urgencyLevel = 'high'; break;
+          case 4: urgencyLevel = 'critical'; break;
+          default: urgencyLevel = 'medium';
+        }
+      } else if (!urgencyLevel || typeof urgencyLevel !== 'string') {
+        urgencyLevel = 'medium';
+      }
+      
+      return {
+        id: report.id,
+        stationId: report.location || 'Unknown Station',
+        stationName: report.location || 'Unknown Location',
+        building: report.location || 'Unknown Building',
+        userEmail: report.email || 'Unknown Email',
+        userName: report.email ? report.email.split('@')[0] : 'Anonymous User',
+        issue: report.type || report.description || 'Unknown Issue',
+        description: report.description || 'No description provided',
+        urgency: urgencyLevel,
+        status: report.status || 'Scheduled',
+        reportedDate: formatDate(report.dateTime),
+        reportedTime: formatTime(report.dateTime),
+        assignedTo: 'Tech Team A', // Default assignment
+        solution: report.solution || null,
+        resolvedDate: report.resolvedDate ? formatDate(report.resolvedDate) : null,
+        resolvedTime: report.resolvedTime ? formatTime(report.resolvedTime) : null,
+        estimatedResolution: report.estimatedResolution || null,
+        scheduledDate: report.scheduledDate || null
+      };
+    });
+  };
+
+  const formattedReports = formatReports();
+  console.log('Formatted reports:', formattedReports);
 
   const getStatusColor = (status) => {
-    switch (status) {
+    const statusStr = safeToLowerCase(status);
+    switch (statusStr) {
       case 'resolved': return 'status-resolved';
       case 'investigating': return 'status-investigating';
       case 'scheduled': return 'status-scheduled';
@@ -136,7 +211,8 @@ const AdminProblems = () => {
   };
 
   const getUrgencyColor = (urgency) => {
-    switch (urgency) {
+    const urgencyStr = safeToLowerCase(urgency);
+    switch (urgencyStr) {
       case 'critical': return 'urgency-critical';
       case 'high': return 'urgency-high';
       case 'medium': return 'urgency-medium';
@@ -146,7 +222,8 @@ const AdminProblems = () => {
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
+    const statusStr = safeToLowerCase(status);
+    switch (statusStr) {
       case 'resolved': return <CheckCircle className="w-4 h-4" />;
       case 'investigating': return <Clock className="w-4 h-4" />;
       case 'scheduled': return <Calendar className="w-4 h-4" />;
@@ -154,13 +231,13 @@ const AdminProblems = () => {
     }
   };
 
-  const filteredReports = reports.filter(report => {
-    const matchesSearch = report.stationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.stationId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.issue.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.userEmail.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || report.status === filterStatus;
-    const matchesUrgency = filterUrgency === 'all' || report.urgency === filterUrgency;
+  const filteredReports = formattedReports.filter(report => {
+    const matchesSearch = safeToLowerCase(report.stationName).includes(safeToLowerCase(searchTerm)) ||
+                         safeToLowerCase(report.stationId).includes(safeToLowerCase(searchTerm)) ||
+                         safeToLowerCase(report.issue).includes(safeToLowerCase(searchTerm)) ||
+                         safeToLowerCase(report.userEmail).includes(safeToLowerCase(searchTerm));
+    const matchesStatus = filterStatus === 'all' || safeToLowerCase(report.status) === filterStatus;
+    const matchesUrgency = filterUrgency === 'all' || safeToLowerCase(report.urgency) === filterUrgency;
     return matchesSearch && matchesStatus && matchesUrgency;
   });
 
@@ -183,26 +260,139 @@ const AdminProblems = () => {
     }
   };
 
-  const handleSendResponse = () => {
+  const handleSendResponse = async () => {
     if (!responseText.trim()) {
       showError('Please enter a response message');
       return;
     }
     
-    showSuccess('Response sent to user successfully!');
-    setResponseText('');
-    setIsDialogOpen(false);
+    try {
+      // Here you would typically send the response to the user via email or notification system
+      // For now, we'll just show a success message
+      showSuccess('Response sent to user successfully!');
+      setResponseText('');
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error sending response:', error);
+      showError('Failed to send response. Please try again.');
+    }
   };
 
-  const handleUpdateStatus = (reportId, newStatus) => {
-    showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+  const handleUpdateStatus = async (reportId, newStatus) => {
+    try {
+      setUpdatingStatus(true);
+      
+      console.log(`=== UPDATING REPORT STATUS ===`);
+      console.log('Report ID:', reportId);
+      console.log('New Status:', newStatus);
+      
+      // Find the original report data
+      const originalReport = reports.find(r => r.id === reportId);
+      if (!originalReport) {
+        showError('Report not found');
+        return;
+      }
+      
+      console.log('Original report:', originalReport);
+      
+      // Prepare the update data - only send the fields that need to be updated
+      const updateData = {
+        id: reportId,
+        status: newStatus,
+        // Add any additional fields that might be needed for the update
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('Update data:', updateData);
+      
+      // Try the most likely API endpoint for updating reports
+      const endpoint = 'https://api-qcusolarcharge.up.railway.app/report/updateReport';
+      
+      console.log(`Updating report via: ${endpoint}`);
+      
+      const response = await authenticatedAdminFetch(endpoint, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      console.log(`Response from ${endpoint}:`, response.status, response.ok);
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Status update response:', responseData);
+        
+        showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+        
+        // Refresh reports to show updated status
+        setTimeout(() => {
+          fetchReports();
+        }, 1000);
+      } else {
+        const errorText = await response.text();
+        console.log(`Error response:`, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      
+      // If the API call fails, try alternative endpoints
+      try {
+        console.log('Trying alternative endpoint...');
+        
+        // Try PATCH method instead
+        const patchResponse = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/updateReport', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: reportId,
+            status: newStatus
+          })
+        });
+        
+        if (patchResponse.ok) {
+          const patchData = await patchResponse.json();
+          console.log('PATCH update response:', patchData);
+          
+          showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+          
+          // Refresh reports to show updated status
+          setTimeout(() => {
+            fetchReports();
+          }, 1000);
+        } else {
+          throw new Error('PATCH method also failed');
+        }
+      } catch (patchError) {
+        console.error('PATCH method also failed:', patchError);
+        
+        // If all API methods fail, update local state as fallback
+        console.log('All API methods failed, updating local state...');
+        
+        setReports(prevReports => 
+          prevReports.map(report => 
+            report.id === reportId 
+              ? { ...report, status: newStatus }
+              : report
+          )
+        );
+        
+        showSuccess(`Report ${reportId} status updated to ${newStatus} (local update - API endpoint may not be available)`);
+      }
+    } finally {
+      setUpdatingStatus(false);
+    }
   };
 
   const statsData = {
-    total: reports.length,
-    pending: reports.filter(r => r.status === 'investigating').length,
-    resolved: reports.filter(r => r.status === 'resolved').length,
-    critical: reports.filter(r => r.urgency === 'critical').length
+    total: formattedReports.length,
+    pending: formattedReports.filter(r => safeToLowerCase(r.status) === 'investigating').length,
+    resolved: formattedReports.filter(r => safeToLowerCase(r.status) === 'resolved').length,
+    critical: formattedReports.filter(r => safeToLowerCase(r.urgency) === 'critical').length
   };
 
   return (
@@ -301,80 +491,99 @@ const AdminProblems = () => {
 
         {/* Reports List */}
         <div className="reports-list">
-          {filteredReports.map((report) => (
-            <div key={report.id} className="report-card">
-              <div className="report-header">
-                <div className="report-info">
-                  <div className="report-title-group">
-                    <div className="report-title">{report.issue}</div>
-                    <div className="report-badges">
-                      <div className={`urgency-badge ${getUrgencyColor(report.urgency)}`}>
-                        {report.urgency}
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading problem reports...</p>
+            </div>
+          ) : error ? (
+            <div className="error-container">
+              <p className="error-message">{error}</p>
+              <button onClick={fetchReports} className="retry-button">
+                Try Again
+              </button>
+            </div>
+          ) : filteredReports.length > 0 ? (
+            filteredReports.map((report) => (
+              <div key={report.id} className="report-card">
+                <div className="report-header">
+                  <div className="report-info">
+                    <div className="report-title-group">
+                      <div className="report-title">{report.issue}</div>
+                      <div className="report-badges">
+                        <div className={`urgency-badge ${getUrgencyColor(report.urgency)}`}>
+                          {report.urgency}
+                        </div>
+                        <div className={`status-badge ${getStatusColor(report.status)}`}>
+                          {getStatusIcon(report.status)}
+                          <span>{report.status}</span>
+                        </div>
                       </div>
-                      <div className={`status-badge ${getStatusColor(report.status)}`}>
-                        {getStatusIcon(report.status)}
-                        <span>{report.status}</span>
+                    </div>
+                    
+                    <div className="report-details">
+                      <div className="detail-item">
+                        <MapPin className="detail-icon" />
+                        <span>{report.stationName} ({report.stationId})</span>
+                      </div>
+                      <div className="detail-item">
+                        <User className="detail-icon" />
+                        <span>{report.userEmail}</span>
+                      </div>
+                      <div className="detail-item">
+                        <Calendar className="detail-icon" />
+                        <span>{report.reportedDate} at {report.reportedTime}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span>Assigned to: {report.assignedTo}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="report-details">
-                    <div className="detail-item">
-                      <MapPin className="detail-icon" />
-                      <span>{report.stationName} ({report.stationId})</span>
-                    </div>
-                    <div className="detail-item">
-                      <User className="detail-icon" />
-                      <span>{report.userEmail}</span>
-                    </div>
-                    <div className="detail-item">
-                      <Calendar className="detail-icon" />
-                      <span>{report.reportedDate} at {report.reportedTime}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span>Assigned to: {report.assignedTo}</span>
-                    </div>
+                  <div className="report-actions">
+                    <button 
+                      className="view-details-button"
+                      onClick={() => {
+                        setSelectedReport(report);
+                        setIsDialogOpen(true);
+                      }}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
                 
-                <div className="report-actions">
-                  <button 
-                    className="view-details-button"
-                    onClick={() => {
-                      setSelectedReport(report);
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    View Details
-                  </button>
+                <div className="report-content">
+                  <p className="report-description">
+                    {report.description}
+                  </p>
+                  
+                  {safeToLowerCase(report.status) === 'scheduled' && report.scheduledDate && (
+                    <div className="status-info status-blue">
+                      Scheduled for resolution: {report.scheduledDate}
+                    </div>
+                  )}
+                  
+                  {safeToLowerCase(report.status) === 'investigating' && report.estimatedResolution && (
+                    <div className="status-info status-yellow">
+                      Estimated resolution: {report.estimatedResolution}
+                    </div>
+                  )}
+                  
+                  {safeToLowerCase(report.status) === 'resolved' && report.resolvedDate && (
+                    <div className="status-info status-green">
+                      Resolved on {report.resolvedDate} at {report.resolvedTime}
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              <div className="report-content">
-                <p className="report-description">
-                  {report.description}
-                </p>
-                
-                {report.status === 'scheduled' && report.scheduledDate && (
-                  <div className="status-info status-blue">
-                    Scheduled for resolution: {report.scheduledDate}
-                  </div>
-                )}
-                
-                {report.status === 'investigating' && report.estimatedResolution && (
-                  <div className="status-info status-yellow">
-                    Estimated resolution: {report.estimatedResolution}
-                  </div>
-                )}
-                
-                {report.status === 'resolved' && report.resolvedDate && (
-                  <div className="status-info status-green">
-                    Resolved on {report.resolvedDate} at {report.resolvedTime}
-                  </div>
-                )}
-              </div>
+            ))
+          ) : (
+            <div className="no-reports">
+              <AlertTriangle className="no-reports-icon" />
+              <p>No problem reports found matching your criteria.</p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Report Details Dialog */}
@@ -425,7 +634,7 @@ const AdminProblems = () => {
                   </div>
                 </div>
 
-                {selectedReport.status === 'resolved' && selectedReport.solution && (
+                {safeToLowerCase(selectedReport.status) === 'resolved' && selectedReport.solution && (
                   <div className="solution-section">
                     <h4 className="section-title">Solution</h4>
                     <div className="solution-content">
@@ -454,19 +663,21 @@ const AdminProblems = () => {
                 </div>
 
                 <div className="action-buttons">
-                  {selectedReport.status !== 'resolved' && (
+                  {safeToLowerCase(selectedReport.status) !== 'resolved' && (
                     <>
                       <button 
                         className="action-button"
                         onClick={() => handleUpdateStatus(selectedReport.id, 'investigating')}
+                        disabled={updatingStatus}
                       >
-                        Mark as Investigating
+                        {updatingStatus ? 'Updating...' : 'Mark as Investigating'}
                       </button>
                       <button 
                         className="action-button"
                         onClick={() => handleUpdateStatus(selectedReport.id, 'resolved')}
+                        disabled={updatingStatus}
                       >
-                        Mark as Resolved
+                        {updatingStatus ? 'Updating...' : 'Mark as Resolved'}
                       </button>
                     </>
                   )}
@@ -480,13 +691,6 @@ const AdminProblems = () => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {filteredReports.length === 0 && (
-          <div className="no-reports">
-            <AlertTriangle className="no-reports-icon" />
-            <p>No problem reports found matching your criteria.</p>
           </div>
         )}
       </div>

@@ -306,6 +306,81 @@
     font-weight: 500;
 }
 
+/* Existing rating styles */
+#rate-us-page .existing-rating {
+    padding: 20px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+#rate-us-page .existing-rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+#rate-us-page .existing-rating-header h4 {
+    margin: 0;
+    color: #3b82f6;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#rate-us-page .rating-date {
+    color: #64748b;
+    font-size: 14px;
+}
+
+#rate-us-page .existing-rating-content {
+    margin-bottom: 16px;
+}
+
+#rate-us-page .existing-rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#rate-us-page .existing-rating-stars .rating-text {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+#rate-us-page .existing-rating-comment {
+    color: #e2e8f0;
+    font-style: italic;
+    margin: 12px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+}
+
+#rate-us-page .existing-rating-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+#rate-us-page .existing-rating-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 8px;
+    color: #f59e0b;
+    font-size: 14px;
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -674,6 +749,39 @@
 
 .light #rate-us-page .error-text {
     color: #1f2937;
+}
+
+/* Light mode existing rating styles */
+.light #rate-us-page .existing-rating {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.light #rate-us-page .existing-rating-header h4 {
+    color: #2563eb;
+}
+
+.light #rate-us-page .rating-date {
+    color: #6b7280;
+}
+
+.light #rate-us-page .existing-rating-stars .rating-text {
+    color: #1f2937;
+}
+
+.light #rate-us-page .existing-rating-comment {
+    color: #374151;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.light #rate-us-page .existing-rating-location {
+    color: #6b7280;
+}
+
+.light #rate-us-page .existing-rating-notice {
+    background: rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.2);
+    color: #d97706;
 }
 
 .light #rate-us-page .form-select:focus,

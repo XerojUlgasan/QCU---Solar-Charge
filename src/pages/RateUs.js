@@ -190,6 +190,21 @@ function RateUs() {
     const allReviews = formatReviews();
     const recentReviews = allReviews.slice(0, 5); // Show only first 5 reviews
 
+    // Check if current user has already submitted a rating
+    const getUserExistingRating = () => {
+        if (!user?.email || !reviews || reviews.length === 0) return null;
+        
+        const userReview = reviews.find(review => review.email === user.email);
+        return userReview ? {
+            rating: userReview.rate,
+            comment: userReview.comment,
+            location: userReview.location,
+            date: formatDate(userReview.dateTime)
+        } : null;
+    };
+
+    const userExistingRating = getUserExistingRating();
+
     // Filter and sort reviews for modal
     const getFilteredReviews = () => {
         let filtered = [...allReviews];
@@ -301,28 +316,40 @@ function RateUs() {
                 photo_url: user?.photoURL || null
             };
             
-            console.log('Submitting rating data:', ratingData);
-            console.log('User token available:', !!idToken);
-            
             // Use the correct endpoint for posting ratings
             const endpoint = 'https://api-qcusolarcharge.up.railway.app/rates/postRates';
-            
-            console.log(`Submitting to endpoint: ${endpoint}`);
-            const response = await authenticatedPost(endpoint, ratingData);
-            console.log(`Response from ${endpoint}:`, response.status, response.ok);
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(ratingData)
+            });
             
             if (response.ok) {
                 const responseData = await response.json();
-                console.log('Success response:', responseData);
+                
+                // Check if the response indicates success
+                if (responseData.success === false || responseData.error) {
+                    // Handle specific error cases
+                    if (responseData.message && responseData.message.includes('already submitted')) {
+                        showError('You have already submitted a rating. Each user can only submit one rating.');
+                        return;
+                    }
+                    throw new Error(responseData.message || 'Server returned error');
+                }
+                
         showSuccess(`Thank you for rating us ${selectedRating} star${selectedRating > 1 ? 's' : ''}!`);
         setSelectedRating(0);
         setFeedback('');
+                setSelectedLocation('');
                 
-                // Refresh reviews to show the new rating
-                fetchReviews();
+                // Wait a moment before refreshing to ensure data is saved
+                setTimeout(() => {
+                    fetchReviews();
+                }, 1000);
             } else {
                 const errorText = await response.text();
-                console.log(`Error from ${endpoint}:`, errorText);
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
         } catch (error) {
@@ -482,6 +509,38 @@ function RateUs() {
                                 </p>
                             </div>
                             <div className="card-content">
+                                {userExistingRating ? (
+                                    <div className="existing-rating">
+                                        <div className="existing-rating-header">
+                                            <h4>Your Previous Rating</h4>
+                                            <span className="rating-date">Submitted {userExistingRating.date}</span>
+                                        </div>
+                                        <div className="existing-rating-content">
+                                            <div className="existing-rating-stars">
+                                                {renderStars(userExistingRating.rating)}
+                                                <span className="rating-text">{userExistingRating.rating} star{userExistingRating.rating > 1 ? 's' : ''}</span>
+                                            </div>
+                                            {userExistingRating.comment && (
+                                                <p className="existing-rating-comment">"{userExistingRating.comment}"</p>
+                                            )}
+                                            <div className="existing-rating-location">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+                                                    <circle cx="12" cy="10" r="3"></circle>
+                                                </svg>
+                                                <span>{userExistingRating.location}</span>
+                                            </div>
+                                        </div>
+                                        <div className="existing-rating-notice">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <path d="M12 6v6"></path>
+                                                <path d="M12 16h.01"></path>
+                                            </svg>
+                                            <span>You have already submitted a rating. Each user can only submit one rating.</span>
+                                        </div>
+                                    </div>
+                                ) : (
                                 <div className="rating-input">
                                     <div className="stars-interactive">
                                         {renderStars(selectedRating, true)}
@@ -560,6 +619,7 @@ function RateUs() {
                                         </div>
                                     )}
                                 </div>
+                                )}
                             </div>
                         </div>
                     </div>

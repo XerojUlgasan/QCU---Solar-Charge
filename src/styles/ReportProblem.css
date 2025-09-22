@@ -551,3 +551,92 @@
 .light #report-problem-page .modal-description {
     color: #6b7280;
 }
+
+/* Loading and Error States */
+#report-problem-page .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+#report-problem-page .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+#report-problem-page .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+#report-problem-page .error-message {
+    color: #ef4444;
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+#report-problem-page .retry-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#report-problem-page .retry-button:hover {
+    background: #2563eb;
+}
+
+#report-problem-page .no-reports {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #9aa3b2;
+    font-size: 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Light mode styles for loading and error states */
+.light #report-problem-page .loading-spinner {
+    border-color: rgba(59, 130, 246, 0.3);
+    border-top-color: #3b82f6;
+}
+
+.light #report-problem-page .error-message {
+    color: #dc2626;
+}
+
+.light #report-problem-page .retry-button {
+    background: #3b82f6;
+    color: white;
+}
+
+.light #report-problem-page .retry-button:hover {
+    background: #2563eb;
+}
+
+.light #report-problem-page .no-reports {
+    color: #6b7280;
+}
