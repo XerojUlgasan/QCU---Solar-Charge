@@ -269,9 +269,9 @@ const AdminProblems = () => {
     try {
       // Here you would typically send the response to the user via email or notification system
       // For now, we'll just show a success message
-      showSuccess('Response sent to user successfully!');
-      setResponseText('');
-      setIsDialogOpen(false);
+    showSuccess('Response sent to user successfully!');
+    setResponseText('');
+    setIsDialogOpen(false);
     } catch (error) {
       console.error('Error sending response:', error);
       showError('Failed to send response. Please try again.');
@@ -358,7 +358,7 @@ const AdminProblems = () => {
           const patchData = await patchResponse.json();
           console.log('PATCH update response:', patchData);
           
-          showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+    showSuccess(`Report ${reportId} status updated to ${newStatus}`);
           
           // Refresh reports to show updated status
           setTimeout(() => {
@@ -505,78 +505,78 @@ const AdminProblems = () => {
             </div>
           ) : filteredReports.length > 0 ? (
             filteredReports.map((report) => (
-              <div key={report.id} className="report-card">
-                <div className="report-header">
-                  <div className="report-info">
-                    <div className="report-title-group">
-                      <div className="report-title">{report.issue}</div>
-                      <div className="report-badges">
-                        <div className={`urgency-badge ${getUrgencyColor(report.urgency)}`}>
-                          {report.urgency}
-                        </div>
-                        <div className={`status-badge ${getStatusColor(report.status)}`}>
-                          {getStatusIcon(report.status)}
-                          <span>{report.status}</span>
-                        </div>
+            <div key={report.id} className="report-card">
+              <div className="report-header">
+                <div className="report-info">
+                  <div className="report-title-group">
+                    <div className="report-title">{report.issue}</div>
+                    <div className="report-badges">
+                      <div className={`urgency-badge ${getUrgencyColor(report.urgency)}`}>
+                        {report.urgency}
                       </div>
-                    </div>
-                    
-                    <div className="report-details">
-                      <div className="detail-item">
-                        <MapPin className="detail-icon" />
-                        <span>{report.stationName} ({report.stationId})</span>
-                      </div>
-                      <div className="detail-item">
-                        <User className="detail-icon" />
-                        <span>{report.userEmail}</span>
-                      </div>
-                      <div className="detail-item">
-                        <Calendar className="detail-icon" />
-                        <span>{report.reportedDate} at {report.reportedTime}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span>Assigned to: {report.assignedTo}</span>
+                      <div className={`status-badge ${getStatusColor(report.status)}`}>
+                        {getStatusIcon(report.status)}
+                        <span>{report.status}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="report-actions">
-                    <button 
-                      className="view-details-button"
-                      onClick={() => {
-                        setSelectedReport(report);
-                        setIsDialogOpen(true);
-                      }}
-                    >
-                      View Details
-                    </button>
+                  <div className="report-details">
+                    <div className="detail-item">
+                      <MapPin className="detail-icon" />
+                      <span>{report.stationName} ({report.stationId})</span>
+                    </div>
+                    <div className="detail-item">
+                      <User className="detail-icon" />
+                      <span>{report.userEmail}</span>
+                    </div>
+                    <div className="detail-item">
+                      <Calendar className="detail-icon" />
+                      <span>{report.reportedDate} at {report.reportedTime}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span>Assigned to: {report.assignedTo}</span>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="report-content">
-                  <p className="report-description">
-                    {report.description}
-                  </p>
-                  
-                  {safeToLowerCase(report.status) === 'scheduled' && report.scheduledDate && (
-                    <div className="status-info status-blue">
-                      Scheduled for resolution: {report.scheduledDate}
-                    </div>
-                  )}
-                  
-                  {safeToLowerCase(report.status) === 'investigating' && report.estimatedResolution && (
-                    <div className="status-info status-yellow">
-                      Estimated resolution: {report.estimatedResolution}
-                    </div>
-                  )}
-                  
-                  {safeToLowerCase(report.status) === 'resolved' && report.resolvedDate && (
-                    <div className="status-info status-green">
-                      Resolved on {report.resolvedDate} at {report.resolvedTime}
-                    </div>
-                  )}
+                <div className="report-actions">
+                  <button 
+                    className="view-details-button"
+                    onClick={() => {
+                      setSelectedReport(report);
+                      setIsDialogOpen(true);
+                    }}
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
+              
+              <div className="report-content">
+                <p className="report-description">
+                  {report.description}
+                </p>
+                
+                  {safeToLowerCase(report.status) === 'scheduled' && report.scheduledDate && (
+                  <div className="status-info status-blue">
+                    Scheduled for resolution: {report.scheduledDate}
+                  </div>
+                )}
+                
+                  {safeToLowerCase(report.status) === 'investigating' && report.estimatedResolution && (
+                  <div className="status-info status-yellow">
+                    Estimated resolution: {report.estimatedResolution}
+                  </div>
+                )}
+                
+                  {safeToLowerCase(report.status) === 'resolved' && report.resolvedDate && (
+                  <div className="status-info status-green">
+                    Resolved on {report.resolvedDate} at {report.resolvedTime}
+                  </div>
+                )}
+              </div>
+            </div>
             ))
           ) : (
             <div className="no-reports">
