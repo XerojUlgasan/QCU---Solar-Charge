@@ -1,37 +1,73 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import "../styles/Overview.css";
 
 function Overview() {
-    const stations = [
-        {
-            id: "QCU-001",
-            name: "Main Library",
-            status: "active",
-            usage: 85,
-            location: "1st Floor, Main Entrance"
-        },
-        {
-            id: "QCU-002", 
-            name: "Student Center",
-            status: "active",
-            usage: 72,
-            location: "Food Court Area"
-        },
-        {
-            id: "QCU-003",
-            name: "Engineering Building",
-            status: "maintenance",
-            usage: 0,
-            location: "Lobby"
-        },
-        {
-            id: "QCU-004",
-            name: "Sports Complex",
-            status: "active",
-            usage: 45,
-            location: "Main Entrance"
+    const [overviewData, setOverviewData] = useState({
+        active: 0,
+        total_power: 0,
+        transactions_today: 0,
+        devices: []
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        fetchOverviewData();
+    }, []);
+
+    const fetchOverviewData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('https://api-qcusolarcharge.up.railway.app/overview/getoverview');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.overview) {
+                setOverviewData(data.overview);
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (error) {
+            console.error('Error fetching overview data:', error);
+            setError('Failed to load overview data');
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const formatPower = (power) => {
+        if (power >= 1000) {
+            return `${(power / 1000).toFixed(1)}kW`;
+        }
+        return `${power.toFixed(1)}W`;
+    };
+
+    const formatLastUpdated = (timestamp) => {
+        if (!timestamp || !timestamp.seconds) {
+            return 'Unknown';
+        }
+        
+        const now = new Date();
+        const lastUpdated = new Date(timestamp.seconds * 1000);
+        const diffInSeconds = Math.floor((now - lastUpdated) / 1000);
+        
+        if (diffInSeconds < 60) {
+            return 'Just now';
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} min ago`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        } else {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        }
+    };
 
     const features = [
         {
@@ -139,60 +175,91 @@ function Overview() {
                 </div>
 
                 {/* Network Stats */}
+                {loading ? (
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
+                        <p>Loading overview data...</p>
+                    </div>
+                ) : error ? (
+                    <div className="error-container">
+                        <p className="error-message">{error}</p>
+                        <button className="retry-button" onClick={fetchOverviewData}>
+                            Retry
+                        </button>
+                    </div>
+                ) : (
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-value" style={{color: '#22c55e'}}>4</div>
+                        <div className="stat-value" style={{color: '#22c55e'}}>{overviewData.active}</div>
                         <div className="stat-label">Active Stations</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-value" style={{color: '#3b82f6'}}>67%</div>
-                        <div className="stat-label">Average Usage</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-value" style={{color: '#f59e0b'}}>12.5kW</div>
+                        <div className="stat-value" style={{color: '#f59e0b'}}>{formatPower(overviewData.total_power)}</div>
                         <div className="stat-label">Total Power</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-value" style={{color: '#8b5cf6'}}>156</div>
-                        <div className="stat-label">Daily Users</div>
+                        <div className="stat-value" style={{color: '#8b5cf6'}}>{overviewData.transactions_today}</div>
+                        <div className="stat-label">Transactions Today</div>
                     </div>
                 </div>
+                )}
 
                 {/* Station Status */}
                 <div id="station-status">
                     <h2 className="section-header">Station Status</h2>
+                    {loading ? (
+                        <div className="loading-container">
+                            <div className="loading-spinner"></div>
+                            <p>Loading station data...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="error-container">
+                            <p className="error-message">{error}</p>
+                            <button className="retry-button" onClick={fetchOverviewData}>
+                                Retry
+                            </button>
+                        </div>
+                    ) : (
                     <div className="stations-grid">
-                        {stations.map((station, index) => (
+                        {overviewData.devices.map((device, index) => (
                             <div key={index} className="station-card">
                                 <div className="station-header">
                                     <div className="station-info">
-                                        <h3>{station.name}
-                                            <div className={`status-dot ${station.status}`}></div>
+                                        <h3>{device.name}
+                                            <div className={`status-dot ${device.status}`}></div>
                                         </h3>
                                         <div className="station-location">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
                                             </svg>
-                                            <span>{station.location}</span>
+                                            <span>{device.location}</span>
                                         </div>
                                     </div>
-                                    <span className="station-id">{station.id}</span>
+                                    <span className="station-id">{device.id}</span>
                                 </div>
                                 <div className="station-details">
                                     <div className="detail-row">
                                         <span className="label">Status</span>
-                                        <span className="value">{getStatusText(station.status)}</span>
+                                        <span className="value">{getStatusText(device.status)}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <span className="label">Power</span>
+                                        <span className="value">{formatPower(device.power)}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <span className="label">Temperature</span>
+                                        <span className="value">{device.temperature}°C</span>
                                     </div>
                                     <div className="usage-container">
                                         <div className="detail-row">
-                                            <span className="label">Usage</span>
-                                            <span className="value">{station.usage}%</span>
+                                            <span className="label">Battery Percentage</span>
+                                            <span className="value">{Math.min(Math.round(device.energy), 100)}%</span>
                                         </div>
                                         <div className="progress-bar">
                                             <div 
                                                 className="progress-fill" 
-                                                style={{width: `${station.usage}%`}}
+                                                style={{width: `${Math.min(device.energy, 100)}%`}}
                                             ></div>
                                         </div>
                                     </div>
@@ -201,12 +268,13 @@ function Overview() {
                                             <circle cx="12" cy="12" r="10"></circle>
                                             <path d="M12 6v6l4 2"></path>
                                         </svg>
-                                        <span>Last updated: 2 min ago</span>
+                                        <span>Last updated: {formatLastUpdated(device.last_updated)}</span>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
+                    )}
                 </div>
 
                 {/* System Features */}
