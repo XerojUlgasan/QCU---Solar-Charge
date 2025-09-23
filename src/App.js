@@ -11,6 +11,7 @@ import AdminDashboard from './admin/AdminDashboard';
 import AdminDevices from './admin/AdminDevices';
 import DeviceDetail from './admin/DeviceDetail';
 import AdminProblems from './admin/AdminProblems';
+import NotFound from './pages/NotFound';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { GoogleLoginProvider } from './contexts/GoogleLoginContext';
@@ -67,6 +68,7 @@ function App() {
                 <Route path='/overview' element={<Overview/>}/>
                 <Route path='/rate-us' element={<RateUs/>}/>
                 <Route path='/report-problem' element={<ReportProblem/>}/>
+                <Route path='*' element={<NotFound/>}/>
               </Routes>
             </main>
           </>

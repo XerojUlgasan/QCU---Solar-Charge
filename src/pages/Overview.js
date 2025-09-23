@@ -254,12 +254,12 @@ function Overview() {
                                     <div className="usage-container">
                                         <div className="detail-row">
                                             <span className="label">Battery Percentage</span>
-                                            <span className="value">{Math.min(Math.round(device.energy), 100)}%</span>
+                                            <span className="value">{device.percentage || 0}%</span>
                                         </div>
                                         <div className="progress-bar">
                                             <div 
                                                 className="progress-fill" 
-                                                style={{width: `${Math.min(device.energy, 100)}%`}}
+                                                style={{width: `${device.percentage || 0}%`}}
                                             ></div>
                                         </div>
                                     </div>

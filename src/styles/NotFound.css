@@ -1,0 +1,207 @@
+/* NotFound Page Styles */
+.not-found-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0b0e13;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.not-found-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.02)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.02)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.not-found-content {
+    text-align: center;
+    max-width: 600px;
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(75, 85, 99, 0.2);
+    position: relative;
+    z-index: 1;
+    animation: slideUp 0.6s ease-out;
+    border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.not-found-icon {
+    margin: 0 auto 2rem auto;
+    color: #9aa3b2;
+    animation: pulse 2s infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.not-found-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #eaecef;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.not-found-description {
+    font-size: 1.125rem;
+    color: #9aa3b2;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.not-found-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.go-home-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #0e5429;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(14, 84, 41, 0.3);
+    text-decoration: none;
+}
+
+.go-home-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(14, 84, 41, 0.4);
+    background: #0d4a26;
+}
+
+.go-home-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(14, 84, 41, 0.3);
+}
+
+.go-home-button svg {
+    transition: transform 0.3s ease;
+}
+
+.go-home-button:hover svg {
+    transform: scale(1.1);
+}
+
+/* Light mode styles */
+[data-theme="light"] .not-found-container {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .not-found-container::before {
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(0,0,0,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(0,0,0,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(0,0,0,0.02)"/><circle cx="10" cy="60" r="0.5" fill="rgba(0,0,0,0.02)"/><circle cx="90" cy="40" r="0.5" fill="rgba(0,0,0,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+}
+
+[data-theme="light"] .not-found-content {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] .not-found-title {
+    color: #1e293b;
+}
+
+[data-theme="light"] .not-found-description {
+    color: #64748b;
+}
+
+[data-theme="light"] .not-found-icon {
+    color: #64748b;
+}
+
+[data-theme="light"] .go-home-button {
+    background: #0e5429;
+    box-shadow: 0 4px 15px rgba(14, 84, 41, 0.3);
+}
+
+[data-theme="light"] .go-home-button:hover {
+    background: #0d4a26;
+    box-shadow: 0 8px 25px rgba(14, 84, 41, 0.4);
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .not-found-container {
+        padding: 1rem;
+    }
+    
+    .not-found-content {
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .not-found-title {
+        font-size: 2rem;
+    }
+    
+    .not-found-description {
+        font-size: 1rem;
+    }
+    
+    .go-home-button {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .not-found-title {
+        font-size: 1.75rem;
+    }
+    
+    .not-found-description {
+        font-size: 0.95rem;
+    }
+    
+    .not-found-content {
+        padding: 1.5rem 1rem;
+    }
+}

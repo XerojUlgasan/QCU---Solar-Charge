@@ -228,7 +228,7 @@ function ReportProblem() {
                 const dateB = new Date(reportB.dateTime);
                 return dateB - dateA;
             })
-            .slice(0, 5); // Show only first 5 reports
+            .slice(0, 3); // Show only first 3 reports
     };
 
     const formattedReports = formatReports();
