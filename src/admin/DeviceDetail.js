@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -14,45 +14,164 @@ import {
   TrendingDown,
   AlertTriangle,
   CheckCircle,
-  RefreshCw
+  RefreshCw,
+  Users
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/DeviceDetail.css';
 
 const DeviceDetail = () => {
   const navigate = useNavigate();
   const { deviceId } = useParams();
+  const { authenticatedAdminFetch } = useAdminAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('realtime');
+  const [timeFilter, setTimeFilter] = useState('daily');
+  const [device, setDevice] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock device data - in real app, this would be fetched based on deviceId
-  const device = {
-    id: deviceId || "QCU-001",
-    name: "Main Library",
-    location: "1st Floor, Main Entrance",
-    building: "Library Building",
-    status: "active",
-    installDate: "2024-01-15",
-    lastMaintenance: "2024-12-01",
-    
-    // Real-time metrics
-    voltage: "24.2V",
-    current: "13.3A", 
-    power: "3.2kW",
-    energy: "156.8kWh",
-    temperature: "28°C",
-    batteryLevel: 92,
-    
-    // Usage data
-    usage: 85,
-    sessionsToday: 23,
-    revenue: "₱2,340",
-    freeHours: 45,
-    
-    // Performance
-    uptime: 99.2,
-    efficiency: 94.8,
-    errorRate: 0.8
+  // Fetch device data from API
+  const fetchDeviceData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard', {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Find the specific device by ID
+      const devices = data.devices || [];
+      const foundDevice = devices.find(d => d.id === deviceId);
+      
+      if (!foundDevice) {
+        throw new Error(`Device ${deviceId} not found`);
+      }
+
+      // Map API data to device structure
+      const mappedDevice = {
+        id: foundDevice.id,
+        name: foundDevice.name || 'Unknown Device',
+        location: foundDevice.location || 'Unknown Location',
+        building: foundDevice.building || 'Unknown Building',
+        status: foundDevice.status || 'unknown',
+        installDate: "2024-01-15", // Not in API yet
+        lastMaintenance: "2024-12-01", // Not in API yet
+        
+        // Real-time metrics from API
+        voltage: `${foundDevice.volt || 0}V`,
+        current: `${foundDevice.current || 0}A`,
+        power: formatPower(foundDevice.power || 0),
+        energy: `${(foundDevice.energy || 0).toFixed(1)}kWh`,
+        temperature: `${foundDevice.temperature || 0}°C`,
+        batteryLevel: foundDevice.percentage || 0,
+        
+        // Usage data (mock for now)
+        usage: foundDevice.percentage || 0,
+        sessionsToday: 23, // Mock data
+        revenue: "₱2,340", // Mock data
+        freeHours: 45, // Mock data
+        
+        // Performance (mock for now)
+        uptime: 99.2,
+        efficiency: 94.8,
+        errorRate: 0.8
+      };
+
+      setDevice(mappedDevice);
+    } catch (err) {
+      console.error('Error fetching device data:', err);
+      setError(err.message);
+      // Set fallback device data
+      setDevice({
+        id: deviceId || "QCU-001",
+        name: "Device Not Found",
+        location: "Unknown Location",
+        building: "Unknown Building",
+        status: "offline",
+        installDate: "2024-01-15",
+        lastMaintenance: "2024-12-01",
+        voltage: "0V",
+        current: "0A",
+        power: "0W",
+        energy: "0kWh",
+        temperature: "0°C",
+        batteryLevel: 0,
+        usage: 0,
+        sessionsToday: 0,
+        revenue: "₱0",
+        freeHours: 0,
+        uptime: 0,
+        efficiency: 0,
+        errorRate: 0
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [deviceId, authenticatedAdminFetch]);
+
+  useEffect(() => {
+    fetchDeviceData();
+  }, [fetchDeviceData]);
+
+  // Utility function to format power
+  const formatPower = (power) => {
+    if (power >= 1000) {
+      return `${(power / 1000).toFixed(1)}kW`;
+    }
+    return `${power.toFixed(1)}W`;
+  };
+
+  // Get time-filtered data
+  const getTimeFilteredData = (timeFilter) => {
+    const baseData = {
+      energy: device?.energy || "0kWh",
+      revenue: device?.revenue || "₱0",
+      uses: device?.sessionsToday || 0,
+      sessions: device?.sessionsToday || 0
+    };
+
+    // Mock time-filtered data (in real app, this would come from API)
+    const timeFilteredData = {
+      daily: {
+        energy: baseData.energy,
+        revenue: baseData.revenue,
+        uses: baseData.uses,
+        sessions: baseData.sessions
+      },
+      weekly: {
+        energy: `${(parseFloat(baseData.energy) * 7).toFixed(1)}kWh`,
+        revenue: `₱${(parseInt(baseData.revenue.replace(/[₱,]/g, '')) * 7).toLocaleString()}`,
+        uses: baseData.uses * 7,
+        sessions: baseData.sessions * 7
+      },
+      monthly: {
+        energy: `${(parseFloat(baseData.energy) * 30).toFixed(1)}kWh`,
+        revenue: `₱${(parseInt(baseData.revenue.replace(/[₱,]/g, '')) * 30).toLocaleString()}`,
+        uses: baseData.uses * 30,
+        sessions: baseData.sessions * 30
+      },
+      total: {
+        energy: `${(parseFloat(baseData.energy) * 365).toFixed(1)}kWh`,
+        revenue: `₱${(parseInt(baseData.revenue.replace(/[₱,]/g, '')) * 365).toLocaleString()}`,
+        uses: baseData.uses * 365,
+        sessions: baseData.sessions * 365
+      }
+    };
+
+    return timeFilteredData[timeFilter] || timeFilteredData.daily;
   };
 
   const recentSessions = [
@@ -150,11 +269,48 @@ const DeviceDetail = () => {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // Mock refresh
-    setTimeout(() => {
+    fetchDeviceData().finally(() => {
       setIsRefreshing(false);
-    }, 1000);
+    });
   };
+
+  if (loading) {
+    return (
+      <div id="device-detail">
+        <AdminHeader 
+          title="Loading Device..."
+          navigate={handleNavigation}
+        />
+        <div className="device-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading device data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !device) {
+    return (
+      <div id="device-detail">
+        <AdminHeader 
+          title="Device Error"
+          navigate={handleNavigation}
+        />
+        <div className="device-content">
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+            <button className="retry-button" onClick={fetchDeviceData}>
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const timeFilteredData = getTimeFilteredData(timeFilter);
 
   return (
     <div id="device-detail">
@@ -164,7 +320,7 @@ const DeviceDetail = () => {
       />
       
       <div className="device-content">
-        {/* Header with back button */}
+        {/* Header with back button and time filter */}
         <div className="header-section">
           <button
             className="back-button"
@@ -174,14 +330,30 @@ const DeviceDetail = () => {
             <span>Back to Devices</span>
           </button>
           
-          <button 
-            className="refresh-button"
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`refresh-icon ${isRefreshing ? 'spinning' : ''}`} />
-            Refresh
-          </button>
+          <div className="header-controls">
+            <div className="time-filter-group">
+              <span className="time-filter-label">Time Period:</span>
+              <select 
+                className="time-filter-select"
+                value={timeFilter} 
+                onChange={(e) => setTimeFilter(e.target.value)}
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="total">Total</option>
+              </select>
+            </div>
+            
+            <button 
+              className="refresh-button"
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`refresh-icon ${isRefreshing ? 'spinning' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Device Overview */}
@@ -207,16 +379,16 @@ const DeviceDetail = () => {
           <div className="overview-content">
             <div className="metrics-grid">
               <div className="metric-card">
-                <div className="metric-value metric-blue">{device.power}</div>
-                <div className="metric-label">Current Power</div>
+                <div className="metric-value metric-blue">{timeFilteredData.energy}</div>
+                <div className="metric-label">Energy Generated</div>
               </div>
               <div className="metric-card">
-                <div className="metric-value metric-green">{device.revenue}</div>
-                <div className="metric-label">Monthly Revenue</div>
+                <div className="metric-value metric-green">{timeFilteredData.revenue}</div>
+                <div className="metric-label">Revenue</div>
               </div>
               <div className="metric-card">
-                <div className="metric-value metric-purple">{device.sessionsToday}</div>
-                <div className="metric-label">Sessions Today</div>
+                <div className="metric-value metric-purple">{timeFilteredData.uses}</div>
+                <div className="metric-label">Uses</div>
               </div>
               <div className="metric-card">
                 <div className="metric-value metric-yellow">{device.uptime}%</div>
@@ -276,14 +448,14 @@ const DeviceDetail = () => {
                       <div className="electrical-value">{device.current}</div>
                     </div>
                   </div>
-                  
+
                   <div className="power-section">
                     <div className="power-label">Power Output</div>
                     <div className="power-value">{device.power}</div>
                     <div className="power-bar">
-                      <div className="power-fill" style={{width: '75%'}}></div>
+                      <div className="power-fill" style={{width: `${Math.min((device.batteryLevel || 0), 100)}%`}}></div>
                     </div>
-                    <div className="power-text">75% of maximum capacity (4.2kW)</div>
+                    <div className="power-text">{device.batteryLevel}% of maximum capacity</div>
                   </div>
 
                   <div className="status-grid">
@@ -343,7 +515,7 @@ const DeviceDetail = () => {
                   <div className="energy-stats">
                     <div className="energy-item">
                       <div className="energy-label">Energy Today</div>
-                      <div className="energy-value">{device.energy}</div>
+                      <div className="energy-value">{timeFilteredData.energy}</div>
                     </div>
                     <div className="energy-item">
                       <div className="energy-label">Free Hours Used</div>
@@ -521,20 +693,20 @@ const DeviceDetail = () => {
                 <div className="card-content">
                   <div className="usage-grid">
                     <div className="usage-item">
-                      <div className="usage-value">847</div>
-                      <div className="usage-label">Total Sessions</div>
+                      <div className="usage-value">{timeFilteredData.sessions}</div>
+                      <div className="usage-label">Sessions</div>
                     </div>
                     <div className="usage-item">
-                      <div className="usage-value">324h</div>
-                      <div className="usage-label">Total Hours</div>
+                      <div className="usage-value">{timeFilteredData.energy}</div>
+                      <div className="usage-label">Energy</div>
                     </div>
                     <div className="usage-item">
-                      <div className="usage-value">156</div>
-                      <div className="usage-label">Unique Users</div>
+                      <div className="usage-value">{timeFilteredData.uses}</div>
+                      <div className="usage-label">Uses</div>
                     </div>
                     <div className="usage-item">
-                      <div className="usage-value">94%</div>
-                      <div className="usage-label">Satisfaction</div>
+                      <div className="usage-value">{timeFilteredData.revenue}</div>
+                      <div className="usage-label">Revenue</div>
                     </div>
                   </div>
                 </div>

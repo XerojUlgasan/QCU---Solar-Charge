@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, 
+  Edit, 
   MapPin, 
   Zap, 
   DollarSign, 
@@ -13,90 +13,141 @@ import {
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/AdminDevices.css';
 
 const AdminDevices = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
+  const { authenticatedAdminFetch } = useAdminAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newDevice, setNewDevice] = useState({
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [deviceForm, setDeviceForm] = useState({
     name: '',
     location: '',
     building: ''
   });
+  const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState('testing');
 
-  const devices = [
-    {
-      id: "QCU-001",
-      name: "Main Library",
-      location: "1st Floor, Main Entrance",
-      building: "Library Building",
-      status: "active",
-      voltage: "24.2V",
-      current: "13.3A",
-      power: "3.2kW",
-      energy: "156.8kWh",
-      usage: 85,
-      revenue: "₱2,340",
-      freeHours: 45,
-      temperature: "28°C",
-      batteryLevel: 92,
-      lastUpdate: "2 min ago"
-    },
-    {
-      id: "QCU-002", 
-      name: "Student Center",
-      location: "Food Court Area",
-      building: "Student Center",
-      status: "active",
-      voltage: "23.8V",
-      current: "12.2A",
-      power: "2.9kW",
-      energy: "134.2kWh",
-      usage: 72,
-      revenue: "₱1,890",
-      freeHours: 32,
-      temperature: "26°C",
-      batteryLevel: 88,
-      lastUpdate: "1 min ago"
-    },
-    {
-      id: "QCU-003",
-      name: "Engineering Building",
-      location: "Lobby",
-      building: "Engineering Building",
-      status: "maintenance",
-      voltage: "0V",
-      current: "0A",
-      power: "0kW",
-      energy: "0kWh",
-      usage: 0,
-      revenue: "₱0",
-      freeHours: 0,
-      temperature: "N/A",
-      batteryLevel: 0,
-      lastUpdate: "2 hours ago"
-    },
-    {
-      id: "QCU-004",
-      name: "Sports Complex",
-      location: "Main Entrance",
-      building: "Sports Complex",
-      status: "active",
-      voltage: "24.5V",
-      current: "7.3A",
-      power: "1.8kW",
-      energy: "89.5kWh",
-      usage: 45,
-      revenue: "₱1,120",
-      freeHours: 28,
-      temperature: "30°C",
-      batteryLevel: 76,
-      lastUpdate: "3 min ago"
+  // Fetch devices data from API
+  const fetchDevicesData = useCallback(async () => {
+    try {
+      console.log('Fetching devices data from /admin/dashboard...');
+      
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Devices API response data:', data);
+      
+      // Handle the API response format
+      if (data.revenue || data.uses || data.energy_generated || data.devices) {
+        console.log('✅ Using direct API data format for devices');
+        
+        // Map API devices to our expected format
+        const mappedDevices = (data.devices || []).map(device => ({
+          id: device.id || `Device-${Math.random()}`,
+          name: device.name || 'Unknown Device',
+          location: device.location || 'Unknown Location',
+          building: device.building || 'Unknown Building',
+          status: device.status || 'unknown',
+          voltage: `${device.volt || 0}V`,
+          current: `${device.current || 0}A`,
+          power: formatPower(device.power || 0),
+          energy: `${(device.energy || 0).toFixed(1)}kWh`,
+          usage: device.percentage || 0,
+          revenue: '₱0', // Not provided in API yet
+          freeHours: 0, // Not provided in API yet
+          temperature: `${device.temperature || 0}°C`,
+          batteryLevel: device.percentage || 0,
+          lastUpdate: formatLastUpdated(device.last_updated),
+          // Add API revenue data for total calculation
+          apiRevenue: data.revenue ? data.revenue.total || 0 : 0
+        }));
+        
+        // Calculate total power from mapped devices
+        const calculatedTotalPower = mappedDevices.reduce((sum, d) => {
+          const powerStr = d.power || '0W';
+          const powerValue = parseFloat(powerStr.replace(/[kW]/g, ''));
+          return sum + powerValue;
+        }, 0);
+        
+        setDevices(mappedDevices);
+        setConnectionStatus('connected');
+        console.log('✅ Devices data mapped and set successfully:', mappedDevices);
+        console.log('💰 API Revenue Data:', data.revenue);
+        console.log('⚡ Total Power Calculation:', calculatedTotalPower, 'W');
+        console.log('📊 Formatted Total Power:', formatTotalPower(calculatedTotalPower));
+      } else {
+        setConnectionStatus('invalid_format');
+        console.log('❌ Could not extract devices data, using fallback');
+        setDevices([]);
+      }
+    } catch (error) {
+      setConnectionStatus('error');
+      console.error('❌ Error fetching devices data:', error);
+      console.log('Using fallback data due to error');
+      setDevices([]);
+      setError(`Failed to load devices data: ${error.message}`);
     }
-  ];
+  }, [authenticatedAdminFetch]);
+
+  // Utility functions
+  const formatPower = (power) => {
+    if (power >= 1000) {
+      return `${(power / 1000).toFixed(1)}kW`;
+    }
+    return `${power.toFixed(1)}W`;
+  };
+
+  const formatLastUpdated = (timestamp) => {
+    if (!timestamp || !timestamp.seconds) {
+      return 'Unknown';
+    }
+    
+    const now = new Date();
+    const lastUpdated = new Date(timestamp.seconds * 1000);
+    const diffInSeconds = Math.floor((now - lastUpdated) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} min ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+  };
+
+  // Fetch data when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        await fetchDevicesData();
+      } catch (error) {
+        console.error('Error in fetchData:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [fetchDevicesData]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -121,17 +172,28 @@ const AdminDevices = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleAddDevice = (e) => {
+  const handleEditDevice = (device) => {
+    setEditingDevice(device);
+    setDeviceForm({
+      name: device.name,
+      location: device.location,
+      building: device.building
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveDevice = (e) => {
     e.preventDefault();
-    if (!newDevice.name || !newDevice.location || !newDevice.building) {
+    if (!deviceForm.name || !deviceForm.location || !deviceForm.building) {
       showError('Please fill in all fields');
       return;
     }
     
-    // Mock device addition
-    showSuccess(`Device "${newDevice.name}" added successfully!`);
-    setNewDevice({ name: '', location: '', building: '' });
-    setIsAddDialogOpen(false);
+    // Mock device update
+    showSuccess(`Device "${deviceForm.name}" updated successfully!`);
+    setDeviceForm({ name: '', location: '', building: '' });
+    setEditingDevice(null);
+    setIsEditDialogOpen(false);
   };
 
   const handleNavigation = (route, deviceId) => {
@@ -154,8 +216,26 @@ const AdminDevices = () => {
   };
 
   const totalActive = devices.filter(d => d.status === 'active').length;
-  const totalPower = devices.reduce((sum, d) => sum + parseFloat(d.power.replace('kW', '') || '0'), 0);
-  const totalRevenue = devices.reduce((sum, d) => sum + parseFloat(d.revenue.replace('₱', '').replace(',', '') || '0'), 0);
+  
+  // Calculate total power from API data (convert to kW if needed)
+  const totalPower = devices.reduce((sum, d) => {
+    const powerStr = d.power || '0W';
+    const powerValue = parseFloat(powerStr.replace(/[kW]/g, ''));
+    return sum + powerValue;
+  }, 0);
+  
+  // Format total power - show as kW if >= 1000W, otherwise as W
+  const formatTotalPower = (totalWatts) => {
+    if (totalWatts >= 1000) {
+      return `${(totalWatts / 1000).toFixed(1)}kW`;
+    }
+    return `${totalWatts.toFixed(1)}W`;
+  };
+  
+  // Use API revenue data if available, otherwise calculate from devices
+  const totalRevenue = devices.length > 0 && devices[0].apiRevenue 
+    ? devices[0].apiRevenue 
+    : devices.reduce((sum, d) => sum + parseFloat(d.revenue.replace('₱', '').replace(',', '') || '0'), 0);
 
   return (
     <div id="admin-devices">
@@ -165,6 +245,24 @@ const AdminDevices = () => {
       />
       
       <div className="devices-content">
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading devices data...</p>
+          </div>
+        ) : error ? (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+            <button className="retry-button" onClick={() => {
+              setLoading(true);
+              setError(null);
+              fetchDevicesData();
+            }}>
+              Retry
+            </button>
+          </div>
+        ) : (
+          <>
         {/* Summary Stats */}
         <div className="stats-grid">
           <div className="stat-card">
@@ -186,7 +284,7 @@ const AdminDevices = () => {
               <Zap className="stat-icon" />
             </div>
             <div className="stat-content">
-              <div className="stat-value">{totalPower.toFixed(1)}kW</div>
+              <div className="stat-value">{formatTotalPower(totalPower)}</div>
               <div className="stat-description">
                 Current generation capacity
               </div>
@@ -232,35 +330,27 @@ const AdminDevices = () => {
               <option value="offline">Offline</option>
             </select>
           </div>
-
-          <button 
-            className="add-device-button"
-            onClick={() => setIsAddDialogOpen(true)}
-          >
-            <Plus className="button-icon" />
-            Add Device
-          </button>
         </div>
 
-        {/* Add Device Dialog */}
-        {isAddDialogOpen && (
+        {/* Edit Device Dialog */}
+        {isEditDialogOpen && (
           <div className="dialog-overlay">
             <div className="dialog-content">
               <div className="dialog-header">
-                <h3 className="dialog-title">Add New Device</h3>
+                <h3 className="dialog-title">Edit Device</h3>
                 <p className="dialog-description">
-                  Register a new EcoCharge station in the network.
+                  Update the details for {editingDevice?.name}.
                 </p>
               </div>
-              <form onSubmit={handleAddDevice} className="dialog-form">
+              <form onSubmit={handleSaveDevice} className="dialog-form">
                 <div className="form-group">
                   <label htmlFor="name" className="form-label">Device Name</label>
                   <input
                     id="name"
                     type="text"
                     placeholder="e.g., Main Library"
-                    value={newDevice.name}
-                    onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
+                    value={deviceForm.name}
+                    onChange={(e) => setDeviceForm({ ...deviceForm, name: e.target.value })}
                     required
                     className="form-input"
                   />
@@ -271,8 +361,8 @@ const AdminDevices = () => {
                     id="location"
                     type="text"
                     placeholder="e.g., 1st Floor, Main Entrance"
-                    value={newDevice.location}
-                    onChange={(e) => setNewDevice({ ...newDevice, location: e.target.value })}
+                    value={deviceForm.location}
+                    onChange={(e) => setDeviceForm({ ...deviceForm, location: e.target.value })}
                     required
                     className="form-input"
                   />
@@ -283,8 +373,8 @@ const AdminDevices = () => {
                     id="building"
                     type="text"
                     placeholder="e.g., Library Building"
-                    value={newDevice.building}
-                    onChange={(e) => setNewDevice({ ...newDevice, building: e.target.value })}
+                    value={deviceForm.building}
+                    onChange={(e) => setDeviceForm({ ...deviceForm, building: e.target.value })}
                     required
                     className="form-input"
                   />
@@ -293,12 +383,12 @@ const AdminDevices = () => {
                   <button 
                     type="button" 
                     className="cancel-button"
-                    onClick={() => setIsAddDialogOpen(false)}
+                    onClick={() => setIsEditDialogOpen(false)}
                   >
                     Cancel
                   </button>
                   <button type="submit" className="submit-button">
-                    Add Device
+                    Save Changes
                   </button>
                 </div>
               </form>
@@ -387,6 +477,20 @@ const AdminDevices = () => {
                   </div>
                 </div>
 
+                {/* Edit Button */}
+                <div className="edit-section">
+                  <button 
+                    className="edit-device-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditDevice(device);
+                    }}
+                  >
+                    <Edit className="button-icon" />
+                    Edit Device
+                  </button>
+                </div>
+
                 <div className="last-updated">
                   Last updated: {device.lastUpdate}
                 </div>
@@ -399,6 +503,8 @@ const AdminDevices = () => {
           <div className="no-devices">
             <p>No devices found matching your criteria.</p>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
