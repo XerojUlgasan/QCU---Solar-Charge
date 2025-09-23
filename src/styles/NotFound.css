@@ -108,15 +108,15 @@
 }
 
 /* Light mode styles */
-[data-theme="light"] .not-found-container {
+.light .not-found-container {
     background: #f8fafc;
 }
 
-[data-theme="light"] .not-found-container::before {
+.light .not-found-container::before {
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(0,0,0,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(0,0,0,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(0,0,0,0.02)"/><circle cx="10" cy="60" r="0.5" fill="rgba(0,0,0,0.02)"/><circle cx="90" cy="40" r="0.5" fill="rgba(0,0,0,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
 }
 
-[data-theme="light"] .not-found-content {
+.light .not-found-content {
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow: 
@@ -124,24 +124,24 @@
         0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
-[data-theme="light"] .not-found-title {
+.light .not-found-title {
     color: #1e293b;
 }
 
-[data-theme="light"] .not-found-description {
+.light .not-found-description {
     color: #64748b;
 }
 
-[data-theme="light"] .not-found-icon {
+.light .not-found-icon {
     color: #64748b;
 }
 
-[data-theme="light"] .go-home-button {
+.light .go-home-button {
     background: #0e5429;
     box-shadow: 0 4px 15px rgba(14, 84, 41, 0.3);
 }
 
-[data-theme="light"] .go-home-button:hover {
+.light .go-home-button:hover {
     background: #0d4a26;
     box-shadow: 0 8px 25px rgba(14, 84, 41, 0.4);
 }
