@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, 
@@ -10,13 +10,259 @@ import {
   Battery, 
   MapPin,
   Activity,
-  CreditCard
+  CreditCard,
+  Filter
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { authenticatedAdminFetch } = useAdminAuth();
+  
+  // State management
+  const [overviewData, setOverviewData] = useState({
+    revenue: {
+      daily: 0,
+      weekly: 0,
+      monthly: 0,
+      total: 0
+    },
+    uses: {
+      daily: 0,
+      weekly: 0,
+      monthly: 0,
+      total: 0
+    },
+    energy: { // standby
+      daily: 0,
+      weekly: 0,
+      monthly: 0,
+      total: 0
+    },
+    transactions: [],
+    maintenance: [], //standby
+    total_hours: 0,
+    volt: 0,
+    current: 0,
+    power: 0,
+    temperature: 0,
+    percentage: 0,
+    devices: [],
+    active_devices: 0,
+    total_devices: 0,
+    power_output: 0
+  });
+  const [recentReports, setRecentReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [timeFilter, setTimeFilter] = useState('daily');
+  const [connectionStatus, setConnectionStatus] = useState('testing');
+
+  // Test API endpoint availability
+  const testAPIEndpoint = async () => {
+    try {
+      console.log('=== TESTING API ENDPOINTS ===');
+      
+      // Test 1: Check if /admin/dashboard exists
+      console.log('Test 1: Checking /admin/dashboard endpoint...');
+      const dashboardResponse = await fetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+      console.log('Dashboard endpoint status:', dashboardResponse.status);
+      console.log('Dashboard endpoint headers:', Object.fromEntries(dashboardResponse.headers.entries()));
+      
+      // Test 2: Check if /overview/getoverview works (as comparison)
+      console.log('Test 2: Checking /overview/getoverview endpoint...');
+      const overviewResponse = await fetch('https://api-qcusolarcharge.up.railway.app/overview/getoverview');
+      console.log('Overview endpoint status:', overviewResponse.status);
+      
+      // Test 3: Check authentication
+      console.log('Test 3: Checking authenticatedAdminFetch function...');
+      console.log('authenticatedAdminFetch type:', typeof authenticatedAdminFetch);
+      
+      console.log('=== API TEST COMPLETE ===');
+    } catch (error) {
+      console.error('API Test Error:', error);
+    }
+  };
+
+  // Fetch dashboard data from API
+  const fetchOverviewData = useCallback(async () => {
+    try {
+      console.log('=== FETCHING DASHBOARD DATA ===');
+      console.log('Using authenticatedAdminFetch:', typeof authenticatedAdminFetch);
+      
+      // First test the endpoint
+      await testAPIEndpoint();
+      
+      console.log('Fetching dashboard data from /admin/dashboard...');
+      
+      // Add timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('Dashboard API response status:', response.status);
+      console.log('Dashboard API response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Dashboard API response data:', data);
+      console.log('Data keys:', Object.keys(data));
+      console.log('Data structure:', JSON.stringify(data, null, 2));
+      
+      // Handle the specific API response format
+      if (data.revenue || data.uses || data.energy_generated || data.devices) {
+        console.log('✅ Using direct API data format');
+        
+        // Calculate aggregate values from devices if available
+        let aggregateVolt = 0;
+        let aggregateCurrent = 0;
+        let aggregatePower = 0;
+        let aggregateTemperature = 0;
+        let aggregatePercentage = 0;
+        let activeDevices = 0;
+        
+        if (data.devices && Array.isArray(data.devices)) {
+          activeDevices = data.devices.filter(device => device.status === 'active').length;
+          
+          // Calculate averages from active devices
+          const activeDevicesList = data.devices.filter(device => device.status === 'active');
+          if (activeDevicesList.length > 0) {
+            aggregateVolt = activeDevicesList.reduce((sum, device) => sum + (device.volt || 0), 0) / activeDevicesList.length;
+            aggregateCurrent = activeDevicesList.reduce((sum, device) => sum + (device.current || 0), 0) / activeDevicesList.length;
+            aggregatePower = activeDevicesList.reduce((sum, device) => sum + (device.power || 0), 0) / activeDevicesList.length;
+            aggregateTemperature = activeDevicesList.reduce((sum, device) => sum + (device.temperature || 0), 0) / activeDevicesList.length;
+            aggregatePercentage = activeDevicesList.reduce((sum, device) => sum + (device.percentage || 0), 0) / activeDevicesList.length;
+          }
+        }
+        
+        // Map the API data to our expected format
+        const mappedData = {
+          revenue: data.revenue || { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          uses: data.uses || { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          energy: data.energy_generated || { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          transactions: data.transactions || [],
+          maintenance: [], // Not provided in API yet
+          total_hours: 0, // Not provided in API yet
+          volt: aggregateVolt,
+          current: aggregateCurrent,
+          power: aggregatePower,
+          temperature: aggregateTemperature,
+          percentage: aggregatePercentage,
+          // Additional data from API
+          devices: data.devices || [],
+          active_devices: data.active_devices || activeDevices,
+          total_devices: data.total_devices || (data.devices ? data.devices.length : 0),
+          power_output: data.power_output || aggregatePower
+        };
+        
+        setOverviewData(mappedData);
+        setConnectionStatus('connected');
+        console.log('✅ Dashboard data mapped and set successfully:', mappedData);
+        console.log('📊 Device Summary:', {
+          total: mappedData.total_devices,
+          active: mappedData.active_devices,
+          avgVolt: aggregateVolt.toFixed(2),
+          avgCurrent: aggregateCurrent.toFixed(2),
+          avgPower: aggregatePower.toFixed(2),
+          avgTemp: aggregateTemperature.toFixed(2),
+          avgPercentage: aggregatePercentage.toFixed(2)
+        });
+      } else {
+        setConnectionStatus('invalid_format');
+        console.log('❌ Could not extract dashboard data, using fallback');
+        console.log('Available keys:', Object.keys(data));
+        setOverviewData({
+          revenue: { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          uses: { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          energy: { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          transactions: [],
+          maintenance: [],
+          total_hours: 0,
+          volt: 0,
+          current: 0,
+          power: 0,
+          temperature: 0,
+          percentage: 0,
+          devices: [],
+          active_devices: 0,
+          total_devices: 0,
+          power_output: 0
+        });
+      }
+    } catch (error) {
+      setConnectionStatus('error');
+      console.error('❌ Error fetching dashboard data:', error);
+      console.log('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      console.log('Using fallback data due to error');
+      // Use fallback data on error
+      setOverviewData({
+        revenue: { daily: 0, weekly: 0, monthly: 0, total: 0 },
+        uses: { daily: 0, weekly: 0, monthly: 0, total: 0 },
+        energy: { daily: 0, weekly: 0, monthly: 0, total: 0 },
+        transactions: [],
+        maintenance: [],
+        total_hours: 0,
+        volt: 0,
+        current: 0,
+        power: 0,
+        temperature: 0,
+        percentage: 0
+      });
+      setError(`Failed to load dashboard data: ${error.message}`);
+    }
+  }, [authenticatedAdminFetch]);
+
+  // Fetch recent reports from API
+  const fetchRecentReports = useCallback(async () => {
+    try {
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/getReports');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const reportsData = data.value || data;
+      setRecentReports(Array.isArray(reportsData) ? reportsData : []);
+    } catch (error) {
+      console.error('Error fetching recent reports:', error);
+      // Don't set error state for reports as it's not critical
+    }
+  }, [authenticatedAdminFetch]);
+
+  // Fetch all data when component mounts
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        await Promise.all([
+          fetchOverviewData(),
+          fetchRecentReports()
+        ]);
+      } catch (error) {
+        console.error('Error in fetchAllData:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, [fetchOverviewData, fetchRecentReports]);
 
   const handleNavigation = (route, deviceId) => {
     switch (route) {
@@ -36,110 +282,153 @@ const AdminDashboard = () => {
         navigate('/admin/dashboard');
     }
   };
-  const overviewStats = [
-    {
-      title: "Total Energy Generated",
-      value: "2,847 kWh",
-      change: "+12.5%",
-      changeType: "positive",
-      icon: <Zap className="w-4 h-4" />
-    },
-    {
-      title: "Revenue Generated",
-      value: "₱18,420",
-      change: "+8.3%", 
-      changeType: "positive",
-      icon: <DollarSign className="w-4 h-4" />
-    },
-    {
-      title: "Free RFID Hours Used",
-      value: "1,247 hrs",
-      change: "+15.2%",
-      changeType: "positive",
-      icon: <Clock className="w-4 h-4" />
-    },
-    {
-      title: "Active Users Today",
-      value: "156",
-      change: "-2.1%",
-      changeType: "negative",
-      icon: <Users className="w-4 h-4" />
-    }
-  ];
 
-  const deviceStatus = [
-    {
-      id: "QCU-001",
-      name: "Main Library",
-      location: "1st Floor, Main Entrance",
-      status: "active",
-      voltage: "24.2V",
-      power: "3.2kW",
-      usage: 85,
-      revenue: "₱2,340",
-      freeHours: 45
-    },
-    {
-      id: "QCU-002", 
-      name: "Student Center",
-      location: "Food Court Area",
-      status: "active",
-      voltage: "23.8V",
-      power: "2.9kW",
-      usage: 72,
-      revenue: "₱1,890",
-      freeHours: 32
-    },
-    {
-      id: "QCU-003",
-      name: "Engineering Building",
-      location: "Lobby",
-      status: "maintenance",
-      voltage: "0V",
-      power: "0kW",
-      usage: 0,
-      revenue: "₱0",
-      freeHours: 0
-    },
-    {
-      id: "QCU-004",
-      name: "Sports Complex",
-      location: "Main Entrance",
-      status: "active",
-      voltage: "24.5V",
-      power: "1.8kW",
-      usage: 45,
-      revenue: "₱1,120",
-      freeHours: 28
+  // Utility functions
+  const formatPower = (power) => {
+    if (power >= 1000) {
+      return `${(power / 1000).toFixed(1)}kW`;
     }
-  ];
+    return `${power.toFixed(1)}W`;
+  };
 
-  const recentTransactions = [
-    {
-      id: "TXN-001",
-      user: "student@qcu.edu.ph",
-      station: "QCU-001",
-      amount: "₱25.00",
-      type: "payment",
-      time: "2 min ago"
-    },
-    {
-      id: "TXN-002",
-      user: "john.doe@qcu.edu.ph",
-      station: "QCU-002", 
-      amount: "Free Hour",
-      type: "rfid",
-      time: "15 min ago"
-    },
-    {
-      id: "TXN-003",
-      user: "sarah.kim@qcu.edu.ph",
-      station: "QCU-004",
-      amount: "₱15.00",
-      type: "payment",
-      time: "1 hour ago"
+  const formatLastUpdated = (timestamp) => {
+    if (!timestamp || !timestamp.seconds) {
+      return 'Unknown';
     }
-  ];
+    
+    const now = new Date();
+    const lastUpdated = new Date(timestamp.seconds * 1000);
+    const diffInSeconds = Math.floor((now - lastUpdated) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} min ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'active': return 'Active';
+      case 'maintenance': return 'Maintenance';
+      case 'offline': return 'Offline';
+      default: return 'Unknown';
+    }
+  };
+
+  // Calculate overview stats from API data and time filter
+  const calculateOverviewStats = () => {
+    return [
+      {
+        title: "Energy Generated", 
+        value: `${overviewData.energy[timeFilter]} kWh`,
+        change: "+5.2%", // Static for now, can be calculated from historical data
+        changeType: "positive",
+        icon: <Zap className="w-4 h-4" />
+      },
+      {
+        title: "Revenue Generated", 
+        value: `₱${overviewData.revenue[timeFilter].toLocaleString()}`,
+        change: "+3.8%", // Static for now, can be calculated from historical data
+        changeType: "positive",
+        icon: <DollarSign className="w-4 h-4" />
+      },
+      {
+        title: "Device Uses",
+        value: `${overviewData.uses[timeFilter]} sessions`,
+        change: "+2.1%", // Static for now, can be calculated from historical data
+        changeType: "positive",
+        icon: <Users className="w-4 h-4" />
+      },
+      {
+        title: "Active Devices",
+        value: `${overviewData.active_devices}/${overviewData.total_devices}`,
+        change: "+5.2%", // Static for now, can be calculated from historical data
+        changeType: "positive",
+        icon: <Activity className="w-4 h-4" />
+      }
+    ];
+  };
+
+  const overviewStats = calculateOverviewStats();
+
+  // Use devices from API data, with fallback to mock data
+  const deviceStatus = overviewData.devices && overviewData.devices.length > 0 
+    ? overviewData.devices.map(device => ({
+        id: device.id || `Device-${Math.random()}`,
+        name: device.name || "Unknown Device",
+        location: device.location || "Unknown Location",
+        status: device.status || "unknown",
+        voltage: `${device.volt || 0}V`,
+        power: formatPower(device.power || 0),
+        usage: device.percentage || 0,
+        revenue: "₱0", // Not provided in API yet
+        sessions: 0 // Not provided in API yet
+      }))
+    : [
+        // Fallback mock data if no devices from API
+        {
+          id: "QCU-001",
+          name: "Main Library",
+          location: "1st Floor, Main Entrance",
+          status: "active",
+          voltage: "24.2V",
+          power: "3.2kW",
+          usage: 85,
+          revenue: "₱2,340",
+          sessions: 45
+        },
+        {
+          id: "QCU-002", 
+          name: "Student Center",
+          location: "Food Court Area",
+          status: "active",
+          voltage: "23.8V",
+          power: "2.9kW",
+          usage: 72,
+          revenue: "₱1,890",
+          sessions: 32
+        },
+        {
+          id: "QCU-003",
+          name: "Engineering Building",
+          location: "Lobby",
+          status: "maintenance",
+          voltage: "0V",
+          power: "0kW",
+          usage: 0,
+          revenue: "₱0",
+          sessions: 0
+        },
+        {
+          id: "QCU-004",
+          name: "Sports Complex",
+          location: "Main Entrance",
+          status: "active",
+          voltage: "24.5V",
+          power: "1.8kW",
+          usage: 45,
+          revenue: "₱1,120",
+          sessions: 28
+        }
+      ];
+
+  // Use transactions from API data, limit to 3 most recent
+  const recentTransactions = overviewData.transactions.slice(0, 3).map((transaction, index) => ({
+    id: transaction.id || `TXN-${index + 1}`,
+    user: transaction.user || transaction.email || "Unknown User",
+    station: transaction.station || transaction.device_id || "Unknown Station",
+    amount: transaction.amount || "₱0.00",
+    type: transaction.type || "payment",
+    time: transaction.time || transaction.timestamp || "Unknown time"
+  }));
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -170,67 +459,120 @@ const AdminDashboard = () => {
       />
       
       <div className="dashboard-content">
-        {/* Overview Stats */}
-        <div className="stats-grid">
-          {overviewStats.map((stat, index) => (
-            <div key={index} className="stat-card">
-              <div className="stat-header">
-                <div className="stat-title">{stat.title}</div>
-                <div className="stat-icon">{stat.icon}</div>
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stat.value}</div>
-                <div className="stat-change">
-                  {getChangeIcon(stat.changeType)}
-                  <span className={getChangeColor(stat.changeType)}>
-                    {stat.change} from last month
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading dashboard data...</p>
+          </div>
+        ) : error ? (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+            <button className="retry-button" onClick={() => {
+              setLoading(true);
+              setError(null);
+              fetchOverviewData();
+            }}>
+              Retry
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Filter Controls */}
+            <div className="filter-controls">
+              <div>
+                <h2 className="dashboard-title">Dashboard Overview</h2>
+                <div className="connection-status">
+                  <span className={`status-indicator ${connectionStatus}`}>
+                    {connectionStatus === 'connected' && '🟢 Connected to API'}
+                    {connectionStatus === 'error' && '🔴 API Error - Using Fallback Data'}
+                    {connectionStatus === 'invalid_format' && '🟡 API Connected - Invalid Data Format'}
+                    {connectionStatus === 'testing' && '🟡 Testing Connection...'}
                   </span>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="main-grid">
-          {/* Device Status */}
-          <div className="main-card">
-            <div className="card-header">
-              <div>
-                <div className="card-title">Device Status</div>
-                <div className="card-description">Real-time monitoring of all charging stations</div>
-              </div>
-              <button 
-                className="view-all-button"
-                onClick={() => handleNavigation('admin-devices')}
-              >
-                View All
-              </button>
-            </div>
-            <div className="card-content">
-              {deviceStatus.map((device) => (
-                <div 
-                  key={device.id} 
-                  className="device-item"
-                  onClick={() => handleNavigation('admin-device-detail', device.id)}
+              <div className="filter-group">
+                <Filter className="w-4 h-4 filter-icon" />
+                <select 
+                  value={timeFilter} 
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                  className="filter-select"
                 >
-                  <div className="device-info">
-                    <div className={`status-indicator ${getStatusColor(device.status)}`}></div>
-                    <div>
-                      <div className="device-name">{device.name}</div>
-                      <div className="device-location">
-                        <MapPin className="w-3 h-3" />
-                        <span>{device.id}</span>
-                      </div>
-                    </div>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="total">Total</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Overview Stats */}
+            <div className="stats-grid">
+              {overviewStats.map((stat, index) => (
+                <div key={index} className="stat-card">
+                  <div className="stat-header">
+                    <div className="stat-title">{stat.title}</div>
+                    <div className="stat-icon">{stat.icon}</div>
                   </div>
-                  <div className="device-stats">
-                    <div className="device-power">{device.power}</div>
-                    <div className="device-voltage">{device.voltage}</div>
+                  <div className="stat-content">
+                    <div className="stat-value">{stat.value}</div>
+                    <div className="stat-change">
+                      {getChangeIcon(stat.changeType)}
+                      <span className={getChangeColor(stat.changeType)}>
+                        {stat.change} from last month
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+
+            <div className="main-grid">
+              {/* Device Status */}
+              <div className="main-card">
+                <div className="card-header">
+                  <div>
+                    <div className="card-title">Device Status</div>
+                    <div className="card-description">Real-time monitoring of all charging stations</div>
+                  </div>
+                  <button 
+                    className="view-all-button"
+                    onClick={() => handleNavigation('admin-devices')}
+                  >
+                    View All
+                  </button>
+                </div>
+                <div className="card-content">
+                  {deviceStatus.length > 0 ? (
+                    deviceStatus.map((device) => (
+                      <div 
+                        key={device.id} 
+                        className="device-item"
+                        onClick={() => handleNavigation('admin-device-detail', device.id)}
+                      >
+                        <div className="device-info">
+                          <div className={`status-indicator ${getStatusColor(device.status)}`}></div>
+                          <div>
+                            <div className="device-name">{device.name}</div>
+                            <div className="device-location">
+                              <MapPin className="w-3 h-3" />
+                              <span>{device.id}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="device-stats">
+                          <div className="device-power">{device.power}</div>
+                          <div className="device-voltage">{device.voltage}</div>
+                          <div className="device-usage">{device.usage}%</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-data">
+                      <p>No device data available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
           {/* Recent Transactions */}
           <div className="main-card">
@@ -282,25 +624,25 @@ const AdminDashboard = () => {
               <div className="energy-stats">
                 <div className="energy-progress">
                   <div className="progress-label">
-                    <span>Today's Generation</span>
-                    <span className="progress-value">156.2 kWh</span>
+                    <span>Current Power</span>
+                    <span className="progress-value">{overviewData.power}W</span>
                   </div>
                   <div className="progress-bar">
-                    <div className="progress-fill" style={{width: '78%'}}></div>
+                    <div className="progress-fill" style={{width: `${Math.min((overviewData.percentage || 0), 100)}%`}}></div>
                   </div>
                   <div className="progress-text">
-                    78% of daily target (200 kWh)
+                    {overviewData.percentage || 0}% battery level
                   </div>
                 </div>
                 
                 <div className="energy-metrics">
                   <div className="metric-card metric-green">
-                    <div className="metric-value">2.8MW</div>
-                    <div className="metric-label">Total Generated</div>
+                    <div className="metric-value">{overviewData.volt}V</div>
+                    <div className="metric-label">Voltage</div>
                   </div>
                   <div className="metric-card metric-blue">
-                    <div className="metric-value">95%</div>
-                    <div className="metric-label">Efficiency</div>
+                    <div className="metric-value">{overviewData.current}A</div>
+                    <div className="metric-label">Current</div>
                   </div>
                 </div>
               </div>
@@ -329,22 +671,24 @@ const AdminDashboard = () => {
                 
                 <div className="system-metrics">
                   <div className="system-metric">
-                    <span>Active Stations</span>
-                    <span>3/4</span>
+                    <span>Temperature</span>
+                    <span>{overviewData.temperature}°C</span>
                   </div>
                   <div className="system-metric">
-                    <span>Avg Response Time</span>
-                    <span>1.2s</span>
+                    <span>Total Hours</span>
+                    <span>{overviewData.total_hours} hrs</span>
                   </div>
                   <div className="system-metric">
-                    <span>Error Rate</span>
-                    <span className="system-healthy">0.8%</span>
+                    <span>Power Output</span>
+                    <span className="system-healthy">{overviewData.power}W</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
