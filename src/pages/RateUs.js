@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
-import { authenticatedGet, authenticatedPost } from '../utils/api';
+import { authenticatedGet } from '../utils/api';
 import "../styles/RateUs.css";
 
 function RateUs() {

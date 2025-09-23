@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   AlertTriangle, 
   CheckCircle, 
   Clock, 
   Search, 
-  Filter, 
   MapPin, 
   User, 
   Calendar,
@@ -39,7 +38,7 @@ const AdminProblems = () => {
   };
 
   // Fetch reports from API
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -71,12 +70,12 @@ const AdminProblems = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authenticatedAdminFetch]);
 
   // Fetch reports when component mounts
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [fetchReports]);
 
   // Format date for display
   const formatDate = (dateTime) => {
