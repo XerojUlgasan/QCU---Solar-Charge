@@ -16,6 +16,7 @@ function ReportProblem() {
         urgency: ''
     });
     const [recentReports, setRecentReports] = useState([]);
+    const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -41,11 +42,23 @@ function ReportProblem() {
             
             // Handle API response structure - data is wrapped in 'reports' property
             const reportsData = data.reports || data.value || data;
+            const stationsData = data.station_locations || data.stations || [];
+            
             console.log('📊 Processed reports data:', reportsData);
+            console.log('📊 Stations data:', stationsData);
             console.log('📊 Is array?', Array.isArray(reportsData));
             console.log('📊 Length:', reportsData?.length);
             
             setRecentReports(Array.isArray(reportsData) ? reportsData : []);
+            
+            // Store stations data for dropdown
+            if (Array.isArray(stationsData)) {
+                console.log('✅ Stations loaded successfully:', stationsData.length, 'stations');
+                setStations(stationsData);
+            } else {
+                console.warn('⚠️ Stations data is not an array:', stationsData);
+                setStations([]);
+            }
         } catch (err) {
             console.error('📊 Error fetching reports:', err);
             setError('Failed to load recent reports. Please try again later.');
@@ -73,12 +86,6 @@ function ReportProblem() {
         return null;
     };
 
-    const stations = [
-        { id: 'QCU-001', name: 'Main Library', location: '1st Floor, Main Entrance' },
-        { id: 'QCU-002', name: 'Student Center', location: 'Food Court Area' },
-        { id: 'QCU-003', name: 'Engineering Building', location: 'Lobby' },
-        { id: 'QCU-004', name: 'Sports Complex', location: 'Main Entrance' }
-    ];
 
     const problemTypes = [
         'Charging port not working',
@@ -382,8 +389,8 @@ function ReportProblem() {
                                                 >
                                                     <option value="">Select the station with the problem</option>
                                                     {stations.map((station) => (
-                                                        <option key={station.id} value={station.id}>
-                                                            {station.name} ({station.id}) - {station.location}
+                                                        <option key={station.device_id || station.station_id} value={station.device_id || station.station_id}>
+                                                            {station.building || station.station_building} ({station.device_id || station.station_id}) - {station.location || station.station_location}
                                                         </option>
                                                     ))}
                                                 </select>

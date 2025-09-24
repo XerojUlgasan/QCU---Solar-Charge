@@ -381,169 +381,279 @@
     font-size: 14px;
 }
 
-/* Edit rating styles */
+/* Edit rating styles - Compact Elegant Design */
 #rate-us-page .existing-rating-actions {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid rgba(59, 130, 246, 0.2);
+    border-top: 1px solid rgba(59, 130, 246, 0.15);
+    display: flex;
+    justify-content: center;
 }
 
 #rate-us-page .edit-rating-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 8px;
-    color: #3b82f6;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 10px;
+    color: #60a5fa;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+#rate-us-page .edit-rating-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+#rate-us-page .edit-rating-btn:hover::before {
+    left: 100%;
 }
 
 #rate-us-page .edit-rating-btn:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+    border-color: rgba(59, 130, 246, 0.4);
     transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
 }
 
 #rate-us-page .edit-rating {
-    padding: 24px;
-    background: #0f141c;
-    border: 1px solid #1e2633;
+    padding: 16px;
+    background: linear-gradient(135deg, #0f141c 0%, #1a1f2e 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
     border-radius: 12px;
-    margin-top: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: 12px;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+#rate-us-page .edit-rating::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
 }
 
 #rate-us-page .edit-rating-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #374151;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+    position: relative;
+}
+
+#rate-us-page .edit-rating-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 1px;
 }
 
 #rate-us-page .edit-rating-header h4 {
     margin: 0;
     color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#rate-us-page .edit-rating-header h4::before {
-    content: "✏️";
-    font-size: 16px;
-}
-
-#rate-us-page .cancel-edit-btn {
+    font-size: 14px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    color: #ef4444;
+    background: linear-gradient(135deg, #ffffff, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#rate-us-page .edit-rating-header h4::before {
+    content: "✨";
     font-size: 14px;
-    font-weight: 500;
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.5));
+}
+
+#rate-us-page .cancel-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 8px;
+    color: #f87171;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #rate-us-page .cancel-edit-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+    border-color: rgba(239, 68, 68, 0.4);
     transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
 }
 
 #rate-us-page .edit-rating .rating-input {
-    background: rgba(55, 65, 81, 0.3);
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 16px;
+    background: rgba(30, 38, 51, 0.4);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 #rate-us-page .edit-rating .stars-interactive {
-    margin-bottom: 20px;
-    padding: 16px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 12px;
+    padding: 8px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(99, 102, 241, 0.05));
+    border-radius: 10px;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+#rate-us-page .edit-rating .stars-interactive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 #rate-us-page .edit-rating .rating-submit {
-    margin-top: 20px;
+    margin-top: 12px;
 }
 
 #rate-us-page .edit-rating .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    position: relative;
 }
 
 #rate-us-page .edit-rating .form-label {
     color: #e2e8f0;
-    font-weight: 500;
-    margin-bottom: 8px;
+    font-weight: 600;
+    margin-bottom: 6px;
     display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 #rate-us-page .edit-rating .form-select,
 #rate-us-page .edit-rating .form-textarea {
-    background: #1e2633;
-    border: 1px solid #374151;
+    background: rgba(30, 38, 51, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.3);
     color: #ffffff;
     border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    padding: 10px 12px;
+    font-size: 13px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
+    backdrop-filter: blur(10px);
 }
 
 #rate-us-page .edit-rating .form-select:focus,
 #rate-us-page .edit-rating .form-textarea:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #60a5fa;
+    box-shadow: 
+        0 0 0 3px rgba(59, 130, 246, 0.1),
+        0 2px 8px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
+    background: rgba(30, 38, 51, 0.9);
+}
+
+#rate-us-page .edit-rating .form-select option {
+    background: #1e2633;
+    color: #ffffff;
+    padding: 8px 12px;
 }
 
 #rate-us-page .edit-rating .form-textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 60px;
+    font-family: inherit;
 }
 
 #rate-us-page .edit-rating .submit-button {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
     border: none;
     color: white;
-    padding: 12px 24px;
+    padding: 10px 20px;
     border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#rate-us-page .edit-rating .submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+#rate-us-page .edit-rating .submit-button:hover::before {
+    left: 100%;
 }
 
 #rate-us-page .edit-rating .submit-button:hover {
-    background: linear-gradient(135deg, #16a34a, #15803d);
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    box-shadow: 
+        0 8px 20px rgba(34, 197, 94, 0.4),
+        0 0 0 1px rgba(34, 197, 94, 0.2);
 }
 
 #rate-us-page .edit-rating .submit-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+}
+
+#rate-us-page .edit-rating .submit-button:disabled::before {
+    display: none;
 }
 
 @keyframes slideDown {
@@ -949,54 +1059,79 @@
     color: #d97706;
 }
 
-/* Light mode edit rating styles */
+/* Light mode edit rating styles - Compact Elegant Design */
 .light #rate-us-page .existing-rating-actions {
     border-top-color: rgba(59, 130, 246, 0.1);
 }
 
 .light #rate-us-page .edit-rating-btn {
-    background: rgba(59, 130, 246, 0.05);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.08));
     border-color: rgba(59, 130, 246, 0.2);
     color: #2563eb;
 }
 
 .light #rate-us-page .edit-rating-btn:hover {
-    background: rgba(59, 130, 246, 0.1);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15));
     border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
 }
 
 .light #rate-us-page .edit-rating {
-    background: #ffffff;
-    border-color: #e5e7eb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-color: rgba(59, 130, 246, 0.15);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.light #rate-us-page .edit-rating::before {
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
 }
 
 .light #rate-us-page .edit-rating-header {
-    border-bottom-color: #e5e7eb;
+    border-bottom-color: rgba(59, 130, 246, 0.1);
+}
+
+.light #rate-us-page .edit-rating-header::after {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
 }
 
 .light #rate-us-page .edit-rating-header h4 {
-    color: #1f2937;
+    background: linear-gradient(135deg, #1f2937, #374151);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.light #rate-us-page .edit-rating-header h4::before {
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.3));
 }
 
 .light #rate-us-page .cancel-edit-btn {
-    background: rgba(239, 68, 68, 0.05);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.08));
     border-color: rgba(239, 68, 68, 0.2);
     color: #dc2626;
 }
 
 .light #rate-us-page .cancel-edit-btn:hover {
-    background: rgba(239, 68, 68, 0.1);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15));
     border-color: rgba(239, 68, 68, 0.3);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.1);
 }
 
 .light #rate-us-page .edit-rating .rating-input {
-    background: rgba(243, 244, 246, 0.5);
+    background: rgba(248, 250, 252, 0.6);
+    border-color: rgba(59, 130, 246, 0.1);
 }
 
 .light #rate-us-page .edit-rating .stars-interactive {
-    background: rgba(0, 0, 0, 0.02);
-    border-color: rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.03), rgba(99, 102, 241, 0.03));
+    border-color: rgba(59, 130, 246, 0.1);
+}
+
+.light #rate-us-page .edit-rating .stars-interactive::before {
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
 }
 
 .light #rate-us-page .edit-rating .form-label {
@@ -1005,24 +1140,35 @@
 
 .light #rate-us-page .edit-rating .form-select,
 .light #rate-us-page .edit-rating .form-textarea {
-    background: #f9fafb;
-    border-color: #d1d5db;
+    background: rgba(248, 250, 252, 0.9);
+    border-color: rgba(59, 130, 246, 0.25);
     color: #1f2937;
 }
 
 .light #rate-us-page .edit-rating .form-select:focus,
 .light #rate-us-page .edit-rating .form-textarea:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 
+        0 0 0 3px rgba(59, 130, 246, 0.08),
+        0 2px 8px rgba(59, 130, 246, 0.1);
+    background: rgba(248, 250, 252, 1);
+}
+
+.light #rate-us-page .edit-rating .form-select option {
+    background: #f9fafb;
+    color: #1f2937;
+    padding: 8px 12px;
 }
 
 .light #rate-us-page .edit-rating .submit-button {
-    background: linear-gradient(135deg, #16a34a, #15803d);
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
 }
 
 .light #rate-us-page .edit-rating .submit-button:hover {
-    background: linear-gradient(135deg, #15803d, #166534);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    background: linear-gradient(135deg, #15803d 0%, #166534 50%, #14532d 100%);
+    box-shadow: 
+        0 8px 20px rgba(34, 197, 94, 0.25),
+        0 0 0 1px rgba(34, 197, 94, 0.15);
 }
 
 .light #rate-us-page .form-select:focus,

@@ -18,6 +18,7 @@ function RateUs() {
     const [error, setError] = useState(null);
     const [submittingRating, setSubmittingRating] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState('');
+    const [stationLocations, setStationLocations] = useState([]); // Store station locations from API
     const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
     const [sortBy, setSortBy] = useState('newest'); // 'newest' or 'ratings'
     const [starFilter, setStarFilter] = useState('all'); // 'all', '1', '2', '3', '4', '5'
@@ -52,12 +53,26 @@ function RateUs() {
             
             // Handle new API response structure
             const reviewsData = data.ratings || data.value || data;
+            const stationLocationsData = data.station_locations || [];
+            
+            console.log('📊 Station locations data:', stationLocationsData);
+            
+            // Store station locations data for dropdown
+            if (Array.isArray(stationLocationsData)) {
+                console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
+                setStationLocations(stationLocationsData);
+            } else {
+                console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
+                setStationLocations([]);
+            }
             
             // If user is logged in and we have their specific rating data, store it separately
             if (user?.email && Array.isArray(reviewsData)) {
                 const userSpecificRating = reviewsData.find(rating => rating.email === user.email);
                 if (userSpecificRating) {
                     console.log('✅ Found user-specific rating with ID:', userSpecificRating);
+                    console.log('📊 User rating ID field:', userSpecificRating.id);
+                    console.log('📊 User rating all fields:', Object.keys(userSpecificRating));
                     setUserRating(userSpecificRating);
                 } else {
                     console.log('❌ No user-specific rating found');
@@ -128,6 +143,8 @@ function RateUs() {
                 rating: review.rate || 0,
                 comment: review.comment || 'No comment provided',
                 station: review.location || 'Unknown Location',
+                building: review.building || review.location || 'Unknown Building',
+                location: review.location || 'Unknown Location',
                 date: formatDate(review.dateTime),
                 avatar: getUserAvatar(review),
                 photo_url: review.photo_url, // Preserve photo URL for user matching
@@ -153,6 +170,8 @@ function RateUs() {
                 rating: review.rating,
                 comment: review.comment,
                 station: review.station,
+                building: review.building,
+                location: review.location,
                 date: review.date,
                 avatar: review.avatar
             }));
@@ -385,7 +404,9 @@ function RateUs() {
             const ratingData = {
                 rate_id: userExistingRating.id || userExistingRating.rate_id || userExistingRating._id, // Required: the ID of the rating to update
                 rate: editData.rating, // Required: the new rating value
-                comment: editData.comment || '' // Optional: the new comment
+                comment: editData.comment || '', // Optional: the new comment
+                location: editData.location, // Required: the location field
+                building: editData.location // Required: the building field (same as location)
             };
             
             // Validate that we have a rate_id
@@ -397,6 +418,25 @@ function RateUs() {
             console.log('📊 User existing rating:', userExistingRating);
             console.log('📊 Available rating fields:', Object.keys(userExistingRating));
             console.log('📊 Rating ID found:', ratingData.rate_id);
+            console.log('📊 Edit data:', editData);
+            console.log('📊 User rating state:', userRating);
+            console.log('📊 All reviews:', allReviews);
+            
+            // Additional validation
+            if (!ratingData.rate_id) {
+                console.error('❌ No rate_id found in:', ratingData);
+                throw new Error('Rating ID not found. Cannot update rating without ID.');
+            }
+            
+            if (!ratingData.building) {
+                console.error('❌ No building found in:', ratingData);
+                throw new Error('Building/location is required for update.');
+            }
+            
+            if (!ratingData.location) {
+                console.error('❌ No location found in:', ratingData);
+                throw new Error('Location is required for update.');
+            }
             
             // Use the correct endpoint for editing ratings
             const endpoint = 'https://api-qcusolarcharge.up.railway.app/rates/editrates';
@@ -740,12 +780,11 @@ function RateUs() {
                                                             required
                                                         >
                                                             <option value="">Select location</option>
-                                                            <option value="QCU Campus">QCU Campus</option>
-                                                            <option value="Main Library">Main Library</option>
-                                                            <option value="Student Center">Student Center</option>
-                                                            <option value="Engineering Building">Engineering Building</option>
-                                                            <option value="Sports Complex">Sports Complex</option>
-                                                            <option value="Academic Building">Academic Building</option>
+                                                            {stationLocations.map((station) => (
+                                                                <option key={station.device_id} value={station.building || station.location}>
+                                                                    {station.building || station.location} ({station.device_id})
+                                                                </option>
+                                                            ))}
                                                         </select>
                                                         {locationError && <p className="error-message">{locationError}</p>}
                                                     </div>
@@ -814,12 +853,11 @@ function RateUs() {
                                                     }}
                                                 >
                                                     <option value="">Select location</option>
-                                                    <option value="QCU Campus">QCU Campus</option>
-                                                    <option value="Main Library">Main Library</option>
-                                                    <option value="Student Center">Student Center</option>
-                                                    <option value="Engineering Building">Engineering Building</option>
-                                                    <option value="Sports Complex">Sports Complex</option>
-                                                    <option value="Academic Building">Academic Building</option>
+                                                    {stationLocations.map((station) => (
+                                                        <option key={station.device_id} value={station.building || station.location}>
+                                                            {station.building || station.location} ({station.device_id})
+                                                        </option>
+                                                    ))}
                                                 </select>
                                                 {locationError && (
                                                     <div className="error-message-container">
@@ -921,7 +959,7 @@ function RateUs() {
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
                                             </svg>
-                                            <span>{review.station}</span>
+                                            <span>{review.building && review.location ? `${review.building} - ${review.location}` : review.station}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1025,8 +1063,8 @@ function RateUs() {
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
                                                 <circle cx="12" cy="10" r="3"/>
                                             </svg>
-                                            <span>{review.station}</span>
-                        </div>
+                                            <span>{review.building && review.location ? `${review.building} - ${review.location}` : review.station}</span>
+                                        </div>
                             </div>
                         </div>
                             ))}
