@@ -52,26 +52,98 @@ const AdminDevices = () => {
       if (data.revenue || data.uses || data.energy_generated || data.devices) {
         console.log('✅ Using direct API data format for devices');
         
+        // Calculate individual device revenue from transactions
+        const calculateDeviceRevenue = (deviceId, transactions) => {
+          if (!transactions || !Array.isArray(transactions)) {
+            console.log(`❌ No transactions data for device ${deviceId}`);
+            return 0;
+          }
+          
+          // Handle undefined deviceId
+          if (!deviceId) {
+            console.log(`❌ Device ID is undefined, cannot calculate revenue`);
+            return 0;
+          }
+          
+          console.log(`🔍 Calculating revenue for device ${deviceId}`);
+          console.log(`📊 Total transactions available: ${transactions.length}`);
+          
+          // Filter transactions for this specific device using device_id
+          const deviceTransactions = transactions.filter(transaction => {
+            // Use device_id as the primary field (as confirmed by your groupmate)
+            const transactionDeviceId = transaction.device_id;
+            
+            // Safe comparison with null checks
+            const matches = transactionDeviceId && deviceId && (
+              transactionDeviceId === deviceId || 
+              transactionDeviceId === deviceId.toString() ||
+              deviceId === transactionDeviceId.toString()
+            );
+            
+            if (matches) {
+              console.log(`✅ Found transaction for ${deviceId}:`, transaction);
+            }
+            
+            return matches;
+          });
+          
+          console.log(`📊 Found ${deviceTransactions.length} transactions for device ${deviceId}`);
+          
+          // Sum up the amounts from transactions
+          const totalRevenue = deviceTransactions.reduce((sum, transaction) => {
+            const amount = parseFloat(transaction.amount) || parseFloat(transaction.value) || 0;
+            console.log(`💰 Adding transaction amount: ₱${amount}`);
+            return sum + amount;
+          }, 0);
+          
+          console.log(`💰 Total revenue for ${deviceId}: ₱${totalRevenue}`);
+          return totalRevenue;
+        };
+
+        // Debug device structure
+        console.log('📱 Device Structure Analysis:');
+        console.log('📊 Available devices:', data.devices);
+        console.log('📊 First device sample:', data.devices?.[0]);
+        console.log('📊 Device keys:', data.devices?.[0] ? Object.keys(data.devices[0]) : 'No devices');
+        console.log('📊 ALL DEVICE IDs FROM API:', data.devices?.map(d => d.id || d.device_id || d.deviceId || d._id));
+        
         // Map API devices to our expected format
-        const mappedDevices = (data.devices || []).map(device => ({
-          id: device.id || `Device-${Math.random()}`,
-          name: device.name || 'Unknown Device',
-          location: device.location || 'Unknown Location',
-          building: device.building || 'Unknown Building',
-          status: device.status || 'unknown',
-          voltage: `${device.volt || 0}V`,
-          current: `${device.current || 0}A`,
-          power: formatPower(device.power || 0),
-          energy: `${(device.energy || 0).toFixed(1)}kWh`,
-          usage: device.percentage || 0,
-          revenue: '₱0', // Not provided in API yet
-          freeHours: 0, // Not provided in API yet
-          temperature: `${device.temperature || 0}°C`,
-          batteryLevel: device.percentage || 0,
-          lastUpdate: formatLastUpdated(device.last_updated),
-          // Add API revenue data for total calculation
-          apiRevenue: data.revenue ? data.revenue.total || 0 : 0
-        }));
+        const mappedDevices = (data.devices || []).map(device => {
+          // Debug device ID - check multiple possible field names
+          console.log('🔍 Processing device:', device);
+          console.log('🔍 Device ID field (device.id):', device.id);
+          console.log('🔍 Device ID field (device.device_id):', device.device_id);
+          console.log('🔍 Device ID field (device.deviceId):', device.deviceId);
+          console.log('🔍 Device ID field (device._id):', device._id);
+          console.log('🔍 All device fields:', Object.keys(device));
+          
+          // Try to find the actual device ID field
+          const actualDeviceId = device.id || device.device_id || device.deviceId || device._id;
+          console.log('🔍 Using device ID:', actualDeviceId);
+          
+          // Calculate individual device revenue from actual transactions
+          const deviceRevenue = calculateDeviceRevenue(actualDeviceId, data.transactions);
+          
+          return {
+            id: actualDeviceId || `Device-${Math.random()}`,
+            name: device.name || 'Unknown Device',
+            location: device.location || 'Unknown Location',
+            building: device.building || 'Unknown Building',
+            status: device.status || 'unknown',
+            voltage: `${device.volt || 0}V`,
+            current: `${device.current || 0}A`,
+            power: formatPower(device.power || 0),
+            energy: `${(device.energy || 0).toFixed(1)}kWh`,
+            usage: device.percentage || 0,
+            revenue: `₱${deviceRevenue.toFixed(0)}`, // Use actual transaction revenue
+            freeHours: Math.floor((device.percentage || 0) / 2), // Calculate based on usage
+            temperature: `${device.temperature || 0}°C`,
+            batteryLevel: device.percentage || 0,
+            lastUpdate: formatLastUpdated(device.last_updated),
+            // Add API revenue data for total calculation
+            apiRevenue: data.revenue ? data.revenue.total || 0 : 0
+          };
+        });
         
         // Calculate total power from mapped devices
         const calculatedTotalPower = mappedDevices.reduce((sum, d) => {
@@ -86,6 +158,26 @@ const AdminDevices = () => {
         console.log('💰 API Revenue Data:', data.revenue);
         console.log('⚡ Total Power Calculation:', calculatedTotalPower, 'W');
         console.log('📊 Formatted Total Power:', formatTotalPower(calculatedTotalPower));
+        
+        // Debug individual device revenue calculations
+        console.log('💵 Individual Device Revenue Calculations (from transactions):');
+        console.log('📊 Available Transactions:', data.transactions);
+        console.log('📊 Transaction Structure Sample:', data.transactions?.[0]);
+        console.log('📊 Transaction device_id fields:', (data.transactions || []).map(t => t.device_id));
+        mappedDevices.forEach(device => {
+          const deviceTransactions = (data.transactions || []).filter(transaction => 
+            transaction.device_id === device.id
+          );
+          console.log(`  ${device.id} (${device.name}): ${device.revenue} (${deviceTransactions.length} transactions)`);
+          if (deviceTransactions.length > 0) {
+            console.log(`    Transactions:`, deviceTransactions.map(t => `₱${t.amount}`).join(', '));
+            console.log(`    Transaction Details:`, deviceTransactions);
+          } else {
+            console.log(`    No transactions found for device ${device.id}`);
+            console.log(`    Available device_id values in transactions:`, (data.transactions || []).map(t => t.device_id).filter(Boolean));
+            console.log(`    Device ID being searched: "${device.id}"`);
+          }
+        });
       } else {
         setConnectionStatus('invalid_format');
         console.log('❌ Could not extract devices data, using fallback');

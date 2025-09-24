@@ -330,21 +330,21 @@ const AdminDashboard = () => {
         title: "Energy Generated", 
         value: `${overviewData.energy[timeFilter]} kWh`,
         change: "+5.2%", // Static for now, can be calculated from historical data
-        changeType: "positive",
-        icon: <Zap className="w-4 h-4" />
-      },
-      {
-        title: "Revenue Generated", 
+      changeType: "positive",
+      icon: <Zap className="w-4 h-4" />
+    },
+    {
+      title: "Revenue Generated",
         value: `₱${overviewData.revenue[timeFilter].toLocaleString()}`,
         change: "+3.8%", // Static for now, can be calculated from historical data
-        changeType: "positive",
-        icon: <DollarSign className="w-4 h-4" />
-      },
-      {
+      changeType: "positive",
+      icon: <DollarSign className="w-4 h-4" />
+    },
+    {
         title: "Device Uses",
         value: `${overviewData.uses[timeFilter]} sessions`,
         change: "+2.1%", // Static for now, can be calculated from historical data
-        changeType: "positive",
+      changeType: "positive",
         icon: <Users className="w-4 h-4" />
       },
       {
@@ -359,63 +359,91 @@ const AdminDashboard = () => {
 
   const overviewStats = calculateOverviewStats();
 
+  // Calculate device revenue from transactions
+  const calculateDeviceRevenue = (deviceId, transactions) => {
+    if (!transactions || !Array.isArray(transactions) || !deviceId) {
+      return 0;
+    }
+    
+    // Filter transactions for this specific device using device_id
+    const deviceTransactions = transactions.filter(transaction => 
+      transaction.device_id === deviceId
+    );
+    
+    // Sum up the amounts from transactions
+    const totalRevenue = deviceTransactions.reduce((sum, transaction) => {
+      const amount = parseFloat(transaction.amount) || parseFloat(transaction.value) || 0;
+      return sum + amount;
+    }, 0);
+    
+    return totalRevenue;
+  };
+
   // Use devices from API data, with fallback to mock data
   const deviceStatus = overviewData.devices && overviewData.devices.length > 0 
-    ? overviewData.devices.map(device => ({
-        id: device.id || `Device-${Math.random()}`,
-        name: device.name || "Unknown Device",
-        location: device.location || "Unknown Location",
-        status: device.status || "unknown",
-        voltage: `${device.volt || 0}V`,
-        power: formatPower(device.power || 0),
-        usage: device.percentage || 0,
-        revenue: "₱0", // Not provided in API yet
-        sessions: 0 // Not provided in API yet
-      }))
+    ? overviewData.devices.map(device => {
+        // Try to find the actual device ID field (same logic as AdminDevices)
+        const actualDeviceId = device.id || device.device_id || device.deviceId || device._id;
+        
+        // Calculate individual device revenue from actual transactions
+        const deviceRevenue = calculateDeviceRevenue(actualDeviceId, overviewData.transactions);
+        
+        return {
+          id: actualDeviceId || `Device-${Math.random()}`,
+          name: device.name || "Unknown Device",
+          location: device.location || "Unknown Location",
+          status: device.status || "unknown",
+          voltage: `${device.volt || 0}V`,
+          power: formatPower(device.power || 0),
+          usage: device.percentage || 0,
+          revenue: `₱${deviceRevenue.toFixed(0)}`, // Use actual transaction revenue
+          sessions: Math.floor((device.percentage || 0) / 4) // Calculate based on usage
+        };
+      })
     : [
         // Fallback mock data if no devices from API
-        {
-          id: "QCU-001",
-          name: "Main Library",
-          location: "1st Floor, Main Entrance",
-          status: "active",
-          voltage: "24.2V",
-          power: "3.2kW",
-          usage: 85,
-          revenue: "₱2,340",
+    {
+      id: "QCU-001",
+      name: "Main Library",
+      location: "1st Floor, Main Entrance",
+      status: "active",
+      voltage: "24.2V",
+      power: "3.2kW",
+      usage: 85,
+      revenue: "₱2,340",
           sessions: 45
-        },
-        {
-          id: "QCU-002", 
-          name: "Student Center",
-          location: "Food Court Area",
-          status: "active",
-          voltage: "23.8V",
-          power: "2.9kW",
-          usage: 72,
-          revenue: "₱1,890",
+    },
+    {
+      id: "QCU-002", 
+      name: "Student Center",
+      location: "Food Court Area",
+      status: "active",
+      voltage: "23.8V",
+      power: "2.9kW",
+      usage: 72,
+      revenue: "₱1,890",
           sessions: 32
-        },
-        {
-          id: "QCU-003",
-          name: "Engineering Building",
-          location: "Lobby",
-          status: "maintenance",
-          voltage: "0V",
-          power: "0kW",
-          usage: 0,
-          revenue: "₱0",
+    },
+    {
+      id: "QCU-003",
+      name: "Engineering Building",
+      location: "Lobby",
+      status: "maintenance",
+      voltage: "0V",
+      power: "0kW",
+      usage: 0,
+      revenue: "₱0",
           sessions: 0
-        },
-        {
-          id: "QCU-004",
-          name: "Sports Complex",
-          location: "Main Entrance",
-          status: "active",
-          voltage: "24.5V",
-          power: "1.8kW",
-          usage: 45,
-          revenue: "₱1,120",
+    },
+    {
+      id: "QCU-004",
+      name: "Sports Complex",
+      location: "Main Entrance",
+      status: "active",
+      voltage: "24.5V",
+      power: "1.8kW",
+      usage: 45,
+      revenue: "₱1,120",
           sessions: 28
         }
       ];
@@ -505,74 +533,74 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Overview Stats */}
-            <div className="stats-grid">
-              {overviewStats.map((stat, index) => (
-                <div key={index} className="stat-card">
-                  <div className="stat-header">
-                    <div className="stat-title">{stat.title}</div>
-                    <div className="stat-icon">{stat.icon}</div>
-                  </div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stat.value}</div>
-                    <div className="stat-change">
-                      {getChangeIcon(stat.changeType)}
-                      <span className={getChangeColor(stat.changeType)}>
-                        {stat.change} from last month
-                      </span>
-                    </div>
-                  </div>
+        {/* Overview Stats */}
+        <div className="stats-grid">
+          {overviewStats.map((stat, index) => (
+            <div key={index} className="stat-card">
+              <div className="stat-header">
+                <div className="stat-title">{stat.title}</div>
+                <div className="stat-icon">{stat.icon}</div>
+              </div>
+              <div className="stat-content">
+                <div className="stat-value">{stat.value}</div>
+                <div className="stat-change">
+                  {getChangeIcon(stat.changeType)}
+                  <span className={getChangeColor(stat.changeType)}>
+                    {stat.change} from last month
+                  </span>
                 </div>
-              ))}
+              </div>
             </div>
+          ))}
+        </div>
 
-            <div className="main-grid">
-              {/* Device Status */}
-              <div className="main-card">
-                <div className="card-header">
-                  <div>
-                    <div className="card-title">Device Status</div>
-                    <div className="card-description">Real-time monitoring of all charging stations</div>
-                  </div>
-                  <button 
-                    className="view-all-button"
-                    onClick={() => handleNavigation('admin-devices')}
-                  >
-                    View All
-                  </button>
-                </div>
-                <div className="card-content">
+        <div className="main-grid">
+          {/* Device Status */}
+          <div className="main-card">
+            <div className="card-header">
+              <div>
+                <div className="card-title">Device Status</div>
+                <div className="card-description">Real-time monitoring of all charging stations</div>
+              </div>
+              <button 
+                className="view-all-button"
+                onClick={() => handleNavigation('admin-devices')}
+              >
+                View All
+              </button>
+            </div>
+            <div className="card-content">
                   {deviceStatus.length > 0 ? (
                     deviceStatus.map((device) => (
-                      <div 
-                        key={device.id} 
-                        className="device-item"
-                        onClick={() => handleNavigation('admin-device-detail', device.id)}
-                      >
-                        <div className="device-info">
-                          <div className={`status-indicator ${getStatusColor(device.status)}`}></div>
-                          <div>
-                            <div className="device-name">{device.name}</div>
-                            <div className="device-location">
-                              <MapPin className="w-3 h-3" />
-                              <span>{device.id}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="device-stats">
-                          <div className="device-power">{device.power}</div>
-                          <div className="device-voltage">{device.voltage}</div>
-                          <div className="device-usage">{device.usage}%</div>
-                        </div>
+                <div 
+                  key={device.id} 
+                  className="device-item"
+                  onClick={() => handleNavigation('admin-device-detail', device.id)}
+                >
+                  <div className="device-info">
+                    <div className={`status-indicator ${getStatusColor(device.status)}`}></div>
+                    <div>
+                      <div className="device-name">{device.name}</div>
+                      <div className="device-location">
+                        <MapPin className="w-3 h-3" />
+                        <span>{device.id}</span>
                       </div>
+                    </div>
+                  </div>
+                  <div className="device-stats">
+                    <div className="device-power">{device.power}</div>
+                    <div className="device-voltage">{device.voltage}</div>
+                          <div className="device-usage">{device.usage}%</div>
+                  </div>
+                </div>
                     ))
                   ) : (
                     <div className="no-data">
                       <p>No device data available</p>
                     </div>
                   )}
-                </div>
-              </div>
+            </div>
+          </div>
 
           {/* Recent Transactions */}
           <div className="main-card">

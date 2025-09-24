@@ -2,20 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
+  RefreshCw, 
+  Battery, 
   Zap, 
-  DollarSign, 
+  Thermometer, 
   Clock, 
-  Activity, 
-  Thermometer,
-  Battery,
-  MapPin,
+  DollarSign, 
+  Users, 
+  TrendingUp, 
+  TrendingDown, 
   Calendar,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
-  RefreshCw,
-  Users
+  XCircle,
+  Info
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
@@ -41,81 +41,168 @@ const DeviceDetail = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard', {
+      // First, get device basic info from dashboard endpoint
+      console.log('🔍 Fetching device basic info from dashboard...');
+      const dashboardUrl = 'https://api-qcusolarcharge.up.railway.app/admin/dashboard';
+      const dashboardResponse = await authenticatedAdminFetch(dashboardUrl, {
+        signal: controller.signal
+      });
+      
+      if (!dashboardResponse.ok) {
+        throw new Error(`Dashboard API error: ${dashboardResponse.status}`);
+      }
+      
+      const dashboardData = await dashboardResponse.json();
+      console.log('📊 Dashboard data:', dashboardData);
+      
+      // Find the specific device in the dashboard data
+      const devices = dashboardData.devices || [];
+      const foundDevice = devices.find(d => {
+        const deviceIdField = d.id || d.device_id || d.deviceId || d._id;
+        return deviceIdField === deviceId;
+      });
+      
+      if (!foundDevice) {
+        throw new Error(`Device ${deviceId} not found in dashboard data`);
+      }
+      
+      console.log('✅ Found device in dashboard:', foundDevice);
+      
+      // Then, get detailed metrics from devices endpoint
+      const devicesUrl = `https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`;
+      console.log('🔍 Fetching detailed metrics from:', devicesUrl);
+      
+      const response = await authenticatedAdminFetch(devicesUrl, {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
 
+      console.log('📊 Devices API Response Status:', response.status);
+      console.log('📊 Devices API Response OK:', response.ok);
+
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.log('❌ Devices API Error Response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      
-      // Find the specific device by ID
-      const devices = data.devices || [];
-      const foundDevice = devices.find(d => d.id === deviceId);
-      
-      if (!foundDevice) {
-        throw new Error(`Device ${deviceId} not found`);
-      }
+      console.log('✅ Device detail API response:', data);
+      console.log('📊 Response data keys:', Object.keys(data));
 
-      // Map API data to device structure
+      // Calculate device revenue from transactions
+      const calculateDeviceRevenue = (deviceId, transactions) => {
+        if (!transactions || !Array.isArray(transactions)) {
+          console.log(`❌ No transactions data for device ${deviceId}`);
+          return 0;
+        }
+        
+        // Handle undefined deviceId
+        if (!deviceId) {
+          console.log(`❌ Device ID is undefined, cannot calculate revenue`);
+          return 0;
+        }
+        
+        console.log(`🔍 Calculating revenue for device ${deviceId}`);
+        console.log(`📊 Total transactions available: ${transactions.length}`);
+        
+        // Filter transactions for this specific device using device_id
+        const deviceTransactions = transactions.filter(transaction => {
+          // Use device_id as the primary field (as confirmed by your groupmate)
+          const transactionDeviceId = transaction.device_id;
+          
+          // Safe comparison with null checks
+          const matches = transactionDeviceId && deviceId && (
+            transactionDeviceId === deviceId || 
+            transactionDeviceId === deviceId.toString() ||
+            deviceId === transactionDeviceId.toString()
+          );
+          
+          if (matches) {
+            console.log(`✅ Found transaction for ${deviceId}:`, transaction);
+          }
+          
+          return matches;
+        });
+        
+        console.log(`📊 Found ${deviceTransactions.length} transactions for device ${deviceId}`);
+        
+        // Sum up the amounts from transactions
+        const totalRevenue = deviceTransactions.reduce((sum, transaction) => {
+          const amount = parseFloat(transaction.amount) || parseFloat(transaction.value) || 0;
+          console.log(`💰 Adding transaction amount: ₱${amount}`);
+          return sum + amount;
+        }, 0);
+        
+        console.log(`💰 Total revenue for ${deviceId}: ₱${totalRevenue}`);
+        return totalRevenue;
+      };
+
+      // Map API data to device structure (combine dashboard info + detailed metrics)
+      console.log('🔧 Mapping device data...');
+      console.log('📊 Dashboard device info:', foundDevice);
+      console.log('📊 Detailed metrics data:', data);
+      
       const mappedDevice = {
-        id: foundDevice.id,
-        name: foundDevice.name || 'Unknown Device',
-        location: foundDevice.location || 'Unknown Location',
-        building: foundDevice.building || 'Unknown Building',
-        status: foundDevice.status || 'unknown',
+        id: deviceId, // Use the deviceId from URL params
+        name: foundDevice.name || 'Unknown Device', // From dashboard
+        location: foundDevice.location || 'Unknown Location', // From dashboard
+        building: foundDevice.building || 'Unknown Building', // From dashboard
+        status: foundDevice.status || 'unknown', // From dashboard
         installDate: "2024-01-15", // Not in API yet
         lastMaintenance: "2024-12-01", // Not in API yet
         
-        // Real-time metrics from API
+        // Real-time metrics from dashboard (more current)
         voltage: `${foundDevice.volt || 0}V`,
         current: `${foundDevice.current || 0}A`,
         power: formatPower(foundDevice.power || 0),
-        energy: `${(foundDevice.energy || 0).toFixed(1)}kWh`,
+        energy: `${(foundDevice.energy || 0).toFixed(1)}kWh`, // From dashboard
         temperature: `${foundDevice.temperature || 0}°C`,
         batteryLevel: foundDevice.percentage || 0,
         
-        // Usage data (mock for now)
+        // Usage data with transaction-based revenue from detailed endpoint
         usage: foundDevice.percentage || 0,
-        sessionsToday: 23, // Mock data
-        revenue: "₱2,340", // Mock data
-        freeHours: 45, // Mock data
+        sessionsToday: Math.floor((foundDevice.percentage || 0) / 4), // Calculate based on usage
+        revenue: `₱${calculateDeviceRevenue(deviceId, data.transactions).toFixed(0)}`, // Use actual transaction revenue from detailed endpoint
+        freeHours: Math.floor((foundDevice.percentage || 0) / 2), // Calculate based on usage
         
         // Performance (mock for now)
         uptime: 99.2,
         efficiency: 94.8,
-        errorRate: 0.8
+        errorRate: 0.8,
+        
+        // Store detailed metrics for time filtering
+        detailedMetrics: data
       };
 
+      console.log('✅ Mapped device:', mappedDevice);
       setDevice(mappedDevice);
     } catch (err) {
       console.error('Error fetching device data:', err);
       setError(err.message);
       // Set fallback device data
       setDevice({
-        id: deviceId || "QCU-001",
-        name: "Device Not Found",
-        location: "Unknown Location",
-        building: "Unknown Building",
-        status: "offline",
-        installDate: "2024-01-15",
-        lastMaintenance: "2024-12-01",
-        voltage: "0V",
-        current: "0A",
-        power: "0W",
-        energy: "0kWh",
-        temperature: "0°C",
+        id: deviceId,
+        name: 'Unknown Device',
+        location: 'Unknown Location',
+        building: 'Unknown Building',
+        status: 'unknown',
+        installDate: '2024-01-15',
+        lastMaintenance: '2024-12-01',
+        voltage: '0V',
+        current: '0A',
+        power: '0W',
+        energy: '0kWh',
+        temperature: '0°C',
         batteryLevel: 0,
         usage: 0,
         sessionsToday: 0,
-        revenue: "₱0",
+        revenue: '₱0',
         freeHours: 0,
         uptime: 0,
         efficiency: 0,
-        errorRate: 0
+        errorRate: 0,
+        detailedMetrics: {}
       });
     } finally {
       setLoading(false);
@@ -126,7 +213,17 @@ const DeviceDetail = () => {
     fetchDeviceData();
   }, [fetchDeviceData]);
 
-  // Utility function to format power
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchDeviceData();
+    setIsRefreshing(false);
+  };
+
+  const handleNavigation = (route, id) => {
+    navigate(`/${route}${id ? `/${id}` : ''}`);
+  };
+
+  // Format power display
   const formatPower = (power) => {
     if (power >= 1000) {
       return `${(power / 1000).toFixed(1)}kW`;
@@ -134,175 +231,250 @@ const DeviceDetail = () => {
     return `${power.toFixed(1)}W`;
   };
 
-  // Get time-filtered data
+  // Get time-filtered data from API response
   const getTimeFilteredData = (timeFilter) => {
-    const baseData = {
-      energy: device?.energy || "0kWh",
-      revenue: device?.revenue || "₱0",
-      uses: device?.sessionsToday || 0,
-      sessions: device?.sessionsToday || 0
-    };
+    if (!device) {
+      return {
+        energy: "0kWh",
+        revenue: "₱0",
+        uses: 0,
+        sessions: 0
+      };
+    }
 
-    // Mock time-filtered data (in real app, this would come from API)
-    const timeFilteredData = {
-      daily: {
-        energy: baseData.energy,
-        revenue: baseData.revenue,
-        uses: baseData.uses,
-        sessions: baseData.sessions
+    // Use API data structure: data.energy, data.revenue, data.uses (from detailed endpoint)
+    // Note: We need to access the detailed metrics data that was fetched
+    const detailedData = device.detailedMetrics || {};
+    
+    const apiData = {
+      energy: {
+        daily: `${(detailedData.energy?.daily || 0).toFixed(1)}kWh`,
+        weekly: `${(detailedData.energy?.weekly || 0).toFixed(1)}kWh`,
+        monthly: `${(detailedData.energy?.monthly || 0).toFixed(1)}kWh`,
+        total: `${(detailedData.energy?.total || 0).toFixed(1)}kWh`
       },
-      weekly: {
-        energy: `${(parseFloat(baseData.energy) * 7).toFixed(1)}kWh`,
-        revenue: `₱${(parseInt(baseData.revenue.replace(/[₱,]/g, '')) * 7).toLocaleString()}`,
-        uses: baseData.uses * 7,
-        sessions: baseData.sessions * 7
+      revenue: {
+        daily: `₱${(detailedData.revenue?.daily || 0).toLocaleString()}`,
+        weekly: `₱${(detailedData.revenue?.weekly || 0).toLocaleString()}`,
+        monthly: `₱${(detailedData.revenue?.monthly || 0).toLocaleString()}`,
+        total: `₱${(detailedData.revenue?.total || 0).toLocaleString()}`
       },
-      monthly: {
-        energy: `${(parseFloat(baseData.energy) * 30).toFixed(1)}kWh`,
-        revenue: `₱${(parseInt(baseData.revenue.replace(/[₱,]/g, '')) * 30).toLocaleString()}`,
-        uses: baseData.uses * 30,
-        sessions: baseData.sessions * 30
+      uses: {
+        daily: detailedData.uses?.daily || 0,
+        weekly: detailedData.uses?.weekly || 0,
+        monthly: detailedData.uses?.monthly || 0,
+        total: detailedData.uses?.total || 0
       },
-      total: {
-        energy: `${(parseFloat(baseData.energy) * 365).toFixed(1)}kWh`,
-        revenue: `₱${(parseInt(baseData.revenue.replace(/[₱,]/g, '')) * 365).toLocaleString()}`,
-        uses: baseData.uses * 365,
-        sessions: baseData.sessions * 365
+      sessions: {
+        daily: device.sessionsToday || 0,
+        weekly: (device.sessionsToday || 0) * 7,
+        monthly: (device.sessionsToday || 0) * 30,
+        total: (device.sessionsToday || 0) * 365
       }
     };
 
-    return timeFilteredData[timeFilter] || timeFilteredData.daily;
+    return {
+      energy: apiData.energy[timeFilter] || apiData.energy.daily,
+      revenue: apiData.revenue[timeFilter] || apiData.revenue.daily,
+      uses: apiData.uses[timeFilter] || apiData.uses.daily,
+      sessions: apiData.sessions[timeFilter] || apiData.sessions.daily
+    };
   };
 
-  const recentSessions = [
-    {
-      id: "S001",
-      user: "student@qcu.edu.ph",
-      startTime: "14:30",
-      duration: "45 min",
-      type: "payment",
-      amount: "₱25.00",
-      port: "USB-C"
-    },
-    {
-      id: "S002", 
-      user: "john.doe@qcu.edu.ph",
-      startTime: "13:15",
-      duration: "60 min",
-      type: "rfid",
-      amount: "Free",
-      port: "Wireless"
-    },
-    {
-      id: "S003",
-      user: "sarah.kim@qcu.edu.ph", 
-      startTime: "12:00",
-      duration: "30 min",
-      type: "payment",
-      amount: "₱15.00",
-      port: "USB-A"
-    },
-    {
-      id: "S004",
-      user: "mike.lee@qcu.edu.ph",
-      startTime: "11:20",
-      duration: "25 min", 
-      type: "payment",
-      amount: "₱12.50",
-      port: "USB-C"
+  // Get recent sessions from transactions
+  const getRecentSessions = () => {
+    if (!device?.detailedMetrics?.transactions || !Array.isArray(device.detailedMetrics.transactions)) {
+      console.log('📊 No transactions data available for sessions');
+      return [];
     }
-  ];
+
+    console.log('📊 Available transactions:', device.detailedMetrics.transactions);
+    console.log('📊 Device ID for filtering:', device.id);
+    
+    // Debug transaction structure
+    if (device.detailedMetrics.transactions.length > 0) {
+      console.log('📊 First transaction sample:', device.detailedMetrics.transactions[0]);
+      console.log('📊 Transaction fields:', Object.keys(device.detailedMetrics.transactions[0]));
+    }
+
+    // Filter transactions for this device and sort by most recent
+    const deviceTransactions = device.detailedMetrics.transactions
+      .filter(transaction => transaction.device_id === device.id)
+      .sort((a, b) => new Date(b.timestamp || b.created_at || b.date) - new Date(a.timestamp || a.created_at || a.date))
+      .slice(0, 5); // Get latest 5 transactions
+
+    console.log('📊 Filtered device transactions:', deviceTransactions);
+    
+    // Debug each transaction's fields
+    deviceTransactions.forEach((transaction, index) => {
+      console.log(`📊 Transaction ${index + 1} fields:`, Object.keys(transaction));
+      console.log(`📊 Transaction ${index + 1} data:`, transaction);
+    });
+
+    // Map transactions to session format
+    const sessions = deviceTransactions.map((transaction, index) => {
+      // Try multiple possible field names for user
+      const user = transaction.user_email || 
+                   transaction.user_id || 
+                   transaction.user || 
+                   transaction.email ||
+                   transaction.customer_email ||
+                   transaction.customer_id ||
+                   transaction.client_email ||
+                   transaction.client_id ||
+                   "Unknown User";
+      
+      // Try multiple possible field names for timestamp
+      const timestamp = transaction.timestamp || 
+                       transaction.created_at || 
+                       transaction.date ||
+                       transaction.time ||
+                       transaction.createdAt ||
+                       transaction.created ||
+                       transaction.transaction_date ||
+                       transaction.transaction_time;
+      
+      console.log(`📊 Mapping transaction ${index + 1}:`, {
+        originalUser: transaction.user_email || transaction.user_id || transaction.user,
+        mappedUser: user,
+        originalTime: timestamp,
+        formattedTime: formatTime(timestamp),
+        amount: transaction.amount
+      });
+      
+      return {
+        id: transaction.id || `T${index + 1}`,
+        user: user,
+        startTime: formatTime(timestamp),
+        duration: calculateDuration(timestamp),
+        type: transaction.payment_method === 'rfid' ? 'rfid' : 'payment',
+        amount: transaction.amount ? `₱${parseFloat(transaction.amount).toFixed(2)}` : '₱0.00',
+        port: transaction.port || 'USB-C'
+      };
+    });
+
+    console.log('📊 Mapped sessions:', sessions);
+    return sessions;
+  };
+
+  // Helper function to format time
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'Unknown';
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch (error) {
+      return 'Unknown';
+    }
+  };
+
+  // Helper function to calculate duration
+  const calculateDuration = (timestamp) => {
+    if (!timestamp) return 'Unknown';
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      
+      if (diffMins < 60) {
+        return `${diffMins} min ago`;
+      } else if (diffMins < 1440) {
+        const hours = Math.floor(diffMins / 60);
+        return `${hours}h ago`;
+      } else {
+        const days = Math.floor(diffMins / 1440);
+        return `${days}d ago`;
+      }
+    } catch (error) {
+      return 'Unknown';
+    }
+  };
+
+  const recentSessions = getRecentSessions();
 
   const alerts = [
     {
       id: "A001",
       type: "warning",
-      message: "Temperature slightly elevated (28°C)",
-      time: "10 min ago",
-      severity: "low"
+      message: "Battery temperature slightly elevated",
+      time: "2 hours ago",
+      severity: "Medium"
     },
     {
       id: "A002",
       type: "info",
-      message: "Scheduled maintenance due in 7 days",
-      time: "2 hours ago",
-      severity: "medium"
+      message: "Scheduled maintenance completed",
+      time: "1 day ago",
+      severity: "Low"
     }
   ];
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return 'status-active';
-      case 'maintenance': return 'status-maintenance';
-      case 'offline': return 'status-offline';
-      default: return 'status-unknown';
-    }
-  };
-
   const getAlertIcon = (type) => {
     switch (type) {
-      case 'warning': return <AlertTriangle className="w-4 h-4 alert-warning" />;
-      case 'error': return <AlertTriangle className="w-4 h-4 alert-error" />;
-      case 'info': return <CheckCircle className="w-4 h-4 alert-info" />;
-      default: return <AlertTriangle className="w-4 h-4" />;
-    }
-  };
-
-  const handleNavigation = (route, deviceId) => {
-    switch (route) {
-      case 'admin-dashboard':
-        navigate('/admin/dashboard');
-        break;
-      case 'admin-devices':
-        navigate('/admin/devices');
-        break;
-      case 'admin-problems':
-        navigate('/admin/problems');
-        break;
-      case 'admin-device-detail':
-        navigate(`/admin/device/${deviceId}`);
-        break;
+      case 'warning':
+        return <AlertTriangle className="alert-icon warning" />;
+      case 'error':
+        return <XCircle className="alert-icon error" />;
+      case 'success':
+        return <CheckCircle className="alert-icon success" />;
       default:
-        navigate('/admin/dashboard');
+        return <Info className="alert-icon info" />;
     }
-  };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetchDeviceData().finally(() => {
-      setIsRefreshing(false);
-    });
   };
 
   if (loading) {
     return (
       <div id="device-detail">
         <AdminHeader 
-          title="Loading Device..."
+          title="Loading Device Details..."
           navigate={handleNavigation}
         />
-        <div className="device-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading device data...</p>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading device information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div id="device-detail">
+        <AdminHeader 
+          title="Device Detail Error"
+          navigate={handleNavigation}
+        />
+        <div className="error-container">
+          <div className="error-message">
+            <h3>Error Loading Device</h3>
+            <p>{error}</p>
+            <button className="retry-button" onClick={handleRefresh}>
+              Try Again
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  if (error && !device) {
+  if (!device) {
     return (
       <div id="device-detail">
         <AdminHeader 
-          title="Device Error"
+          title="Device Not Found"
           navigate={handleNavigation}
         />
-        <div className="device-content">
-          <div className="error-container">
-            <p className="error-message">{error}</p>
-            <button className="retry-button" onClick={fetchDeviceData}>
-              Retry
+        <div className="error-container">
+          <div className="error-message">
+            <h3>Device Not Found</h3>
+            <p>The requested device could not be found.</p>
+            <button className="retry-button" onClick={() => handleNavigation('admin-devices')}>
+              Back to Devices
             </button>
           </div>
         </div>
@@ -326,16 +498,16 @@ const DeviceDetail = () => {
             className="back-button"
             onClick={() => handleNavigation('admin-devices')}
           >
-            <ArrowLeft className="back-icon" />
-            <span>Back to Devices</span>
+            <ArrowLeft className="icon" />
+            Back to Devices
           </button>
           
           <div className="header-controls">
             <div className="time-filter-group">
-              <span className="time-filter-label">Time Period:</span>
+              <label className="time-filter-label">Time Period:</label>
               <select 
                 className="time-filter-select"
-                value={timeFilter} 
+                value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
               >
                 <option value="daily">Daily</option>
@@ -345,195 +517,161 @@ const DeviceDetail = () => {
               </select>
             </div>
             
-            <button 
+            <button
               className="refresh-button"
-              onClick={handleRefresh} 
+              onClick={handleRefresh}
               disabled={isRefreshing}
             >
-              <RefreshCw className={`refresh-icon ${isRefreshing ? 'spinning' : ''}`} />
+              <RefreshCw className={`icon ${isRefreshing ? 'spinning' : ''}`} />
               Refresh
             </button>
           </div>
         </div>
 
-        {/* Device Overview */}
-        <div className="overview-card">
-          <div className="overview-header">
-            <div className="device-info">
-              <div className="device-title">{device.name}</div>
-              <div className="device-description">
-                <MapPin className="location-icon" />
-                <span>{device.location}</span>
-                <span>•</span>
-                <span>{device.building}</span>
-              </div>
+        {/* Device Overview Cards */}
+        <div className="overview-grid">
+          <div className="overview-card">
+            <div className="card-header">
+              <div className="card-title">Device Status</div>
+              <div className={`status-indicator ${device.status}`}></div>
             </div>
-            <div className="device-badges">
-              <div className={`status-badge ${getStatusColor(device.status)}`}>
-                {device.status}
+            <div className="card-content">
+              <div className="status-info">
+                <div className="status-text">{device.status}</div>
+                <div className="status-location">{device.location}</div>
               </div>
-              <div className="device-id-badge">{device.id}</div>
             </div>
           </div>
-          
-          <div className="overview-content">
-            <div className="metrics-grid">
-              <div className="metric-card">
-                <div className="metric-value metric-blue">{timeFilteredData.energy}</div>
-                <div className="metric-label">Energy Generated</div>
+
+          <div className="overview-card">
+            <div className="card-header">
+              <div className="card-title">Power Output</div>
+              <Zap className="card-icon" />
+            </div>
+            <div className="card-content">
+              <div className="metric-value">{device.power}</div>
+              <div className="metric-label">Current Generation</div>
+            </div>
+          </div>
+
+          <div className="overview-card">
+            <div className="card-header">
+              <div className="card-title">Battery Level</div>
+              <Battery className="card-icon" />
+            </div>
+            <div className="card-content">
+              <div className="metric-value">{device.batteryLevel}%</div>
+              <div className="metric-label">Charge Status</div>
+            </div>
+          </div>
+
+          <div className="overview-card">
+            <div className="card-header">
+              <div className="card-title">Temperature</div>
+              <Thermometer className="card-icon" />
+            </div>
+            <div className="card-content">
+              <div className="metric-value">{device.temperature}</div>
+              <div className="metric-label">System Temp</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Energy Generated</div>
+              <div className="metric-period">{timeFilter}</div>
+            </div>
+            <div className="metric-content">
+              <div className="metric-value">{timeFilteredData.energy}</div>
+              <div className="metric-trend">
+                <TrendingUp className="trend-icon" />
+                <span className="trend-text">+5.2%</span>
               </div>
-              <div className="metric-card">
-                <div className="metric-value metric-green">{timeFilteredData.revenue}</div>
-                <div className="metric-label">Revenue</div>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Revenue</div>
+              <div className="metric-period">{timeFilter}</div>
+            </div>
+            <div className="metric-content">
+              <div className="metric-value">{timeFilteredData.revenue}</div>
+              <div className="metric-trend">
+                <TrendingUp className="trend-icon" />
+                <span className="trend-text">+12.8%</span>
               </div>
-              <div className="metric-card">
-                <div className="metric-value metric-purple">{timeFilteredData.uses}</div>
-                <div className="metric-label">Uses</div>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Usage Sessions</div>
+              <div className="metric-period">{timeFilter}</div>
+            </div>
+            <div className="metric-content">
+              <div className="metric-value">{timeFilteredData.sessions}</div>
+              <div className="metric-trend">
+                <TrendingUp className="trend-icon" />
+                <span className="trend-text">+8.1%</span>
               </div>
-              <div className="metric-card">
-                <div className="metric-value metric-yellow">{device.uptime}%</div>
-                <div className="metric-label">Uptime</div>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <div className="metric-title">Total Uses</div>
+              <div className="metric-period">{timeFilter}</div>
+            </div>
+            <div className="metric-content">
+              <div className="metric-value">{timeFilteredData.uses}</div>
+              <div className="metric-trend">
+                <TrendingUp className="trend-icon" />
+                <span className="trend-text">+3.4%</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="tabs-container">
-          <div className="tabs-list">
-            <button 
-              className={`tab-trigger ${activeTab === 'realtime' ? 'active' : ''}`}
-              onClick={() => setActiveTab('realtime')}
-            >
-              Real-time
-            </button>
-            <button 
-              className={`tab-trigger ${activeTab === 'sessions' ? 'active' : ''}`}
-              onClick={() => setActiveTab('sessions')}
-            >
-              Sessions
-            </button>
-            <button 
-              className={`tab-trigger ${activeTab === 'maintenance' ? 'active' : ''}`}
-              onClick={() => setActiveTab('maintenance')}
-            >
-              Maintenance
-            </button>
-            <button 
-              className={`tab-trigger ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('analytics')}
-            >
-              Analytics
-            </button>
-          </div>
+        {/* Tab Navigation */}
+        <div className="tab-navigation">
+          <button 
+            className={`tab-button ${activeTab === 'realtime' ? 'active' : ''}`}
+            onClick={() => setActiveTab('realtime')}
+          >
+            Real-time Data
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'sessions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('sessions')}
+          >
+            Sessions
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'maintenance' ? 'active' : ''}`}
+            onClick={() => setActiveTab('maintenance')}
+          >
+            Maintenance
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            Analytics
+          </button>
+        </div>
 
+        {/* Tab Content */}
+        <div className="tab-content-container">
           {/* Real-time Tab */}
           <div className={`tab-content ${activeTab === 'realtime' ? 'active' : ''}`}>
-            <div className="tab-grid">
-              {/* Technical Metrics */}
-              <div className="detail-card">
+            <div className="realtime-grid">
+              <div className="realtime-card">
                 <div className="card-header">
-                  <div className="card-title">
-                    <Zap className="title-icon" />
-                    <span>Electrical Parameters</span>
-                  </div>
-                </div>
-                <div className="card-content">
-                  <div className="electrical-grid">
-                    <div className="electrical-item">
-                      <div className="electrical-label">Voltage</div>
-                      <div className="electrical-value">{device.voltage}</div>
-                    </div>
-                    <div className="electrical-item">
-                      <div className="electrical-label">Current</div>
-                      <div className="electrical-value">{device.current}</div>
-                    </div>
-                  </div>
-
-                  <div className="power-section">
-                    <div className="power-label">Power Output</div>
-                    <div className="power-value">{device.power}</div>
-                    <div className="power-bar">
-                      <div className="power-fill" style={{width: `${Math.min((device.batteryLevel || 0), 100)}%`}}></div>
-                    </div>
-                    <div className="power-text">{device.batteryLevel}% of maximum capacity</div>
-                  </div>
-
-                  <div className="status-grid">
-                    <div className="status-item">
-                      <Thermometer className="status-icon status-orange" />
-                      <div>
-                        <div className="status-value">{device.temperature}</div>
-                        <div className="status-label">Temperature</div>
-                      </div>
-                    </div>
-                    <div className="status-item">
-                      <Battery className="status-icon status-green" />
-                      <div>
-                        <div className="status-value">{device.batteryLevel}%</div>
-                        <div className="status-label">Battery</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* System Status */}
-              <div className="detail-card">
-                <div className="card-header">
-                  <div className="card-title">
-                    <Activity className="title-icon" />
-                    <span>System Status</span>
-                  </div>
-                </div>
-                <div className="card-content">
-                  <div className="system-metrics">
-                    <div className="metric-row">
-                      <span className="metric-label">System Efficiency</span>
-                      <span className="metric-value system-healthy">{device.efficiency}%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{width: `${device.efficiency}%`}}></div>
-                    </div>
-                    
-                    <div className="metric-row">
-                      <span className="metric-label">Error Rate</span>
-                      <span className="metric-value system-healthy">{device.errorRate}%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{width: `${device.errorRate}%`}}></div>
-                    </div>
-                    
-                    <div className="metric-row">
-                      <span className="metric-label">Usage Level</span>
-                      <span className="metric-value">{device.usage}%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{width: `${device.usage}%`}}></div>
-                    </div>
-                  </div>
-
-                  <div className="energy-stats">
-                    <div className="energy-item">
-                      <div className="energy-label">Energy Today</div>
-                      <div className="energy-value">{timeFilteredData.energy}</div>
-                    </div>
-                    <div className="energy-item">
-                      <div className="energy-label">Free Hours Used</div>
-                      <div className="energy-value">{device.freeHours}h</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Alerts */}
-            {alerts.length > 0 && (
-              <div className="alerts-card">
-                <div className="card-header">
-                  <div className="card-title">
-                    <AlertTriangle className="title-icon" />
-                    <span>Active Alerts</span>
-                  </div>
+                  <div className="card-title">System Alerts</div>
                 </div>
                 <div className="card-content">
                   <div className="alerts-list">
@@ -552,7 +690,7 @@ const DeviceDetail = () => {
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Sessions Tab */}
