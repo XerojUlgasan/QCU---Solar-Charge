@@ -26,18 +26,28 @@ function ReportProblem() {
             setLoading(true);
             setError(null);
             
+            console.log('📊 Fetching reports from API...');
             const response = await authenticatedGet('https://api-qcusolarcharge.up.railway.app/report/getReports');
+            
+            console.log('📊 API Response status:', response.status);
+            console.log('📊 API Response ok:', response.ok);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
-            // Handle API response structure - data might be wrapped in 'value' property
-            const reportsData = data.value || data;
+            console.log('📊 Raw API response:', data);
+            
+            // Handle API response structure - data is wrapped in 'reports' property
+            const reportsData = data.reports || data.value || data;
+            console.log('📊 Processed reports data:', reportsData);
+            console.log('📊 Is array?', Array.isArray(reportsData));
+            console.log('📊 Length:', reportsData?.length);
+            
             setRecentReports(Array.isArray(reportsData) ? reportsData : []);
         } catch (err) {
-            console.error('Error fetching reports:', err);
+            console.error('📊 Error fetching reports:', err);
             setError('Failed to load recent reports. Please try again later.');
         } finally {
             setLoading(false);
@@ -110,6 +120,7 @@ function ReportProblem() {
             // Prepare report data according to API structure
             const reportData = {
                 email: user?.email || '',
+                name: user?.displayName || user?.name || '',
                 location: formData.station,
                 type: formData.problemType,
                 urgencyLevel: formData.urgency,
@@ -198,23 +209,36 @@ function ReportProblem() {
 
     // Format reports for display
     const formatReports = () => {
-        if (!recentReports || recentReports.length === 0) return [];
+        console.log('📊 formatReports called');
+        console.log('📊 recentReports:', recentReports);
+        console.log('📊 recentReports length:', recentReports?.length);
         
-        return recentReports
-            .map(report => ({
-                id: report.id,
-                issue: report.type || report.description || 'Unknown Issue',
-                location: report.location || 'Unknown Location',
-                status: report.status || 'Scheduled',
-                urgencyLevel: report.urgencyLevel || 'Medium',
-                reportedBy: report.email ? report.email.split('@')[0] : 'Anonymous',
-                date: formatDate(report.dateTime),
-                description: report.description || ''
-            }))
+        if (!recentReports || recentReports.length === 0) {
+            console.log('📊 No reports to format');
+            return [];
+        }
+        
+        console.log('📊 Processing reports...');
+        const formatted = recentReports
+            .map(report => {
+                console.log('📊 Processing report:', report);
+                return {
+                    id: report.transaction_id || report.id,
+                    issue: report.type || report.description || 'Unknown Issue',
+                    location: report.location || 'Unknown Location',
+                    status: report.status || 'Scheduled',
+                    urgencyLevel: report.urgencyLevel || 'Medium',
+                    reportedBy: report.email ? report.email.split('@')[0] : 'Anonymous',
+                    reportedByName: report.name || report.user_name || 'Anonymous',
+                    photoUrl: report.photo || report.photo_url || report.user_photo || null,
+                    date: formatDate(report.dateTime),
+                    description: report.description || ''
+                };
+            })
             .sort((a, b) => {
                 // Sort by dateTime in descending order (latest first)
-                const reportA = recentReports.find(r => r.id === a.id);
-                const reportB = recentReports.find(r => r.id === b.id);
+                const reportA = recentReports.find(r => (r.transaction_id || r.id) === a.id);
+                const reportB = recentReports.find(r => (r.transaction_id || r.id) === b.id);
                 
                 if (!reportA?.dateTime || !reportB?.dateTime) return 0;
                 
@@ -229,6 +253,10 @@ function ReportProblem() {
                 return dateB - dateA;
             })
             .slice(0, 3); // Show only first 3 reports
+        
+        console.log('📊 Formatted reports:', formatted);
+        console.log('📊 Formatted reports length:', formatted.length);
+        return formatted;
     };
 
     const formattedReports = formatReports();
@@ -489,18 +517,18 @@ function ReportProblem() {
                                     </div>
                                 ) : (
                                 <div className="reports-list">
-                                        {formattedReports.length > 0 ? (
-                                            formattedReports.map((report) => (
+                                         {formattedReports.length > 0 ? (
+                                             formattedReports.map((report) => (
                                         <div key={report.id} className="report-item">
                                             <div className="report-header">
                                                 <div className="report-info">
-                                                    <div className="report-issue">{report.issue}</div>
+                                                     <h4 className="report-title">{report.issue}</h4>
                                                     <div className="report-location">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                             <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                             <circle cx="12" cy="10" r="3"></circle>
                                                         </svg>
-                                                                <span>{report.location}</span>
+                                                         <span>{report.location}</span>
                                                     </div>
                                                 </div>
                                                 <div className={`status-badge ${getStatusColor(report.status)}`}>
@@ -511,16 +539,44 @@ function ReportProblem() {
                                                 </div>
                                             </div>
                                             <div className="report-meta">
-                                                Reported by {report.reportedBy} • {report.date}
+                                                 <div className="reporter-info">
+                                                     {report.photoUrl ? (
+                                                         <img 
+                                                             src={report.photoUrl} 
+                                                             alt={report.reportedByName}
+                                                             className="reporter-avatar"
+                                                             onError={(e) => {
+                                                                 // Fallback to generated avatar if profile picture fails to load
+                                                                 if (report.reportedByName) {
+                                                                     const encodedName = encodeURIComponent(report.reportedByName);
+                                                                     e.target.src = `https://ui-avatars.com/api/?name=${encodedName}&background=0D8ABC&color=fff`;
+                                                                 }
+                                                             }}
+                                                         />
+                                                     ) : (
+                                                         <div className="reporter-avatar-fallback">
+                                                             {report.reportedByName.charAt(0).toUpperCase()}
                                             </div>
-                                        </div>
-                                            ))
-                                        ) : (
-                                            <div className="no-reports">
-                                                <p>No recent reports found.</p>
-                                            </div>
-                                        )}
+                                                     )}
+                                                     <div className="reporter-details">
+                                                         <span className="reporter-name">{report.reportedByName}</span>
+                                                         <span className="report-date">{report.date}</span>
                                 </div>
+                                                 </div>
+                                             </div>
+                                             {report.description && (
+                                                 <div className="report-description">
+                                                     <p>"{report.description}"</p>
+                                                 </div>
+                                             )}
+                                        </div>
+                                             ))
+                                         ) : (
+                                             <div className="no-reports">
+                                                 <p>No recent reports found.</p>
+                                             </div>
+                                         )}
+                                 </div>
                                 )}
                             </div>
                         </div>

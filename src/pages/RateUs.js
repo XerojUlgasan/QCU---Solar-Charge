@@ -13,6 +13,7 @@ function RateUs() {
     const [hoveredRating, setHoveredRating] = useState(0);
     const [feedback, setFeedback] = useState('');
     const [reviews, setReviews] = useState([]);
+    const [userRating, setUserRating] = useState(null); // Store user's specific rating with ID
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [submittingRating, setSubmittingRating] = useState(false);
@@ -21,6 +22,12 @@ function RateUs() {
     const [sortBy, setSortBy] = useState('newest'); // 'newest' or 'ratings'
     const [starFilter, setStarFilter] = useState('all'); // 'all', '1', '2', '3', '4', '5'
     const [locationError, setLocationError] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({
+        rating: 0,
+        comment: '',
+        location: ''
+    });
 
     // Fetch reviews from API
     const fetchReviews = async () => {
@@ -28,15 +35,38 @@ function RateUs() {
             setLoading(true);
             setError(null);
             
-            const response = await authenticatedGet('https://api-qcusolarcharge.up.railway.app/rates/getRates');
+            // Build URL with email query parameter if user is authenticated
+            let url = 'https://api-qcusolarcharge.up.railway.app/rates/getrates';
+            if (user?.email) {
+                url += `?email=${encodeURIComponent(user.email)}`;
+            }
+            
+            const response = await authenticatedGet(url);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
-            // Handle API response structure - data might be wrapped in 'value' property
-            const reviewsData = data.value || data;
+            console.log('📊 RateUs API response:', data);
+            
+            // Handle new API response structure
+            const reviewsData = data.ratings || data.value || data;
+            
+            // If user is logged in and we have their specific rating data, store it separately
+            if (user?.email && Array.isArray(reviewsData)) {
+                const userSpecificRating = reviewsData.find(rating => rating.email === user.email);
+                if (userSpecificRating) {
+                    console.log('✅ Found user-specific rating with ID:', userSpecificRating);
+                    setUserRating(userSpecificRating);
+                } else {
+                    console.log('❌ No user-specific rating found');
+                    setUserRating(null);
+                }
+            } else {
+                setUserRating(null);
+            }
+            
             setReviews(Array.isArray(reviewsData) ? reviewsData : []);
         } catch (err) {
             console.error('Error fetching reviews:', err);
@@ -92,12 +122,15 @@ function RateUs() {
         
         return reviews
             .map(review => ({
+                id: review.id || review.rate_id || review._id, // Preserve ID for updates
+                email: review.email, // Preserve email for user matching
                 user: review.name || 'Anonymous',
                 rating: review.rate || 0,
                 comment: review.comment || 'No comment provided',
                 station: review.location || 'Unknown Location',
                 date: formatDate(review.dateTime),
                 avatar: getUserAvatar(review),
+                photo_url: review.photo_url, // Preserve photo URL for user matching
                 rawDateTime: review.dateTime // Keep original dateTime for sorting
             }))
             .sort((a, b) => {
@@ -192,15 +225,34 @@ function RateUs() {
 
     // Check if current user has already submitted a rating
     const getUserExistingRating = () => {
-        if (!user?.email || !reviews || reviews.length === 0) return null;
+        // Use the user's specific rating data (with ID) if available
+        if (userRating) {
+            console.log('✅ Using user-specific rating:', userRating);
+            return {
+                id: userRating.id || userRating.rate_id || userRating._id,
+                rating: userRating.rate || 0,
+                comment: userRating.comment || '',
+                location: userRating.location || '',
+                date: formatDate(userRating.dateTime)
+            };
+        }
         
-        const userReview = reviews.find(review => review.email === user.email);
-        return userReview ? {
-            rating: userReview.rate,
-            comment: userReview.comment,
-            location: userReview.location,
-            date: formatDate(userReview.dateTime)
-        } : null;
+        // Fallback to finding in general reviews (for display purposes)
+        if (!user?.email || !allReviews || allReviews.length === 0) return null;
+        
+        const userReview = allReviews.find(review => review.email === user.email);
+        if (userReview) {
+            console.log('⚠️ Using general review (no ID available):', userReview);
+            return {
+                id: null, // No ID available in general reviews
+                rating: userReview.rating,
+                comment: userReview.comment,
+                location: userReview.station,
+                date: userReview.date
+            };
+        }
+        
+        return null;
     };
 
     const userExistingRating = getUserExistingRating();
@@ -287,6 +339,107 @@ function RateUs() {
 
     const communityStats = calculateCommunityStats();
 
+    // Handle edit mode
+    const handleEditRating = () => {
+        if (userExistingRating) {
+            setEditData({
+                rating: userExistingRating.rating,
+                comment: userExistingRating.comment || '',
+                location: userExistingRating.location
+            });
+            setIsEditing(true);
+        }
+    };
+
+    // Handle cancel edit
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setEditData({
+            rating: 0,
+            comment: '',
+            location: ''
+        });
+    };
+
+    // Handle update rating
+    const handleUpdateRating = async () => {
+        if (editData.rating === 0) return;
+        
+        // Validate location
+        if (!editData.location) {
+            setLocationError('Please select an item in the list.');
+            return;
+        } else {
+            setLocationError('');
+        }
+        
+        if (!isAuthenticated) {
+            openModal();
+            return;
+        }
+        
+        setSubmittingRating(true);
+        
+        try {
+            // Prepare rating data for update using the correct API structure
+            const ratingData = {
+                rate_id: userExistingRating.id || userExistingRating.rate_id || userExistingRating._id, // Required: the ID of the rating to update
+                rate: editData.rating, // Required: the new rating value
+                comment: editData.comment || '' // Optional: the new comment
+            };
+            
+            // Validate that we have a rate_id
+            if (!ratingData.rate_id) {
+                throw new Error('Rating ID not found. Cannot update rating without ID.');
+            }
+            
+            console.log('🔄 Updating rating with data:', ratingData);
+            console.log('📊 User existing rating:', userExistingRating);
+            console.log('📊 Available rating fields:', Object.keys(userExistingRating));
+            console.log('📊 Rating ID found:', ratingData.rate_id);
+            
+            // Use the correct endpoint for editing ratings
+            const endpoint = 'https://api-qcusolarcharge.up.railway.app/rates/editrates';
+            console.log('📡 Making POST request to:', endpoint);
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(ratingData)
+            });
+            
+            console.log('📊 Response status:', response.status);
+            console.log('📊 Response ok:', response.ok);
+            
+            if (response.ok) {
+                const responseData = await response.json();
+                
+                // Check if the response indicates success
+                if (responseData.success === false || responseData.error) {
+                    throw new Error(responseData.message || 'Server returned error');
+                }
+                
+                showSuccess('Rating updated successfully!');
+                setIsEditing(false);
+                
+                // Refresh reviews to show the updated rating
+                setTimeout(() => {
+                    fetchReviews();
+                }, 1000);
+            } else {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Error updating rating:', error);
+            showError(`Failed to update rating: ${error.message}`);
+        } finally {
+            setSubmittingRating(false);
+        }
+    };
+
     const handleSubmitRating = async () => {
         if (selectedRating === 0) return;
         
@@ -361,18 +514,26 @@ function RateUs() {
     };
 
 
-    const renderStars = (rating, interactive = false) => {
+    const renderStars = (rating, interactive = false, onRatingChange = null) => {
         return [...Array(5)].map((_, index) => {
             const starNumber = index + 1;
             const isFilled = interactive 
-                ? starNumber <= (hoveredRating || selectedRating)
+                ? starNumber <= (hoveredRating || (onRatingChange ? rating : selectedRating))
                 : starNumber <= rating;
             
             return (
                 <svg
                     key={index}
                     className={`star-icon ${isFilled ? 'filled' : ''} ${interactive ? 'interactive' : ''}`}
-                    onClick={() => interactive && setSelectedRating(starNumber)}
+                    onClick={() => {
+                        if (interactive) {
+                            if (onRatingChange) {
+                                onRatingChange(starNumber);
+                            } else {
+                                setSelectedRating(starNumber);
+                            }
+                        }
+                    }}
                     onMouseEnter={() => interactive && setHoveredRating(starNumber)}
                     onMouseLeave={() => interactive && setHoveredRating(0)}
                     xmlns="http://www.w3.org/2000/svg"
@@ -509,7 +670,7 @@ function RateUs() {
                                 </p>
                             </div>
                             <div className="card-content">
-                                {userExistingRating ? (
+                                {userExistingRating && !isEditing ? (
                                     <div className="existing-rating">
                                         <div className="existing-rating-header">
                                             <h4>Your Previous Rating</h4>
@@ -531,13 +692,99 @@ function RateUs() {
                                                 <span>{userExistingRating.location}</span>
                                             </div>
                                         </div>
-                                        <div className="existing-rating-notice">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <path d="M12 6v6"></path>
-                                                <path d="M12 16h.01"></path>
-                                            </svg>
-                                            <span>You have already submitted a rating. Each user can only submit one rating.</span>
+                                        <div className="existing-rating-actions">
+                                            <button onClick={handleEditRating} className="edit-rating-btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                                Edit Rating
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : isEditing ? (
+                                    <div className="edit-rating">
+                                        <div className="edit-rating-header">
+                                            <h4>Edit Your Rating</h4>
+                                            <button onClick={handleCancelEdit} className="cancel-edit-btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                </svg>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                        <div className="rating-input">
+                                            <div className="stars-interactive">
+                                                {renderStars(editData.rating, true, (rating) => setEditData({...editData, rating}))}
+                                            </div>
+                                            
+                                            {editData.rating > 0 && (
+                                                <div className="rating-submit">
+                                                    <p className="rating-selected">
+                                                        You rated us {editData.rating} star{editData.rating > 1 ? 's' : ''}. 
+                                                        {editData.rating <= 2 ? ' We\'d love to hear how we can improve!' : 
+                                                         editData.rating <= 4 ? ' Thanks for the feedback!' : 
+                                                         ' Thank you so much for the amazing rating!'}
+                                                    </p>
+                                                    
+                                                    <div className="form-group">
+                                                        <label htmlFor="editLocation" className="form-label">
+                                                            Station Location *
+                                                        </label>
+                                                        <select 
+                                                            id="editLocation"
+                                                            value={editData.location} 
+                                                            onChange={(e) => setEditData({...editData, location: e.target.value})}
+                                                            className="form-select"
+                                                            required
+                                                        >
+                                                            <option value="">Select location</option>
+                                                            <option value="QCU Campus">QCU Campus</option>
+                                                            <option value="Main Library">Main Library</option>
+                                                            <option value="Student Center">Student Center</option>
+                                                            <option value="Engineering Building">Engineering Building</option>
+                                                            <option value="Sports Complex">Sports Complex</option>
+                                                            <option value="Academic Building">Academic Building</option>
+                                                        </select>
+                                                        {locationError && <p className="error-message">{locationError}</p>}
+                                                    </div>
+                                                    
+                                                    <div className="form-group">
+                                                        <label htmlFor="editFeedback" className="form-label">
+                                                            Additional Comments (Optional)
+                                                        </label>
+                                                        <textarea
+                                                            id="editFeedback"
+                                                            placeholder="Share your experience or suggestions for improvement..."
+                                                            className="form-textarea"
+                                                            value={editData.comment}
+                                                            onChange={(e) => setEditData({...editData, comment: e.target.value})}
+                                                            rows="4"
+                                                        />
+                                                    </div>
+                                                    
+                                                    <button 
+                                                        onClick={handleUpdateRating} 
+                                                        disabled={submittingRating}
+                                                        className={`submit-button ${submittingRating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        {submittingRating ? (
+                                                            <>
+                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                                                Updating...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                                                    <path d="M20 6L9 17l-5-5"></path>
+                                                                </svg>
+                                                                Update Rating
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
@@ -668,7 +915,7 @@ function RateUs() {
                                         </div>
                                     </div>
                                     <div className="review-content">
-                                        <p className="review-comment">{review.comment}</p>
+                                        <p className="review-comment">"{review.comment}"</p>
                                         <div className="review-location">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
@@ -772,7 +1019,7 @@ function RateUs() {
                                         </button>
                                     </div>
                                     <div className="modal-review-content">
-                                        <p className="modal-review-text">{review.comment}</p>
+                                        <p className="modal-review-text">"{review.comment}"</p>
                                         <div className="modal-review-location">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>

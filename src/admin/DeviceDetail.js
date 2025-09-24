@@ -9,8 +9,8 @@ import {
   Clock, 
   DollarSign, 
   Users, 
-  TrendingUp, 
-  TrendingDown, 
+  TrendingUp,
+  TrendingDown,
   Calendar,
   AlertTriangle,
   CheckCircle,
@@ -167,8 +167,8 @@ const DeviceDetail = () => {
         freeHours: Math.floor((foundDevice.percentage || 0) / 2), // Calculate based on usage
         
         // Performance (mock for now)
-        uptime: 99.2,
-        efficiency: 94.8,
+    uptime: 99.2,
+    efficiency: 94.8,
         errorRate: 0.8,
         
         // Store detailed metrics for time filtering
@@ -516,16 +516,16 @@ const DeviceDetail = () => {
                 <option value="total">Total</option>
               </select>
             </div>
-            
-            <button
-              className="refresh-button"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
+          
+          <button 
+            className="refresh-button"
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+          >
               <RefreshCw className={`icon ${isRefreshing ? 'spinning' : ''}`} />
-              Refresh
-            </button>
-          </div>
+            Refresh
+          </button>
+        </div>
         </div>
 
         {/* Device Overview Cards */}
@@ -552,9 +552,9 @@ const DeviceDetail = () => {
               <div className="metric-value">{device.power}</div>
               <div className="metric-label">Current Generation</div>
             </div>
-          </div>
+        </div>
 
-          <div className="overview-card">
+        <div className="overview-card">
             <div className="card-header">
               <div className="card-title">Battery Level</div>
               <Battery className="card-icon" />
@@ -562,8 +562,8 @@ const DeviceDetail = () => {
             <div className="card-content">
               <div className="metric-value">{device.batteryLevel}%</div>
               <div className="metric-label">Charge Status</div>
+              </div>
             </div>
-          </div>
 
           <div className="overview-card">
             <div className="card-header">
@@ -573,13 +573,13 @@ const DeviceDetail = () => {
             <div className="card-content">
               <div className="metric-value">{device.temperature}</div>
               <div className="metric-label">System Temp</div>
+              </div>
             </div>
           </div>
-        </div>
-
+          
         {/* Metrics Grid */}
-        <div className="metrics-grid">
-          <div className="metric-card">
+            <div className="metrics-grid">
+              <div className="metric-card">
             <div className="metric-header">
               <div className="metric-title">Energy Generated</div>
               <div className="metric-period">{timeFilter}</div>
@@ -591,9 +591,9 @@ const DeviceDetail = () => {
                 <span className="trend-text">+5.2%</span>
               </div>
             </div>
-          </div>
+              </div>
 
-          <div className="metric-card">
+              <div className="metric-card">
             <div className="metric-header">
               <div className="metric-title">Revenue</div>
               <div className="metric-period">{timeFilter}</div>
@@ -605,9 +605,9 @@ const DeviceDetail = () => {
                 <span className="trend-text">+12.8%</span>
               </div>
             </div>
-          </div>
+              </div>
 
-          <div className="metric-card">
+              <div className="metric-card">
             <div className="metric-header">
               <div className="metric-title">Usage Sessions</div>
               <div className="metric-period">{timeFilter}</div>
@@ -619,9 +619,9 @@ const DeviceDetail = () => {
                 <span className="trend-text">+8.1%</span>
               </div>
             </div>
-          </div>
+              </div>
 
-          <div className="metric-card">
+              <div className="metric-card">
             <div className="metric-header">
               <div className="metric-title">Total Uses</div>
               <div className="metric-period">{timeFilter}</div>
@@ -638,31 +638,31 @@ const DeviceDetail = () => {
 
         {/* Tab Navigation */}
         <div className="tab-navigation">
-          <button 
+            <button 
             className={`tab-button ${activeTab === 'realtime' ? 'active' : ''}`}
-            onClick={() => setActiveTab('realtime')}
-          >
+              onClick={() => setActiveTab('realtime')}
+            >
             Real-time Data
-          </button>
-          <button 
+            </button>
+            <button 
             className={`tab-button ${activeTab === 'sessions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('sessions')}
-          >
-            Sessions
-          </button>
-          <button 
+              onClick={() => setActiveTab('sessions')}
+            >
+              Sessions
+            </button>
+            <button 
             className={`tab-button ${activeTab === 'maintenance' ? 'active' : ''}`}
-            onClick={() => setActiveTab('maintenance')}
-          >
-            Maintenance
-          </button>
-          <button 
+              onClick={() => setActiveTab('maintenance')}
+            >
+              Maintenance
+            </button>
+            <button 
             className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            Analytics
-          </button>
-        </div>
+              onClick={() => setActiveTab('analytics')}
+            >
+              Analytics
+            </button>
+          </div>
 
         {/* Tab Content */}
         <div className="tab-content-container">
