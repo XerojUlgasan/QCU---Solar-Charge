@@ -79,3 +79,22 @@ export const authenticatedPut = (url, data) => {
 export const authenticatedDelete = (url) => {
     return authenticatedFetch(url, { method: 'DELETE' });
 };
+
+/**
+ * Send contact message
+ * @param {string} from - Sender's email
+ * @param {string} subject - Message subject
+ * @param {string} message - Message content
+ * @param {string} photo_url - Sender's photo URL
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const postContact = async (from, subject, message, photo_url) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/contact/postContact';
+    const data = {
+        from,
+        subject,
+        message,
+        photo_url
+    };
+    return authenticatedPost(url, data);
+};

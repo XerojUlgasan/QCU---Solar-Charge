@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
+import { postContact } from '../utils/api';
 import "../styles/Contact.css";
 
 function Contact() {
-	const { showSuccess } = useNotification();
+	const { showSuccess, showError } = useNotification();
 	const { openModal } = useGoogleLogin();
 	const { user, isAuthenticated, signInWithGoogle } = useAuth();
 	const [formData, setFormData] = useState({ subject: "", message: "" });
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	// Get user's profile picture or fallback to generated avatar
 	const getUserAvatar = (user) => {
@@ -29,12 +31,85 @@ function Contact() {
 		openModal();
 	}
 
-	function handleSubmit(e){
+
+	async function handleSubmit(e){
 		e.preventDefault();
-		// mock submit - in the future this could send to an API with user's email
-		const userEmail = user?.email || 'Unknown';
-		showSuccess(`Message sent from ${userEmail}! We'll get back to you soon.`);
-		setFormData({ subject: "", message: "" });
+		
+		if (!user?.email) {
+			showError('User email not found. Please try logging in again.');
+			return;
+		}
+		
+		if (!formData.subject.trim() || !formData.message.trim()) {
+			showError('Please fill in both subject and message fields.');
+			return;
+		}
+		
+		setIsSubmitting(true);
+		
+		try {
+			console.log('=== SENDING CONTACT MESSAGE ===');
+			console.log('User email:', user.email);
+			console.log('Subject:', formData.subject);
+			console.log('Message:', formData.message);
+			console.log('API endpoint: https://api-qcusolarcharge.up.railway.app/contact/postContact');
+			
+			// Log the exact data being sent
+			const contactData = {
+				from: user.email,
+				subject: formData.subject.trim(),
+				message: formData.message.trim(),
+				photo_url: user.photoURL || null
+			};
+			console.log('Data being sent to API:', contactData);
+			
+			const response = await postContact(
+				contactData.from,
+				contactData.subject,
+				contactData.message,
+				contactData.photo_url
+			);
+			
+			console.log('Contact API response:', response.status, response.ok);
+			console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+			
+			if (response.ok) {
+				const responseData = await response.json();
+				console.log('Contact response data:', responseData);
+				
+				// Check if the API actually indicates the message was saved
+				if (responseData.success === false) {
+					console.error('API returned success=false:', responseData);
+					showError(`Failed to save message: ${responseData.message || 'Unknown error'}`);
+					return;
+				}
+				
+				// Check for database-specific success indicators
+				if (responseData.saved === false) {
+					console.error('Message was not saved to database:', responseData);
+					showError(`Message not saved: ${responseData.error || 'Database error'}`);
+					return;
+				}
+				
+				showSuccess(`Message sent successfully! We'll get back to you soon.`);
+				setFormData({ subject: "", message: "" });
+			} else {
+				const errorText = await response.text();
+				console.log('Contact error response:', errorText);
+				
+				try {
+					const errorJson = JSON.parse(errorText);
+					showError(`Failed to send message: ${errorJson.message || errorJson.error || errorText}`);
+				} catch {
+					showError(`Failed to send message: HTTP ${response.status} - ${errorText}`);
+				}
+			}
+		} catch (error) {
+			console.error('Error sending contact message:', error);
+			showError(`Failed to send message: ${error.message}`);
+		} finally {
+			setIsSubmitting(false);
+		}
 	}
   return (
 		<div id="contact-page">
@@ -91,7 +166,13 @@ function Contact() {
 										<label htmlFor="message">Message</label>
 										<textarea id="message" rows="6" placeholder="Please describe your question or issue in detail..." value={formData.message} onChange={(e)=>setFormData({...formData, message:e.target.value})} required />
                       </div>
-									<button className="submit-btn" type="submit">Send Message</button>
+									<button 
+										className="submit-btn" 
+										type="submit" 
+										disabled={isSubmitting}
+									>
+										{isSubmitting ? 'Sending...' : 'Send Message'}
+									</button>
                     </form>
                   </>
                 )}

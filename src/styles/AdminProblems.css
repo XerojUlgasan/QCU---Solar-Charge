@@ -372,6 +372,69 @@
     font-size: 0.875rem;
 }
 
+/* User Info with Profile Picture */
+#admin-problems .user-info-item {
+    align-items: flex-start;
+}
+
+#admin-problems .user-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+#admin-problems .user-photo {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #1e2633;
+    flex-shrink: 0;
+}
+
+#admin-problems .user-photo-fallback {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #22c55e, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #1e2633;
+    flex-shrink: 0;
+}
+
+#admin-problems .photo-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+}
+
+#admin-problems .user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+}
+
+#admin-problems .user-email {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+}
+
+#admin-problems .datetime-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
 #admin-problems .report-actions {
     display: flex;
     align-items: center;
@@ -771,6 +834,22 @@
 
 .light #admin-problems .station-location {
     color: #4b5563;
+}
+
+.light #admin-problems .user-photo {
+    border-color: #e5e7eb;
+}
+
+.light #admin-problems .user-photo-fallback {
+    border-color: #e5e7eb;
+}
+
+.light #admin-problems .user-email {
+    color: #4b5563;
+}
+
+.light #admin-problems .datetime-info {
+    color: #6b7280;
 }
 
 .light #admin-problems .description-box {

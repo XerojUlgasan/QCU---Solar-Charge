@@ -357,6 +357,9 @@ const AdminProblems = () => {
       case 'admin-problems':
         navigate('/admin/problems');
         break;
+      case 'admin-contact':
+        navigate('/admin/contact');
+        break;
       case 'admin-device-detail':
         navigate(`/admin/device/${deviceId}`);
         break;
@@ -371,15 +374,104 @@ const AdminProblems = () => {
       return;
     }
     
+    if (!selectedReport) {
+      showError('No report selected');
+      return;
+    }
+    
     try {
-      // Here you would typically send the response to the user via email or notification system
-      // For now, we'll just show a success message
+      console.log('=== SENDING RESPONSE TO REPORT ===');
+      console.log('Selected report:', selectedReport);
+      
+      // Find the original report data to get the device_id
+      const originalReport = reports.find(r => (r.transaction_id || r.id) === selectedReport.id);
+      if (!originalReport) {
+        showError('Report not found');
+        return;
+      }
+      
+      console.log('Original report:', originalReport);
+      
+      // Prepare the response data according to the API specification
+      const responseData = {
+        email: selectedReport.userEmail,
+        device_id: originalReport.location || selectedReport.stationId,
+        response: responseText.trim(),
+        building: selectedReport.building || 'Unknown Building',
+        location: selectedReport.stationLocation || selectedReport.stationId
+      };
+      
+      console.log('Response data being sent:', responseData);
+      
+      // Validate required fields
+      if (!responseData.email || !responseData.email.includes('@')) {
+        showError('Invalid email address');
+        return;
+      }
+      
+      if (!responseData.device_id) {
+        showError('Device ID is missing');
+        return;
+      }
+      
+      if (!responseData.response) {
+        showError('Response message is empty');
+        return;
+      }
+      
+      // Send the response using the admin API
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/sendResponseReport', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(responseData)
+      });
+      
+      console.log('Send response API response:', response.status, response.ok);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        const responseResult = await response.json();
+        console.log('Send response result:', responseResult);
+        
+        // Check if the API actually indicates email was sent
+        if (responseResult.success === false) {
+          console.error('API returned success=false:', responseResult);
+          showError(`Failed to send email: ${responseResult.message || 'Unknown error'}`);
+          return;
+        }
+        
+        // Check for email-specific success indicators
+        if (responseResult.emailSent === false) {
+          console.error('Email was not sent:', responseResult);
+          showError(`Email sending failed: ${responseResult.error || 'Email service unavailable'}`);
+          return;
+        }
+        
     showSuccess('Response sent to user successfully!');
     setResponseText('');
     setIsDialogOpen(false);
+        
+        // Optionally refresh reports to show any updates
+        setTimeout(() => {
+          fetchReports();
+        }, 1000);
+      } else {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        
+        // Try to parse error as JSON for more detailed error messages
+        try {
+          const errorJson = JSON.parse(errorText);
+          showError(`Failed to send response: ${errorJson.message || errorJson.error || errorText}`);
+        } catch {
+          showError(`Failed to send response: HTTP ${response.status} - ${errorText}`);
+        }
+      }
     } catch (error) {
       console.error('Error sending response:', error);
-      showError('Failed to send response. Please try again.');
+      showError(`Failed to send response: ${error.message}`);
     }
   };
 
@@ -604,13 +696,33 @@ const AdminProblems = () => {
                       <MapPin className="detail-icon" />
                       <span className="station-location">{report.stationLocation}</span>
                     </div>
-                    <div className="detail-item">
+                    <div className="detail-item user-info-item">
+                      <div className="user-info">
+                        {report.userPhoto ? (
+                          <img 
+                            src={report.userPhoto} 
+                            alt="User" 
+                            className="user-photo"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div className="user-photo-fallback" style={{ display: report.userPhoto ? 'none' : 'flex' }}>
+                          <User className="photo-icon" />
+                        </div>
+                        <div className="user-details">
+                          <div className="user-email">
                       <User className="detail-icon" />
                       <span>{report.userEmail}</span>
                     </div>
-                    <div className="detail-item">
+                          <div className="datetime-info">
                       <Calendar className="detail-icon" />
                       <span>{report.reportedDate} at {report.reportedTime}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

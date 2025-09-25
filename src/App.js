@@ -11,6 +11,7 @@ import AdminDashboard from './admin/AdminDashboard';
 import AdminDevices from './admin/AdminDevices';
 import DeviceDetail from './admin/DeviceDetail';
 import AdminProblems from './admin/AdminProblems';
+import AdminContactMessages from './admin/AdminContactMessages';
 import NotFound from './pages/NotFound';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -48,6 +49,11 @@ function App() {
         <Route path='/admin/problems' element={
           <AdminAuthProvider>
             <AdminProblems />
+          </AdminAuthProvider>
+        }/>
+        <Route path='/admin/contact' element={
+          <AdminAuthProvider>
+            <AdminContactMessages />
           </AdminAuthProvider>
         }/>
         <Route path='/admin/device/:deviceId' element={

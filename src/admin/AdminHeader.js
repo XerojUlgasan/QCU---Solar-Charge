@@ -5,6 +5,7 @@ import {
   Home, 
   Smartphone, 
   AlertTriangle, 
+  Mail,
   LogOut, 
   Moon, 
   Sun,
@@ -65,6 +66,11 @@ const AdminHeader = ({ title, navigate }) => {
       route: 'admin-problems',
       label: 'Problem Reports',
       icon: <AlertTriangle className="w-5 h-5" />
+    },
+    {
+      route: 'admin-contact',
+      label: 'Contact Messages',
+      icon: <Mail className="w-5 h-5" />
     }
   ];
 

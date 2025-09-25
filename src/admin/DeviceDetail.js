@@ -339,6 +339,9 @@ const DeviceDetail = () => {
       case 'admin-problems':
         navigate('/admin/problems');
         break;
+      case 'admin-contact':
+        navigate('/admin/contact');
+        break;
       case 'admin-device-detail':
         navigate(`/admin/device/${deviceId}`);
         break;

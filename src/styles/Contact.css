@@ -53,8 +53,9 @@
 #contact-page .contact-form label{display:block;margin-bottom:6px;font-size:14px}
 #contact-page .contact-form input,#contact-page .contact-form textarea{width:100%;box-sizing:border-box;background:#0b1119;border:1px solid #2a3446;color:#eaecef;border-radius:10px;padding:10px 12px}
 #contact-page .contact-form input:focus,#contact-page .contact-form textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.2)}
-#contact-page .submit-btn{width:100%;padding:12px 14px;border-radius:10px;background:#0f1a28;color:#eaecef;border:1px solid #2a3446;cursor:pointer}
-#contact-page .submit-btn:hover{background:#0c1622}
+#contact-page .submit-btn{width:100%;padding:12px 14px;border-radius:10px;background:#0f1a28;color:#eaecef;border:1px solid #2a3446;cursor:pointer;transition:all 0.2s ease}
+#contact-page .submit-btn:hover:not(:disabled){background:#0c1622}
+#contact-page .submit-btn:disabled{opacity:0.6;cursor:not-allowed;background:#0a1218}
 
 /* Light mode styles */
 .light #contact-page {
@@ -119,8 +120,14 @@
     border-color: #3b82f6;
 }
 
-.light #contact-page .submit-btn:hover {
+.light #contact-page .submit-btn:hover:not(:disabled) {
     background: #2563eb;
+}
+
+.light #contact-page .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #9ca3af;
 }
 
 /* Modal Styles */
