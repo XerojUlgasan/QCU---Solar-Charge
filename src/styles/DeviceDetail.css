@@ -958,7 +958,7 @@
 }
 
 .light #device-detail .time-filter-label {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #device-detail .time-filter-select {
@@ -982,8 +982,9 @@
 .light #device-detail .sessions-card,
 .light #device-detail .maintenance-card,
 .light #device-detail .analytics-card {
-    background-color: #ffffff;
-    border-color: #e5e7eb;
+    background-color: #f8fafc;
+    border-color: #000000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .light #device-detail .device-overview-header,
@@ -992,7 +993,7 @@
 .light #device-detail .sessions-header,
 .light #device-detail .maintenance-header,
 .light #device-detail .analytics-header {
-    border-bottom-color: #e5e7eb;
+    border-bottom-color: #000000;
 }
 
 .light #device-detail .device-name {
@@ -1000,7 +1001,7 @@
 }
 
 .light #device-detail .device-location {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #device-detail .status-badge.active {
@@ -1020,7 +1021,7 @@
 
 .light #device-detail .device-id-badge {
     background-color: #f3f4f6;
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #device-detail .metric-card,
@@ -1030,15 +1031,24 @@
 
 .light #device-detail .metric-label,
 .light #device-detail .stat-item-label {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #device-detail .tab-navigation {
     background-color: #f3f4f6;
+    border-color: #d1d5db;
 }
 
 .light #device-detail .tab-button:not(.active) {
-    color: #6b7280;
+    background-color: #ffffff;
+    color: #4b5563;
+    border-color: #d1d5db;
+}
+
+.light #device-detail .tab-button.active {
+    background-color: #1f2937;
+    color: #ffffff;
+    border-color: #1f2937;
 }
 
 .light #device-detail .tab-button:not(.active):hover {
@@ -1054,7 +1064,7 @@
 .light #device-detail .maintenance-date,
 .light #device-detail .device-info-label,
 .light #device-detail .trend-label {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #device-detail .electrical-value,
@@ -1064,20 +1074,39 @@
 .light #device-detail .session-amount-value,
 .light #device-detail .maintenance-label,
 .light #device-detail .device-info-value,
-.light #device-detail .stat-item-value {
+.light #device-detail .stat-item-value,
+.light #device-detail .device-name,
+.light #device-detail .device-id-badge,
+.light #device-detail .metric-value,
+.light #device-detail .metric-label,
+.light #device-detail .stat-item-label,
+.light #device-detail .tab-button:not(.active),
+.light #device-detail .realtime-title,
+.light #device-detail .sessions-title,
+.light #device-detail .maintenance-title,
+.light #device-detail .analytics-title,
+.light #device-detail .session-type-badge,
+.light #device-detail .session-type-badge.rfid,
+.light #device-detail .session-type-badge.payment,
+.light #device-detail .maintenance-status,
+.light #device-detail .maintenance-status.completed,
+.light #device-detail .maintenance-status.scheduled,
+.light #device-detail .maintenance-status.pending,
+.light #device-detail .device-info-label,
+.light #device-detail .loading-container p {
     color: #1f2937;
 }
 
 .light #device-detail .alert-item,
 .light #device-detail .session-item,
 .light #device-detail .maintenance-item {
-    border-color: #e5e7eb;
+    border-color: #000000;
 }
 
 .light #device-detail .alert-severity,
 .light #device-detail .session-type-badge.rfid {
     background-color: #f3f4f6;
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #device-detail .session-type-badge.payment {
@@ -1099,8 +1128,175 @@
     background-color: #e5e7eb;
 }
 
+/* Additional light mode text fixes */
+.light #device-detail .device-content {
+    color: #1f2937;
+}
+
+.light #device-detail .time-filter-label {
+    color: #4b5563;
+}
+
+.light #device-detail .device-location {
+    color: #4b5563;
+}
+
+.light #device-detail .device-id-badge {
+    color: #1f2937;
+}
+
+.light #device-detail .metric-label {
+    color: #4b5563;
+}
+
+.light #device-detail .stat-item-label {
+    color: #4b5563;
+}
+
+.light #device-detail .realtime-title,
+.light #device-detail .sessions-title,
+.light #device-detail .maintenance-title,
+.light #device-detail .analytics-title {
+    color: #1f2937;
+}
+
+.light #device-detail .session-meta {
+    color: #4b5563;
+}
+
+.light #device-detail .maintenance-date {
+    color: #4b5563;
+}
+
+.light #device-detail .trend-label {
+    color: #4b5563;
+}
+
+.light #device-detail .trend-value {
+    color: #1f2937;
+}
+
 .light #device-detail .loading-container p {
-    color: #6b7280;
+    color: #4b5563;
+}
+
+/* Electrical Parameters and System Status Light Mode */
+.light #device-detail .electrical-divider {
+    border-top-color: #000000;
+}
+
+.light #device-detail .electrical-grid {
+    color: #1f2937;
+}
+
+.light #device-detail .electrical-item {
+    color: #1f2937;
+}
+
+.light #device-detail .status-grid {
+    color: #1f2937;
+}
+
+.light #device-detail .status-item {
+    color: #1f2937;
+}
+
+.light #device-detail .status-icon {
+    color: #4b5563;
+}
+
+.light #device-detail .status-info {
+    color: #1f2937;
+}
+
+.light #device-detail .progress-label {
+    color: #4b5563;
+}
+
+.light #device-detail .progress-value {
+    color: #1f2937;
+}
+
+.light #device-detail .progress-text {
+    color: #4b5563;
+}
+
+.light #device-detail .progress-header {
+    color: #1f2937;
+}
+
+.light #device-detail .progress-item {
+    color: #1f2937;
+}
+
+.light #device-detail .realtime-card-title {
+    color: #1f2937;
+}
+
+.light #device-detail .progress-section {
+    color: #1f2937;
+}
+
+.light #device-detail .realtime-card-header {
+    color: #1f2937;
+}
+
+.light #device-detail .realtime-card-content {
+    color: #1f2937;
+}
+
+/* Additional comprehensive light mode fixes */
+.light #device-detail .device-content {
+    color: #1f2937;
+}
+
+.light #device-detail .back-button {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.light #device-detail .time-filter-select {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.light #device-detail .refresh-button {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.light #device-detail .device-name {
+    color: #1f2937;
+}
+
+.light #device-detail .tab-button:not(.active):hover {
+    color: #1f2937;
+    background-color: #e5e7eb;
+}
+
+.light #device-detail .alerts-title {
+    color: #1f2937;
+}
+
+.light #device-detail .sessions-title {
+    color: #1f2937;
+}
+
+.light #device-detail .maintenance-title {
+    color: #1f2937;
+}
+
+.light #device-detail .analytics-title {
+    color: #1f2937;
+}
+
+.light #device-detail .retry-button {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
 }
 
 .light #device-detail .error-message {

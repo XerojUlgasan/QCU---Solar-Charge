@@ -273,6 +273,24 @@
     background-color: #16a34a;
 }
 
+/* Header Section */
+#admin-devices .devices-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    text-align: center;
+}
+
+#admin-devices .devices-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+
 /* Devices Grid */
 #admin-devices .devices-grid {
     display: grid;
@@ -544,16 +562,17 @@
 
 .light #admin-devices .stat-card,
 .light #admin-devices .device-card {
-    background-color: #ffffff;
-    border-color: #e5e7eb;
+    background-color: #f8fafc;
+    border-color: #000000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .light #admin-devices .stat-title {
-    color: #6b7280;
+    color: #374151;
 }
 
 .light #admin-devices .stat-icon {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .stat-value {
@@ -561,7 +580,7 @@
 }
 
 .light #admin-devices .stat-description {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .search-input,
@@ -578,12 +597,12 @@
 }
 
 .light #admin-devices .search-input::placeholder {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .dialog-content {
     background-color: #ffffff;
-    border-color: #e5e7eb;
+    border-color: #000000;
 }
 
 .light #admin-devices .dialog-title {
@@ -591,7 +610,7 @@
 }
 
 .light #admin-devices .dialog-description {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .form-label {
@@ -610,12 +629,12 @@
 }
 
 .light #admin-devices .form-input::placeholder {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .cancel-button {
     border-color: #d1d5db;
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .cancel-button:hover {
@@ -628,11 +647,11 @@
 }
 
 .light #admin-devices .device-location {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .device-id {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .detail-row {
@@ -644,17 +663,22 @@
 }
 
 .light #admin-devices .usage-item {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-devices .last-updated {
-    color: #6b7280;
-    border-top-color: #e5e7eb;
+    color: #4b5563;
+    border-top-color: #000000;
 }
 
 .light #admin-devices .no-devices {
-    color: #6b7280;
+    color: #4b5563;
 }
+
+.light #admin-devices .devices-title {
+    color: #1f2937;
+}
+
 
 /* Edit Button Styles */
 #admin-devices .edit-section {
@@ -696,7 +720,7 @@
 
 /* Light mode styles for edit button */
 .light #admin-devices .edit-section {
-    border-top-color: #e5e7eb;
+    border-top-color: #000000;
 }
 
 .light #admin-devices .edit-device-button {

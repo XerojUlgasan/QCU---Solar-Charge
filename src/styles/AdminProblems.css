@@ -86,9 +86,22 @@
 
 #admin-problems .search-filter-group {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     gap: 1rem;
     flex: 1;
+}
+
+#admin-problems .filters-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#admin-problems .filters-right {
+    display: flex;
+    align-items: center;
 }
 
 #admin-problems .search-container {
@@ -143,6 +156,54 @@
     border-color: #22c55e;
     box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
 }
+
+#admin-problems .refresh-button {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#admin-problems .refresh-button:hover:not(:disabled) {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+}
+
+#admin-problems .refresh-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#admin-problems .refresh-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Header Section */
+#admin-problems .problems-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    text-align: center;
+}
+
+#admin-problems .problems-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
 
 /* Reports List */
 #admin-problems .reports-list {
@@ -610,6 +671,10 @@
     #admin-problems .search-filter-group {
         flex-direction: row;
     }
+    
+    #admin-problems .filters-left {
+        flex-direction: row;
+    }
 }
 
 @media (min-width: 768px) {
@@ -635,11 +700,11 @@
 .light #admin-problems .stat-card,
 .light #admin-problems .report-card {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-color: #e5e7eb;
+    border-color: #000000;
 }
 
 .light #admin-problems .report-card:hover {
-    border-color: #d1d5db;
+    border-color: #000000;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
@@ -679,6 +744,22 @@
 .light #admin-problems .search-input::placeholder {
     color: #4b5563;
 }
+
+.light #admin-problems .refresh-button {
+    background-color: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.light #admin-problems .refresh-button:hover:not(:disabled) {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.light #admin-problems .problems-title {
+    color: #1f2937;
+}
+
 
 .light #admin-problems .report-title {
     color: #1f2937;
@@ -726,7 +807,7 @@
 
 .light #admin-problems .dialog-content {
     background-color: #ffffff;
-    border-color: #e5e7eb;
+    border-color: #000000;
 }
 
 .light #admin-problems .dialog-title {

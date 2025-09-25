@@ -507,16 +507,8 @@ const AdminDashboard = () => {
           <>
             {/* Filter Controls */}
             <div className="filter-controls">
-              <div>
+              <div className="dashboard-header">
                 <h2 className="dashboard-title">Dashboard Overview</h2>
-                <div className="connection-status">
-                  <span className={`status-indicator ${connectionStatus}`}>
-                    {connectionStatus === 'connected' && '🟢 Connected to API'}
-                    {connectionStatus === 'error' && '🔴 API Error - Using Fallback Data'}
-                    {connectionStatus === 'invalid_format' && '🟡 API Connected - Invalid Data Format'}
-                    {connectionStatus === 'testing' && '🟡 Testing Connection...'}
-                  </span>
-                </div>
               </div>
               <div className="filter-group">
                 <Filter className="w-4 h-4 filter-icon" />
@@ -602,44 +594,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Recent Transactions */}
-          <div className="main-card">
-            <div className="card-header">
-              <div className="card-title">Recent Transactions</div>
-              <div className="card-description">Latest charging sessions and payments</div>
-            </div>
-            <div className="card-content">
-              {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="transaction-item">
-                  <div className="transaction-info">
-                    <div className="transaction-icon">
-                      {transaction.type === 'rfid' ? (
-                        <Clock className="w-4 h-4" />
-                      ) : (
-                        <CreditCard className="w-4 h-4" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="transaction-user">{transaction.user}</div>
-                      <div className="transaction-details">
-                        Station {transaction.station} • {transaction.time}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="transaction-amount">
-                    <div className="amount-value">{transaction.amount}</div>
-                    <div className={`amount-badge ${transaction.type === 'rfid' ? 'badge-rfid' : 'badge-payment'}`}>
-                      {transaction.type === 'rfid' ? 'RFID' : 'Payment'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Energy & Revenue Charts Section */}
-        <div className="charts-grid">
+          {/* Energy Production */}
           <div className="main-card">
             <div className="card-header">
               <div className="card-title">
@@ -698,43 +653,45 @@ const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* Recent Transactions */}
           <div className="main-card">
             <div className="card-header">
-              <div className="card-title">
-                <Activity className="w-5 h-5" />
-                <span>System Health</span>
-              </div>
-              <div className="card-description">Overall network performance metrics</div>
+              <div className="card-title">Recent Transactions</div>
+              <div className="card-description">Latest charging sessions and payments</div>
             </div>
             <div className="card-content">
-              <div className="system-stats">
-                <div className="system-progress">
-                  <div className="progress-label">
-                    <span>Network Uptime</span>
-                    <span className="progress-value system-healthy">99.2%</span>
+              {recentTransactions.map((transaction) => (
+                <div key={transaction.id} className="transaction-item">
+                  <div className="transaction-info">
+                    <div className="transaction-icon">
+                      {transaction.type === 'rfid' ? (
+                        <Clock className="w-4 h-4" />
+                      ) : (
+                        <CreditCard className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="transaction-user">{transaction.user}</div>
+                      <div className="transaction-details">
+                        Station {transaction.station} • {transaction.time}
+                      </div>
+                    </div>
                   </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{width: '99.2%'}}></div>
+                  <div className="transaction-amount">
+                    <div className="amount-value">{transaction.amount}</div>
+                    <div className={`amount-badge ${transaction.type === 'rfid' ? 'badge-rfid' : 'badge-payment'}`}>
+                      {transaction.type === 'rfid' ? 'RFID' : 'Payment'}
+                    </div>
                   </div>
                 </div>
-                
-                <div className="system-metrics">
-                  <div className="system-metric">
-                    <span>Temperature</span>
-                    <span>{overviewData.temperature}°C</span>
-                  </div>
-                  <div className="system-metric">
-                    <span>Total Hours</span>
-                    <span>{overviewData.total_hours} hrs</span>
-                  </div>
-                  <div className="system-metric">
-                    <span>Power Output</span>
-                    <span className="system-healthy">{overviewData.power}W</span>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+        </div>
+
+        {/* Energy & Revenue Charts Section */}
+        <div className="charts-grid">
+
         </div>
           </>
         )}

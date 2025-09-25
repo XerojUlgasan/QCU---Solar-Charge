@@ -394,6 +394,11 @@ const AdminDevices = () => {
           </div>
         ) : (
           <>
+            {/* Header Section */}
+            <div className="devices-header">
+              <h2 className="devices-title">Device Management</h2>
+            </div>
+
         {/* Summary Stats */}
         <div className="stats-grid">
           <div className="stat-card">

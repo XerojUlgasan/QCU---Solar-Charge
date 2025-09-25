@@ -245,11 +245,11 @@
 }
 
 .light #admin-header .divider {
-    background-color: #6b7280;
+    background-color: #4b5563;
 }
 
 .light #admin-header .nav-button {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-header .nav-button:hover {
@@ -258,7 +258,7 @@
 }
 
 .light #admin-header .action-button {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-header .action-button:hover {
@@ -267,7 +267,7 @@
 }
 
 .light #admin-header .mobile-menu-toggle {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-header .mobile-menu-toggle:hover {
@@ -285,7 +285,7 @@
 }
 
 .light #admin-header .mobile-nav-button {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-header .mobile-nav-button:hover {

@@ -9,7 +9,8 @@ import {
   User, 
   Calendar,
   MessageSquare,
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
@@ -21,7 +22,7 @@ const AdminProblems = () => {
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('newest');
   const [filterUrgency, setFilterUrgency] = useState('all');
   const [selectedReport, setSelectedReport] = useState(null);
   const [responseText, setResponseText] = useState('');
@@ -373,9 +374,9 @@ const AdminProblems = () => {
     try {
       // Here you would typically send the response to the user via email or notification system
       // For now, we'll just show a success message
-      showSuccess('Response sent to user successfully!');
-      setResponseText('');
-      setIsDialogOpen(false);
+    showSuccess('Response sent to user successfully!');
+    setResponseText('');
+    setIsDialogOpen(false);
     } catch (error) {
       console.error('Error sending response:', error);
       showError('Failed to send response. Please try again.');
@@ -426,7 +427,7 @@ const AdminProblems = () => {
         const responseData = await response.json();
         console.log('Status update response:', responseData);
         
-        showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+    showSuccess(`Report ${reportId} status updated to ${newStatus}`);
         
         // Refresh reports to show updated status
         setTimeout(() => {
@@ -460,6 +461,11 @@ const AdminProblems = () => {
       />
       
       <div className="problems-content">
+        {/* Header Section */}
+        <div className="problems-header">
+          <h2 className="problems-title">Problem Reports</h2>
+        </div>
+
         {/* Summary Stats */}
         <div className="stats-grid">
           <div className="stat-card">
@@ -510,6 +516,7 @@ const AdminProblems = () => {
         {/* Filters */}
         <div className="filters-section">
           <div className="search-filter-group">
+            <div className="filters-left">
             <div className="search-container">
               <Search className="search-icon" />
               <input
@@ -530,8 +537,8 @@ const AdminProblems = () => {
               <option value="investigating">Investigating</option>
               <option value="scheduled">Scheduled</option>
               <option value="resolved">Resolved</option>
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
             </select>
 
             <select 
@@ -545,6 +552,18 @@ const AdminProblems = () => {
               <option value="medium">Medium</option>
               <option value="low">Low</option>
             </select>
+            </div>
+
+            <div className="filters-right">
+              <button 
+                onClick={fetchReports}
+                className="refresh-button"
+                disabled={loading}
+              >
+                <RefreshCw className="refresh-icon" />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
 
