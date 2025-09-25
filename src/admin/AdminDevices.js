@@ -136,7 +136,6 @@ const AdminDevices = () => {
             energy: `${(device.energy || 0).toFixed(1)}kWh`,
             usage: device.percentage || 0,
             revenue: `₱${deviceRevenue.toFixed(0)}`, // Use actual transaction revenue
-            freeHours: Math.floor((device.percentage || 0) / 2), // Calculate based on usage
             temperature: `${device.temperature || 0}°C`,
             batteryLevel: device.percentage || 0,
             lastUpdate: formatLastUpdated(device.last_updated),
@@ -274,18 +273,58 @@ const AdminDevices = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveDevice = (e) => {
+  const handleSaveDevice = async (e) => {
     e.preventDefault();
     if (!deviceForm.name || !deviceForm.location || !deviceForm.building) {
       showError('Please fill in all fields');
       return;
     }
     
-    // Mock device update
-    showSuccess(`Device "${deviceForm.name}" updated successfully!`);
-    setDeviceForm({ name: '', location: '', building: '' });
-    setEditingDevice(null);
-    setIsEditDialogOpen(false);
+    try {
+      console.log('=== UPDATING DEVICE ===');
+      console.log('Device ID:', editingDevice.id);
+      console.log('Form Data:', deviceForm);
+      
+      // Prepare the request body according to the API specification
+      const updateData = {
+        device_id: editingDevice.id,
+        device_name: deviceForm.name,
+        device_location: deviceForm.location,
+        device_building: deviceForm.building
+      };
+      
+      console.log('Update payload:', updateData);
+      
+      // Call the update device API
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/updateDevice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Update response:', responseData);
+        
+        showSuccess(`Device "${deviceForm.name}" updated successfully!`);
+        
+        // Refresh the devices data to reflect changes
+        await fetchDevicesData();
+        
+        // Reset form and close dialog
+        setDeviceForm({ name: '', location: '', building: '' });
+        setEditingDevice(null);
+        setIsEditDialogOpen(false);
+      } else {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+    } catch (error) {
+      console.error('Error updating device:', error);
+      showError(`Failed to update device: ${error.message}`);
+    }
   };
 
   const handleNavigation = (route, deviceId) => {
@@ -501,7 +540,7 @@ const AdminDevices = () => {
                   <div className="device-name">{device.name}</div>
                   <div className="device-location">
                     <MapPin className="location-icon" />
-                    <span>{device.location}</span>
+                    <span>{device.location} • {device.building}</span>
                   </div>
                 </div>
                 <div className="device-status-group">
@@ -557,17 +596,6 @@ const AdminDevices = () => {
                   </div>
                 </div>
 
-                {/* Usage Stats */}
-                <div className="usage-stats">
-                  <div className="usage-item">
-                    <Clock className="usage-icon" />
-                    <span>{device.freeHours}h free</span>
-                  </div>
-                  <div className="usage-item">
-                    <Battery className="usage-icon" />
-                    <span>{device.usage}% usage</span>
-                  </div>
-                </div>
 
                 {/* Edit Button */}
                 <div className="edit-section">

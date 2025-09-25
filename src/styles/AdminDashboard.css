@@ -334,6 +334,56 @@
     margin-top: 1rem;
 }
 
+/* Energy Generation */
+#admin-dashboard .energy-generation {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 0.5rem;
+}
+
+#admin-dashboard .generation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+#admin-dashboard .generation-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #9aa3b2;
+}
+
+#admin-dashboard .generation-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+#admin-dashboard .generation-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#admin-dashboard .generation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+#admin-dashboard .generation-item span:first-child {
+    color: #9aa3b2;
+}
+
+#admin-dashboard .generation-item span:last-child {
+    color: #ffffff;
+    font-weight: 500;
+}
+
 #admin-dashboard .metric-card {
     text-align: center;
     padding: 0.75rem;
@@ -506,6 +556,27 @@
 
 .light #admin-dashboard .progress-text {
     color: #6b7280;
+}
+
+.light #admin-dashboard .energy-generation {
+    background-color: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.light #admin-dashboard .generation-title {
+    color: #6b7280;
+}
+
+.light #admin-dashboard .generation-value {
+    color: #059669;
+}
+
+.light #admin-dashboard .generation-item span:first-child {
+    color: #6b7280;
+}
+
+.light #admin-dashboard .generation-item span:last-child {
+    color: #1f2937;
 }
 
 /* Filter Controls */

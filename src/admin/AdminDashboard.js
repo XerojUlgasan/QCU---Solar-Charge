@@ -652,8 +652,8 @@ const AdminDashboard = () => {
               <div className="energy-stats">
                 <div className="energy-progress">
                   <div className="progress-label">
-                    <span>Current Power</span>
-                    <span className="progress-value">{overviewData.power}W</span>
+                    <span>Current Power Output</span>
+                    <span className="progress-value">{overviewData.power_output || overviewData.power}W</span>
                   </div>
                   <div className="progress-bar">
                     <div className="progress-fill" style={{width: `${Math.min((overviewData.percentage || 0), 100)}%`}}></div>
@@ -671,6 +671,27 @@ const AdminDashboard = () => {
                   <div className="metric-card metric-blue">
                     <div className="metric-value">{overviewData.current}A</div>
                     <div className="metric-label">Current</div>
+                  </div>
+                </div>
+                
+                <div className="energy-generation">
+                  <div className="generation-header">
+                    <span className="generation-title">Energy Generated Today</span>
+                    <span className="generation-value">{overviewData.energy.daily}kWh</span>
+                  </div>
+                  <div className="generation-details">
+                    <div className="generation-item">
+                      <span>This Week:</span>
+                      <span>{overviewData.energy.weekly}kWh</span>
+                    </div>
+                    <div className="generation-item">
+                      <span>This Month:</span>
+                      <span>{overviewData.energy.monthly}kWh</span>
+                    </div>
+                    <div className="generation-item">
+                      <span>Total:</span>
+                      <span>{overviewData.energy.total}kWh</span>
+                    </div>
                   </div>
                 </div>
               </div>

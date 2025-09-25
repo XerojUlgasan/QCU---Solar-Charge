@@ -20,7 +20,7 @@ function RateUs() {
     const [selectedLocation, setSelectedLocation] = useState('');
     const [stationLocations, setStationLocations] = useState([]); // Store station locations from API
     const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
-    const [sortBy, setSortBy] = useState('newest'); // 'newest' or 'ratings'
+    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'oldest', or 'ratings'
     const [starFilter, setStarFilter] = useState('all'); // 'all', '1', '2', '3', '4', '5'
     const [locationError, setLocationError] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -57,13 +57,54 @@ function RateUs() {
             
             console.log('📊 Station locations data:', stationLocationsData);
             
-            // Store station locations data for dropdown
-            if (Array.isArray(stationLocationsData)) {
-                console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
-                setStationLocations(stationLocationsData);
-            } else {
-                console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
-                setStationLocations([]);
+            // Fetch updated device information from admin dashboard
+            try {
+                const deviceResponse = await authenticatedGet('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+                if (deviceResponse.ok) {
+                    const deviceData = await deviceResponse.json();
+                    console.log('📊 Device data from dashboard:', deviceData);
+                    
+                    // Use real device data for station locations
+                    if (deviceData.devices && Array.isArray(deviceData.devices)) {
+                        const updatedStationLocations = deviceData.devices.map(device => ({
+                            device_id: device.device_id,
+                            location: device.location,
+                            building: device.building,
+                            name: device.name
+                        }));
+                        
+                        console.log('✅ Updated station locations from dashboard:', updatedStationLocations);
+                        setStationLocations(updatedStationLocations);
+                    } else {
+                        // Fallback to original station locations
+                        if (Array.isArray(stationLocationsData)) {
+                            console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
+                            setStationLocations(stationLocationsData);
+                        } else {
+                            console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
+                            setStationLocations([]);
+                        }
+                    }
+                } else {
+                    // Fallback to original station locations
+                    if (Array.isArray(stationLocationsData)) {
+                        console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
+                        setStationLocations(stationLocationsData);
+                    } else {
+                        console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
+                        setStationLocations([]);
+                    }
+                }
+            } catch (deviceError) {
+                console.warn('⚠️ Failed to fetch device data, using fallback:', deviceError);
+                // Fallback to original station locations
+                if (Array.isArray(stationLocationsData)) {
+                    console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
+                    setStationLocations(stationLocationsData);
+                } else {
+                    console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
+                    setStationLocations([]);
+                }
             }
             
             // If user is logged in and we have their specific rating data, store it separately
@@ -136,20 +177,29 @@ function RateUs() {
         if (!reviews || reviews.length === 0) return [];
         
         return reviews
-            .map(review => ({
-                id: review.id || review.rate_id || review._id, // Preserve ID for updates
-                email: review.email, // Preserve email for user matching
-                user: review.name || 'Anonymous',
-                rating: review.rate || 0,
-                comment: review.comment || 'No comment provided',
-                station: review.location || 'Unknown Location',
-                building: review.building || review.location || 'Unknown Building',
-                location: review.location || 'Unknown Location',
-                date: formatDate(review.dateTime),
-                avatar: getUserAvatar(review),
-                photo_url: review.photo_url, // Preserve photo URL for user matching
-                rawDateTime: review.dateTime // Keep original dateTime for sorting
-            }))
+            .map(review => {
+                // Find matching device info from station locations
+                const deviceInfo = stationLocations.find(device => 
+                    device.device_id === review.device_id || 
+                    device.location === review.location ||
+                    device.building === review.building
+                );
+                
+                return {
+                    id: review.id || review.rate_id || review._id, // Preserve ID for updates
+                    email: review.email, // Preserve email for user matching
+                    user: review.name || 'Anonymous',
+                    rating: review.rate || 0,
+                    comment: review.comment || 'No comment provided',
+                    station: review.location || 'Unknown Location',
+                    building: deviceInfo?.building || review.building || review.location || 'Unknown Building',
+                    location: deviceInfo?.location || review.location || 'Unknown Location',
+                    date: formatDate(review.dateTime),
+                    avatar: getUserAvatar(review),
+                    photo_url: review.photo_url, // Preserve photo URL for user matching
+                    rawDateTime: review.dateTime // Keep original dateTime for sorting
+                };
+            })
             .sort((a, b) => {
                 // Sort by dateTime in descending order (latest first)
                 if (!a.rawDateTime || !b.rawDateTime) return 0;
@@ -165,7 +215,7 @@ function RateUs() {
                 return dateB - dateA;
             })
             .map(review => ({
-                // Remove rawDateTime from final output
+                // Keep rawDateTime for sorting purposes
                 user: review.user,
                 rating: review.rating,
                 comment: review.comment,
@@ -173,7 +223,8 @@ function RateUs() {
                 building: review.building,
                 location: review.location,
                 date: review.date,
-                avatar: review.avatar
+                avatar: review.avatar,
+                rawDateTime: review.rawDateTime // Keep for sorting
             }));
     };
 
@@ -247,11 +298,20 @@ function RateUs() {
         // Use the user's specific rating data (with ID) if available
         if (userRating) {
             console.log('✅ Using user-specific rating:', userRating);
+            
+            // Find matching device info for building
+            const deviceInfo = stationLocations.find(device => 
+                device.device_id === userRating.device_id || 
+                device.location === userRating.location ||
+                device.building === userRating.building
+            );
+            
             return {
                 id: userRating.id || userRating.rate_id || userRating._id,
                 rating: userRating.rate || 0,
                 comment: userRating.comment || '',
-                location: userRating.location || '',
+                location: deviceInfo?.location || userRating.location || '',
+                building: deviceInfo?.building || userRating.building || '',
                 date: formatDate(userRating.dateTime)
             };
         }
@@ -266,7 +326,8 @@ function RateUs() {
                 id: null, // No ID available in general reviews
                 rating: userReview.rating,
                 comment: userReview.comment,
-                location: userReview.station,
+                location: userReview.location,
+                building: userReview.building,
                 date: userReview.date
             };
         }
@@ -288,6 +349,26 @@ function RateUs() {
         // Sort reviews
         if (sortBy === 'newest') {
             // Already sorted by newest in formatReviews, so no change needed
+        } else if (sortBy === 'oldest') {
+            filtered = filtered.sort((a, b) => {
+                // Sort by dateTime in ascending order (oldest first)
+                if (!a.rawDateTime || !b.rawDateTime) {
+                    // Fallback to formatted date if rawDateTime not available
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateA.getTime() - dateB.getTime();
+                }
+                
+                // Handle Firestore timestamp format
+                if (a.rawDateTime.seconds && b.rawDateTime.seconds) {
+                    return a.rawDateTime.seconds - b.rawDateTime.seconds;
+                }
+                
+                // Handle regular Date objects or ISO strings
+                const dateA = new Date(a.rawDateTime);
+                const dateB = new Date(b.rawDateTime);
+                return dateA.getTime() - dateB.getTime();
+            });
         } else if (sortBy === 'ratings') {
             filtered = filtered.sort((a, b) => b.rating - a.rating);
         }
@@ -729,7 +810,7 @@ function RateUs() {
                                                     <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                     <circle cx="12" cy="10" r="3"></circle>
                                                 </svg>
-                                                <span>{userExistingRating.location}</span>
+                                                <span>{userExistingRating.location && userExistingRating.building ? `${userExistingRating.location} • ${userExistingRating.building}` : userExistingRating.location}</span>
                                             </div>
                                         </div>
                                         <div className="existing-rating-actions">
@@ -782,7 +863,7 @@ function RateUs() {
                                                             <option value="">Select location</option>
                                                             {stationLocations.map((station) => (
                                                                 <option key={station.device_id} value={station.building || station.location}>
-                                                                    {station.building || station.location} ({station.device_id})
+                                                                    {station.location && station.building ? `${station.location} • ${station.building}` : (station.building || station.location)}
                                                                 </option>
                                                             ))}
                                                         </select>
@@ -855,7 +936,7 @@ function RateUs() {
                                                     <option value="">Select location</option>
                                                     {stationLocations.map((station) => (
                                                         <option key={station.device_id} value={station.building || station.location}>
-                                                            {station.building || station.location} ({station.device_id})
+                                                            {station.location && station.building ? `${station.location} • ${station.building}` : (station.building || station.location)}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -959,7 +1040,7 @@ function RateUs() {
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
                                             </svg>
-                                            <span>{review.building && review.location ? `${review.building} - ${review.location}` : review.station}</span>
+                                            <span>{review.building && review.location ? `${review.location} • ${review.building}` : review.station}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1005,6 +1086,7 @@ function RateUs() {
                                     className="filter-select"
                                 >
                                     <option value="newest">Newest</option>
+                                    <option value="oldest">Oldest</option>
                                     <option value="ratings">Ratings</option>
                                 </select>
                             </div>
@@ -1063,8 +1145,8 @@ function RateUs() {
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
                                                 <circle cx="12" cy="10" r="3"/>
                                             </svg>
-                                            <span>{review.building && review.location ? `${review.building} - ${review.location}` : review.station}</span>
-                                        </div>
+                                            <span>{review.building && review.location ? `${review.location} • ${review.building}` : review.station}</span>
+                        </div>
                             </div>
                         </div>
                             ))}

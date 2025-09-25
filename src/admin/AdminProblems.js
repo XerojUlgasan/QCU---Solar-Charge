@@ -44,7 +44,7 @@ const AdminProblems = () => {
       setError(null);
       
       console.log('=== FETCHING ADMIN REPORTS DEBUG ===');
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/getReports');
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/getreports');
       
       console.log('Admin reports response status:', response.status);
       console.log('Admin reports response ok:', response.ok);
@@ -58,12 +58,17 @@ const AdminProblems = () => {
       console.log('Admin reports data type:', typeof data);
       console.log('Admin reports data keys:', Object.keys(data || {}));
       
-      // Handle API response structure - data might be wrapped in 'value' property
-      const reportsData = data.value || data;
-      console.log('Admin reports processed data:', reportsData);
-      console.log('Admin reports count:', Array.isArray(reportsData) ? reportsData.length : 'Not an array');
-      
-      setReports(Array.isArray(reportsData) ? reportsData : []);
+      // Handle new API response structure
+      if (data.success && data.reports) {
+        console.log('✅ Using new API format with success and reports');
+        setReports(Array.isArray(data.reports) ? data.reports : []);
+      } else {
+        // Fallback to old format
+        const reportsData = data.reports || data.value || data;
+        console.log('Admin reports processed data:', reportsData);
+        console.log('Admin reports count:', Array.isArray(reportsData) ? reportsData.length : 'Not an array');
+        setReports(Array.isArray(reportsData) ? reportsData : []);
+      }
     } catch (err) {
       console.error('Error fetching reports:', err);
       setError('Failed to load problem reports. Please try again later.');
@@ -173,19 +178,19 @@ const AdminProblems = () => {
       }
       
       return {
-        id: report.id,
+        id: report.transaction_id || report.id,
         stationId: report.location || 'Unknown Station',
         stationName: report.location || 'Unknown Location',
         building: report.location || 'Unknown Building',
         userEmail: report.email || 'Unknown Email',
-        userName: report.email ? report.email.split('@')[0] : 'Anonymous User',
+        userName: report.name || (report.email ? report.email.split('@')[0] : 'Anonymous User'),
+        userPhoto: report.photo || null,
         issue: report.type || report.description || 'Unknown Issue',
         description: report.description || 'No description provided',
         urgency: urgencyLevel,
         status: report.status || 'Scheduled',
         reportedDate: formatDate(report.dateTime),
         reportedTime: formatTime(report.dateTime),
-        assignedTo: 'Tech Team A', // Default assignment
         solution: report.solution || null,
         resolvedDate: report.resolvedDate ? formatDate(report.resolvedDate) : null,
         resolvedTime: report.resolvedTime ? formatTime(report.resolvedTime) : null,
@@ -235,9 +240,42 @@ const AdminProblems = () => {
                          safeToLowerCase(report.stationId).includes(safeToLowerCase(searchTerm)) ||
                          safeToLowerCase(report.issue).includes(safeToLowerCase(searchTerm)) ||
                          safeToLowerCase(report.userEmail).includes(safeToLowerCase(searchTerm));
-    const matchesStatus = filterStatus === 'all' || safeToLowerCase(report.status) === filterStatus;
+    
+    // For newest/oldest, don't filter by status - show all reports
+    const matchesStatus = filterStatus === 'all' || 
+                         filterStatus === 'newest' || 
+                         filterStatus === 'oldest' || 
+                         safeToLowerCase(report.status) === filterStatus;
+    
     const matchesUrgency = filterUrgency === 'all' || safeToLowerCase(report.urgency) === filterUrgency;
     return matchesSearch && matchesStatus && matchesUrgency;
+  }).sort((a, b) => {
+    // Handle newest and oldest sorting
+    if (filterStatus === 'newest') {
+      // Find original reports to get raw dateTime data
+      const originalA = reports.find(r => (r.transaction_id || r.id) === a.id);
+      const originalB = reports.find(r => (r.transaction_id || r.id) === b.id);
+      
+      if (originalA?.dateTime && originalB?.dateTime) {
+        // Handle Firestore timestamp format
+        const dateA = originalA.dateTime.seconds ? new Date(originalA.dateTime.seconds * 1000) : new Date(originalA.dateTime);
+        const dateB = originalB.dateTime.seconds ? new Date(originalB.dateTime.seconds * 1000) : new Date(originalB.dateTime);
+        return dateB - dateA; // Newest first
+      }
+    } else if (filterStatus === 'oldest') {
+      // Find original reports to get raw dateTime data
+      const originalA = reports.find(r => (r.transaction_id || r.id) === a.id);
+      const originalB = reports.find(r => (r.transaction_id || r.id) === b.id);
+      
+      if (originalA?.dateTime && originalB?.dateTime) {
+        // Handle Firestore timestamp format
+        const dateA = originalA.dateTime.seconds ? new Date(originalA.dateTime.seconds * 1000) : new Date(originalA.dateTime);
+        const dateB = originalB.dateTime.seconds ? new Date(originalB.dateTime.seconds * 1000) : new Date(originalB.dateTime);
+        return dateA - dateB; // Oldest first
+      }
+    }
+    // Default sorting (no change)
+    return 0;
   });
 
   const handleNavigation = (route, deviceId) => {
@@ -268,9 +306,9 @@ const AdminProblems = () => {
     try {
       // Here you would typically send the response to the user via email or notification system
       // For now, we'll just show a success message
-    showSuccess('Response sent to user successfully!');
-    setResponseText('');
-    setIsDialogOpen(false);
+      showSuccess('Response sent to user successfully!');
+      setResponseText('');
+      setIsDialogOpen(false);
     } catch (error) {
       console.error('Error sending response:', error);
       showError('Failed to send response. Please try again.');
@@ -286,7 +324,7 @@ const AdminProblems = () => {
       console.log('New Status:', newStatus);
       
       // Find the original report data
-      const originalReport = reports.find(r => r.id === reportId);
+      const originalReport = reports.find(r => (r.transaction_id || r.id) === reportId);
       if (!originalReport) {
         showError('Report not found');
         return;
@@ -294,23 +332,21 @@ const AdminProblems = () => {
       
       console.log('Original report:', originalReport);
       
-      // Prepare the update data - only send the fields that need to be updated
+      // Prepare the update data according to the API specification
       const updateData = {
-        id: reportId,
-        status: newStatus,
-        // Add any additional fields that might be needed for the update
-        updatedAt: new Date().toISOString()
+        problem_id: reportId,
+        status_update: newStatus
       };
       
       console.log('Update data:', updateData);
       
-      // Try the most likely API endpoint for updating reports
-      const endpoint = 'https://api-qcusolarcharge.up.railway.app/report/updateReport';
+      // Use the correct API endpoint for updating reports
+      const endpoint = 'https://api-qcusolarcharge.up.railway.app/admin/updateReport';
       
       console.log(`Updating report via: ${endpoint}`);
       
       const response = await authenticatedAdminFetch(endpoint, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -336,52 +372,7 @@ const AdminProblems = () => {
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      
-      // If the API call fails, try alternative endpoints
-      try {
-        console.log('Trying alternative endpoint...');
-        
-        // Try PATCH method instead
-        const patchResponse = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/updateReport', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id: reportId,
-            status: newStatus
-          })
-        });
-        
-        if (patchResponse.ok) {
-          const patchData = await patchResponse.json();
-          console.log('PATCH update response:', patchData);
-          
-    showSuccess(`Report ${reportId} status updated to ${newStatus}`);
-          
-          // Refresh reports to show updated status
-          setTimeout(() => {
-            fetchReports();
-          }, 1000);
-        } else {
-          throw new Error('PATCH method also failed');
-        }
-      } catch (patchError) {
-        console.error('PATCH method also failed:', patchError);
-        
-        // If all API methods fail, update local state as fallback
-        console.log('All API methods failed, updating local state...');
-        
-        setReports(prevReports => 
-          prevReports.map(report => 
-            report.id === reportId 
-              ? { ...report, status: newStatus }
-              : report
-          )
-        );
-        
-        showSuccess(`Report ${reportId} status updated to ${newStatus} (local update - API endpoint may not be available)`);
-      }
+      showError(`Failed to update report status: ${error.message}`);
     } finally {
       setUpdatingStatus(false);
     }
@@ -472,6 +463,8 @@ const AdminProblems = () => {
               <option value="investigating">Investigating</option>
               <option value="scheduled">Scheduled</option>
               <option value="resolved">Resolved</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
             </select>
 
             <select 
@@ -533,9 +526,6 @@ const AdminProblems = () => {
                       <Calendar className="detail-icon" />
                       <span>{report.reportedDate} at {report.reportedTime}</span>
                     </div>
-                    <div className="detail-item">
-                      <span>Assigned to: {report.assignedTo}</span>
-                    </div>
                   </div>
                 </div>
                 
@@ -553,9 +543,12 @@ const AdminProblems = () => {
               </div>
               
               <div className="report-content">
-                <p className="report-description">
-                  {report.description}
-                </p>
+                <div className="description-box">
+                  <div className="description-label">Description:</div>
+                  <div className="description-text">
+                    "{report.description}"
+                  </div>
+                </div>
                 
                   {safeToLowerCase(report.status) === 'scheduled' && report.scheduledDate && (
                   <div className="status-info status-blue">

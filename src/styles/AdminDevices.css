@@ -524,9 +524,15 @@
     }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
     #admin-devices .devices-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    #admin-devices .devices-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
