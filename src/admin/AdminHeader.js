@@ -5,7 +5,6 @@ import {
   Home, 
   Smartphone, 
   AlertTriangle, 
-  Settings, 
   LogOut, 
   Moon, 
   Sun,
@@ -115,10 +114,6 @@ const AdminHeader = ({ title, navigate }) => {
             )}
           </button>
 
-          {/* Settings */}
-          <button className="action-button">
-            <Settings className="h-5 w-5" />
-          </button>
 
           {/* Logout */}
           <button className="action-button" onClick={handleLogout}>

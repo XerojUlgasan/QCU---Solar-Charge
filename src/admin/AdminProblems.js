@@ -30,6 +30,7 @@ const AdminProblems = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [deviceInfo, setDeviceInfo] = useState([]); // Store device info from dashboard
 
   // Helper function to safely convert to string and lowercase
   const safeToLowerCase = (value) => {
@@ -77,10 +78,39 @@ const AdminProblems = () => {
     }
   }, [authenticatedAdminFetch]);
 
+  // Fetch device information from admin dashboard
+  const fetchDeviceInfo = useCallback(async () => {
+    try {
+      console.log('=== FETCHING DEVICE INFO FROM DASHBOARD ===');
+      
+      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Dashboard data:', data);
+        
+        if (data.devices && Array.isArray(data.devices)) {
+          console.log('✅ Device info loaded:', data.devices.length, 'devices');
+          setDeviceInfo(data.devices);
+        } else {
+          console.log('⚠️ No devices found in dashboard data');
+          setDeviceInfo([]);
+        }
+      } else {
+        console.log('⚠️ Dashboard API not available');
+        setDeviceInfo([]);
+      }
+    } catch (err) {
+      console.log('⚠️ Device info fetch failed:', err.message);
+      setDeviceInfo([]);
+    }
+  }, [authenticatedAdminFetch]);
+
   // Fetch reports when component mounts
   useEffect(() => {
     fetchReports();
-  }, [fetchReports]);
+    fetchDeviceInfo();
+  }, [fetchReports, fetchDeviceInfo]);
 
   // Format date for display
   const formatDate = (dateTime) => {
@@ -153,6 +183,39 @@ const AdminProblems = () => {
     }
   };
 
+  // Get device information for a report
+  const getDeviceInfo = (reportLocation) => {
+    if (!deviceInfo || deviceInfo.length === 0) {
+      return {
+        name: `Device ${reportLocation || 'Unknown'}`,
+        location: reportLocation || 'Unknown Location',
+        building: 'Unknown Building'
+      };
+    }
+
+    // Try to find matching device by location or device_id
+    const device = deviceInfo.find(d => 
+      d.location === reportLocation || 
+      d.device_id === reportLocation ||
+      d.name === reportLocation
+    );
+
+    if (device) {
+      return {
+        name: device.name || `Device ${device.device_id || 'Unknown'}`,
+        location: device.location || reportLocation || 'Unknown Location',
+        building: device.building || 'Unknown Building'
+      };
+    }
+
+    // Fallback to report location
+    return {
+      name: `Device ${reportLocation || 'Unknown'}`,
+      location: reportLocation || 'Unknown Location',
+      building: 'Unknown Building'
+    };
+  };
+
   // Format reports for display
   const formatReports = () => {
     if (!reports || reports.length === 0) return [];
@@ -176,12 +239,16 @@ const AdminProblems = () => {
       } else if (!urgencyLevel || typeof urgencyLevel !== 'string') {
         urgencyLevel = 'medium';
       }
+
+      // Get device information
+      const deviceInfoData = getDeviceInfo(report.location);
       
       return {
         id: report.transaction_id || report.id,
         stationId: report.location || 'Unknown Station',
-        stationName: report.location || 'Unknown Location',
-        building: report.location || 'Unknown Building',
+        stationName: deviceInfoData.name,
+        stationLocation: `${deviceInfoData.location} • ${deviceInfoData.building}`,
+        building: deviceInfoData.building,
         userEmail: report.email || 'Unknown Email',
         userName: report.name || (report.email ? report.email.split('@')[0] : 'Anonymous User'),
         userPhoto: report.photo || null,
@@ -516,7 +583,7 @@ const AdminProblems = () => {
                   <div className="report-details">
                     <div className="detail-item">
                       <MapPin className="detail-icon" />
-                      <span>{report.stationName} ({report.stationId})</span>
+                      <span className="station-location">{report.stationLocation}</span>
                     </div>
                     <div className="detail-item">
                       <User className="detail-icon" />
@@ -612,8 +679,8 @@ const AdminProblems = () => {
                   <div className="detail-section">
                     <h4 className="section-title">Station Details</h4>
                     <div className="detail-content">
-                      <p>{selectedReport.stationName}</p>
-                      <p>{selectedReport.building}</p>
+                      <p className="station-name">{selectedReport.stationName}</p>
+                      <p className="station-location">{selectedReport.stationLocation}</p>
                       <p>ID: {selectedReport.stationId}</p>
                     </div>
                   </div>

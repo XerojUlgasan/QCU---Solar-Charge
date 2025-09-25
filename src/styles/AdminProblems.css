@@ -38,13 +38,13 @@
 #admin-problems .stat-title {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #9aa3b2;
+    color: #e2e8f0;
 }
 
 #admin-problems .stat-icon {
     width: 1rem;
     height: 1rem;
-    color: #9aa3b2;
+    color: #cbd5e1;
 }
 
 #admin-problems .stat-content {
@@ -73,7 +73,7 @@
 
 #admin-problems .stat-description {
     font-size: 0.75rem;
-    color: #9aa3b2;
+    color: #cbd5e1;
 }
 
 /* Filters Section */
@@ -292,18 +292,23 @@
     flex-direction: column;
     gap: 0.4rem;
     font-size: 0.875rem;
-    color: #9aa3b2;
+    color: #cbd5e1;
 }
 
 #admin-problems .detail-item {
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    align-items: flex-start;
+    gap: 0.5rem;
 }
 
 #admin-problems .detail-icon {
     width: 0.875rem;
     height: 0.875rem;
+}
+
+#admin-problems .station-location {
+    color: #cbd5e1;
+    font-size: 0.875rem;
 }
 
 #admin-problems .report-actions {
@@ -354,7 +359,7 @@
 #admin-problems .description-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #9aa3b2;
+    color: #cbd5e1;
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -643,11 +648,11 @@
 }
 
 .light #admin-problems .stat-title {
-    color: #6b7280;
+    color: #374151;
 }
 
 .light #admin-problems .stat-icon {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .stat-value {
@@ -655,7 +660,7 @@
 }
 
 .light #admin-problems .stat-description {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .search-input,
@@ -672,7 +677,7 @@
 }
 
 .light #admin-problems .search-input::placeholder {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .report-title {
@@ -680,7 +685,11 @@
 }
 
 .light #admin-problems .report-details {
-    color: #6b7280;
+    color: #4b5563;
+}
+
+.light #admin-problems .station-location {
+    color: #4b5563;
 }
 
 .light #admin-problems .description-box {
@@ -694,7 +703,7 @@
 }
 
 .light #admin-problems .description-label {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .description-text {
@@ -703,7 +712,7 @@
 
 .light #admin-problems .view-details-button {
     border-color: #d1d5db;
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .view-details-button:hover {
@@ -712,7 +721,7 @@
 }
 
 .light #admin-problems .report-description {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .dialog-content {
@@ -725,11 +734,11 @@
 }
 
 .light #admin-problems .dialog-description {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .dialog-close {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .dialog-close:hover {
@@ -743,20 +752,20 @@
 
 .light #admin-problems .problem-description {
     background-color: #f3f4f6;
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .solution-content {
     background-color: rgba(34, 197, 94, 0.1);
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .solution-date {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .detail-content {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .response-textarea {
@@ -771,12 +780,12 @@
 }
 
 .light #admin-problems .response-textarea::placeholder {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .action-button {
     border-color: #d1d5db;
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .action-button:hover {
@@ -785,9 +794,9 @@
 }
 
 .light #admin-problems .no-reports {
-    color: #6b7280;
+    color: #4b5563;
 }
 
 .light #admin-problems .no-reports-icon {
-    color: #6b7280;
+    color: #4b5563;
 }
