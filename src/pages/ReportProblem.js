@@ -214,6 +214,51 @@ function ReportProblem() {
         }
     };
 
+    // Get device information for a report
+    const getDeviceInfo = (deviceId) => {
+        if (!stations || stations.length === 0) {
+            return {
+                name: `Device ${deviceId || 'Unknown'}`,
+                location: deviceId || 'Unknown Location',
+                building: 'Unknown Building'
+            };
+        }
+
+        // Try to find matching device by device_id, location, or name
+        const device = stations.find(d => 
+            d.device_id === deviceId || 
+            d.location === deviceId ||
+            d.name === deviceId ||
+            d.id === deviceId
+        );
+
+        if (device) {
+            return {
+                name: device.name || `Device ${deviceId}`,
+                location: device.location || 'Unknown Location',
+                building: device.building || 'Unknown Building'
+            };
+        }
+
+        return {
+            name: `Device ${deviceId || 'Unknown'}`,
+            location: deviceId || 'Unknown Location',
+            building: 'Unknown Building'
+        };
+    };
+
+    // Format location to show as "1st Floor, Main Entrance • Academic Building"
+    const formatLocation = (deviceId, building) => {
+        const deviceInfo = getDeviceInfo(deviceId);
+        
+        if (deviceInfo.location && deviceInfo.building) {
+            return `${deviceInfo.location} • ${deviceInfo.building}`;
+        }
+        if (deviceInfo.location) return deviceInfo.location;
+        if (deviceInfo.building) return deviceInfo.building;
+        return "Unknown Location";
+    };
+
     // Format reports for display
     const formatReports = () => {
         console.log('📊 formatReports called');
@@ -232,7 +277,7 @@ function ReportProblem() {
                 return {
                     id: report.transaction_id || report.id,
                     issue: report.type || report.description || 'Unknown Issue',
-                    location: report.location || 'Unknown Location',
+                    location: formatLocation(report.location, report.building),
                     status: report.status || 'For Review',
                     urgencyLevel: report.urgencyLevel || 'Medium',
                     reportedBy: report.email ? report.email.split('@')[0] : 'Anonymous',
@@ -272,6 +317,7 @@ function ReportProblem() {
         switch (status.toLowerCase()) {
             case 'resolved': return 'status-resolved';
             case 'investigating': return 'status-investigating';
+            case 'for review': return 'status-scheduled';
             case 'scheduled': return 'status-scheduled';
             default: return 'status-default';
         }
@@ -291,6 +337,13 @@ function ReportProblem() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <path d="M12 6v6l4 2"></path>
+                    </svg>
+                );
+            case 'for review':
+                return (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                 );
             case 'scheduled': 

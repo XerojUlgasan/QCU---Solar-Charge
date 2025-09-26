@@ -26,6 +26,7 @@ const AdminProblems = () => {
   const [filterStatus, setFilterStatus] = useState('newest');
   const [filterUrgency, setFilterUrgency] = useState('all');
   const [selectedReport, setSelectedReport] = useState(null);
+  const [popupReport, setPopupReport] = useState(null);
   const [responseText, setResponseText] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reports, setReports] = useState([]);
@@ -455,6 +456,7 @@ const AdminProblems = () => {
     showSuccess('Response sent to user successfully!');
     setResponseText('');
     setIsDialogOpen(false);
+    setPopupReport(null);
         
         // Optionally refresh reports to show any updates
         setTimeout(() => {
@@ -523,6 +525,10 @@ const AdminProblems = () => {
         console.log('Status update response:', responseData);
         
     showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+        
+        // Close the popup
+        setIsDialogOpen(false);
+        setPopupReport(null);
         
         // Refresh reports to show updated status
         setTimeout(() => {
@@ -735,6 +741,7 @@ const AdminProblems = () => {
                     className="view-details-button"
                     onClick={() => {
                       setSelectedReport(report);
+                      setPopupReport(report);
                       setIsDialogOpen(true);
                     }}
                   >
@@ -795,7 +802,10 @@ const AdminProblems = () => {
                 </p>
                 <button 
                   className="dialog-close"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setPopupReport(null);
+                  }}
                 >
                   ×
                 </button>
@@ -856,22 +866,22 @@ const AdminProblems = () => {
                 </div>
 
                 <div className="action-buttons">
-                  {safeToLowerCase(selectedReport.status) !== 'resolved' && (
+                  {safeToLowerCase(popupReport.status) !== 'resolved' && (
                     <>
                       <button 
                         className="action-button"
-                        onClick={() => handleUpdateStatus(selectedReport.id, 
-                          safeToLowerCase(selectedReport.status) === 'investigating' ? 'for review' : 'investigating'
+                        onClick={() => handleUpdateStatus(popupReport.id, 
+                          safeToLowerCase(popupReport.status) === 'investigating' ? 'for review' : 'investigating'
                         )}
                         disabled={updatingStatus}
                       >
                         {updatingStatus ? 'Updating...' : 
-                          safeToLowerCase(selectedReport.status) === 'investigating' ? 'Mark as For Review' : 'Mark as Investigating'
+                          safeToLowerCase(popupReport.status) === 'investigating' ? 'Mark as For Review' : 'Mark as Investigating'
                         }
                       </button>
                       <button 
                         className="action-button"
-                        onClick={() => handleUpdateStatus(selectedReport.id, 'resolved')}
+                        onClick={() => handleUpdateStatus(popupReport.id, 'resolved')}
                         disabled={updatingStatus}
                       >
                         {updatingStatus ? 'Updating...' : 'Mark as Resolved'}
@@ -880,7 +890,7 @@ const AdminProblems = () => {
                   )}
                   <button 
                     className="action-button"
-                    onClick={() => handleNavigation('admin-device-detail', selectedReport.stationId)}
+                    onClick={() => handleNavigation('admin-device-detail', popupReport.stationId)}
                   >
                     <ExternalLink className="button-icon" />
                     View Station
