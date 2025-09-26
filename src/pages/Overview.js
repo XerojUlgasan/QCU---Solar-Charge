@@ -11,6 +11,7 @@ function Overview() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAllStations, setShowAllStations] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
         fetchOverviewData();
@@ -162,6 +163,31 @@ function Overview() {
         }
     };
 
+    const getFilteredDevices = () => {
+        if (statusFilter === 'all') {
+            return overviewData.devices;
+        }
+        
+        return overviewData.devices.filter(device => {
+            const status = device.status?.toLowerCase();
+            switch (statusFilter) {
+                case 'active':
+                    return status === 'active' || 
+                           status === 'online' || 
+                           status === 'running' || 
+                           status === 'operational' ||
+                           status === 'connected' ||
+                           (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
+                case 'inactive':
+                    return status === 'inactive' || status === 'offline' || status === 'error' || status === 'failed' || status === 'disconnected';
+                case 'maintenance':
+                    return status === 'maintenance';
+                default:
+                    return true;
+            }
+        });
+    };
+
     return (
         <div id="overview-page">
             <div className="container">
@@ -191,7 +217,17 @@ function Overview() {
                 ) : (
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-value" style={{color: '#22c55e'}}>{overviewData.active}</div>
+                        <div className="stat-value" style={{color: '#22c55e'}}>
+                            {overviewData.devices.filter(device => {
+                                const status = device.status?.toLowerCase();
+                                return status === 'active' || 
+                                       status === 'online' || 
+                                       status === 'running' || 
+                                       status === 'operational' ||
+                                       status === 'connected' ||
+                                       (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
+                            }).length}
+                        </div>
                         <div className="stat-label">Active Stations</div>
                     </div>
                     <div className="stat-card">
@@ -349,20 +385,40 @@ function Overview() {
                 <div className="modal-overlay" onClick={() => setShowAllStations(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>All Stations ({overviewData.devices.length})</h2>
-                            <button 
-                                className="modal-close"
-                                onClick={() => setShowAllStations(false)}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
+                            <h2>All Stations ({getFilteredDevices().length})</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <select 
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    style={{
+                                        padding: '6px 12px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #1e2633',
+                                        backgroundColor: '#0f141c',
+                                        color: '#eaecef',
+                                        fontSize: '14px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="maintenance">Maintenance</option>
+                                </select>
+                                <button 
+                                    className="modal-close"
+                                    onClick={() => setShowAllStations(false)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <div className="modal-body">
                             <div className="stations-grid-modal">
-                                {overviewData.devices.map((device, index) => (
+                                {getFilteredDevices().map((device, index) => (
                                     <div key={index} className="station-card">
                                         <div className="station-header">
                                             <div className="station-info">

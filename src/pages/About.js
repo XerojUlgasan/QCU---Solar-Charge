@@ -70,6 +70,42 @@ function About() {
       role: "Campus Coordinator",
       description: "Managing station deployment and user support",
       initials: "AR"
+    },
+    {
+      name: "Emily Watson",
+      role: "Software Developer",
+      description: "Building the backend systems and mobile applications",
+      initials: "EW"
+    },
+    {
+      name: "Michael Torres",
+      role: "Hardware Engineer",
+      description: "Designing and implementing charging station hardware",
+      initials: "MT"
+    },
+    {
+      name: "Lisa Park",
+      role: "Data Analyst",
+      description: "Analyzing usage patterns and optimizing system performance",
+      initials: "LP"
+    },
+    {
+      name: "David Johnson",
+      role: "Maintenance Specialist",
+      description: "Ensuring optimal performance and reliability of stations",
+      initials: "DJ"
+    },
+    {
+      name: "Rachel Green",
+      role: "Marketing Coordinator",
+      description: "Promoting sustainable charging solutions across campus",
+      initials: "RG"
+    },
+    {
+      name: "James Wilson",
+      role: "Research Assistant",
+      description: "Supporting research and development of new features",
+      initials: "JW"
     }
   ];
 
@@ -149,17 +185,98 @@ function About() {
         {/* Team Section */}
         <div className="mb-20">
           <h2 className="font-bold text-center mb-12" style={{fontSize: '32px'}}>Meet Our Team</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <div key={index} className="text-white flex flex-col rounded-xl text-center" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633', padding: '20px'}}>
-                <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
-                  {member.initials}
+          <div className="pyramid-container" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            {/* Row 1 - 1 member (Director) */}
+            <div className="pyramid-row" style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px'
+            }}>
+              <div className="text-white flex flex-col rounded-lg text-center" style={{
+                backgroundColor: '#0f141c', 
+                border: '1px solid #1e2633', 
+                padding: '16px',
+                width: '220px'
+              }}>
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
+                  {team[0].initials}
                 </div>
-                <h4 className="font-semibold mb-1" style={{fontSize: '18px'}}>{member.name}</h4>
-                <p className="font-medium text-green-500 mb-3" style={{fontSize: '16px'}}>{member.role}</p>
-                <p style={{color: '#9aa3b2', fontSize: '16px'}}>{member.description}</p>
+                <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{team[0].name}</h4>
+                <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{team[0].role}</p>
               </div>
-            ))}
+            </div>
+
+            {/* Row 2 - 2 members (Lead roles) */}
+            <div className="pyramid-row" style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px'
+            }}>
+              {team.slice(1, 3).map((member, index) => (
+                <div key={index} className="text-white flex flex-col rounded-lg text-center" style={{
+                  backgroundColor: '#0f141c', 
+                  border: '1px solid #1e2633', 
+                  padding: '16px',
+                  width: '220px'
+                }}>
+                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
+                    {member.initials}
+                  </div>
+                  <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{member.name}</h4>
+                  <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{member.role}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Row 3 - 3 members (Core team) */}
+            <div className="pyramid-row" style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px'
+            }}>
+              {team.slice(3, 6).map((member, index) => (
+                <div key={index} className="text-white flex flex-col rounded-lg text-center" style={{
+                  backgroundColor: '#0f141c', 
+                  border: '1px solid #1e2633', 
+                  padding: '16px',
+                  width: '220px'
+                }}>
+                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
+                    {member.initials}
+                  </div>
+                  <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{member.name}</h4>
+                  <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{member.role}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Row 4 - 4 members (Support team) */}
+            <div className="pyramid-row" style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px',
+              flexWrap: 'wrap'
+            }}>
+              {team.slice(6, 10).map((member, index) => (
+                <div key={index} className="text-white flex flex-col rounded-lg text-center" style={{
+                  backgroundColor: '#0f141c', 
+                  border: '1px solid #1e2633', 
+                  padding: '16px',
+                  width: '220px'
+                }}>
+                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
+                    {member.initials}
+                  </div>
+                  <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{member.name}</h4>
+                  <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{member.role}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
