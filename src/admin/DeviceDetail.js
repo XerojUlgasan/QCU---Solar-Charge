@@ -789,7 +789,7 @@ const DeviceDetail = () => {
   return (
     <div id="device-detail">
       <AdminHeader 
-        title={`${device.name} - ${device.id}`}
+        title={`${device.name} (${device.id})`}
         navigate={handleNavigation}
       />
       
