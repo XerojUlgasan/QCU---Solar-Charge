@@ -241,7 +241,9 @@ const AdminDevices = () => {
   }, [fetchDevicesData]);
 
   const getStatusColor = (status) => {
-    switch (status) {
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
       case 'active': return 'status-active';
       case 'maintenance': return 'status-maintenance';
       case 'offline': return 'status-offline';

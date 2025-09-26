@@ -11,7 +11,9 @@ import {
   MapPin,
   Activity,
   CreditCard,
-  Filter
+  Filter,
+  X,
+  ArrowUpDown
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
@@ -59,6 +61,8 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [timeFilter, setTimeFilter] = useState('daily');
   const [connectionStatus, setConnectionStatus] = useState('testing');
+  const [isTransactionsPopupOpen, setIsTransactionsPopupOpen] = useState(false);
+  const [transactionsFilter, setTransactionsFilter] = useState('newest');
 
   // Test API endpoint availability
   const testAPIEndpoint = async () => {
@@ -131,10 +135,10 @@ const AdminDashboard = () => {
         let activeDevices = 0;
         
         if (data.devices && Array.isArray(data.devices)) {
-          activeDevices = data.devices.filter(device => device.status === 'active').length;
+          activeDevices = data.devices.filter(device => device.status?.toLowerCase() === 'active').length;
           
           // Calculate averages from active devices
-          const activeDevicesList = data.devices.filter(device => device.status === 'active');
+          const activeDevicesList = data.devices.filter(device => device.status?.toLowerCase() === 'active');
           if (activeDevicesList.length > 0) {
             aggregateVolt = activeDevicesList.reduce((sum, device) => sum + (device.volt || 0), 0) / activeDevicesList.length;
             aggregateCurrent = activeDevicesList.reduce((sum, device) => sum + (device.current || 0), 0) / activeDevicesList.length;
@@ -318,7 +322,9 @@ const AdminDashboard = () => {
   };
 
   const getStatusText = (status) => {
-    switch (status) {
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
       case 'active': return 'Active';
       case 'maintenance': return 'Maintenance';
       case 'offline': return 'Offline';
@@ -382,6 +388,27 @@ const AdminDashboard = () => {
     return totalRevenue;
   };
 
+  // Helper function to format device location
+  const formatDeviceLocation = (location, building) => {
+    if (!location && !building) return "Unknown Location";
+    
+    // If location already contains the full format, return it
+    if (location && location.includes('•')) return location;
+    
+    // Format as "1st Floor, Main Entrance • Academic Building"
+    if (location && building) {
+      return `${location} • ${building}`;
+    }
+    
+    // If only location is available
+    if (location) return location;
+    
+    // If only building is available
+    if (building) return building;
+    
+    return "Unknown Location";
+  };
+
   // Use devices from API data, with fallback to mock data
   const deviceStatus = overviewData.devices && overviewData.devices.length > 0 
     ? overviewData.devices.map(device => {
@@ -394,7 +421,7 @@ const AdminDashboard = () => {
         return {
           id: actualDeviceId || `Device-${Math.random()}`,
           name: device.name || "Unknown Device",
-          location: device.location || "Unknown Location",
+          location: formatDeviceLocation(device.location, device.building),
           status: device.status || "unknown",
           voltage: `${device.volt || 0}V`,
           power: formatPower(device.power || 0),
@@ -451,18 +478,47 @@ const AdminDashboard = () => {
         }
       ];
 
-  // Use transactions from API data, limit to 3 most recent
-  const recentTransactions = overviewData.transactions.slice(0, 3).map((transaction, index) => ({
+  // Helper function to format timestamp
+  const formatTransactionTime = (timeData) => {
+    if (!timeData) return "Unknown time";
+    
+    // If it's already a string, return it
+    if (typeof timeData === 'string') return timeData;
+    
+    // If it's a Firestore timestamp object
+    if (timeData.seconds) {
+      const date = new Date(timeData.seconds * 1000);
+      return date.toLocaleString();
+    }
+    
+    // If it's a Date object
+    if (timeData instanceof Date) {
+      return timeData.toLocaleString();
+    }
+    
+    // If it's a number (Unix timestamp)
+    if (typeof timeData === 'number') {
+      const date = new Date(timeData);
+      return date.toLocaleString();
+    }
+    
+    return "Unknown time";
+  };
+
+  // Use transactions from API data, limit to 6 most recent
+  const recentTransactions = overviewData.transactions.slice(0, 6).map((transaction, index) => ({
     id: transaction.id || `TXN-${index + 1}`,
     user: transaction.user || transaction.email || "Unknown User",
     station: transaction.station || transaction.device_id || "Unknown Station",
     amount: transaction.amount || "₱0.00",
     type: transaction.type || "payment",
-    time: transaction.time || transaction.timestamp || "Unknown time"
+    time: formatTransactionTime(transaction.time || transaction.timestamp || transaction.date_time)
   }));
 
   const getStatusColor = (status) => {
-    switch (status) {
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
       case 'active': return 'status-active';
       case 'maintenance': return 'status-maintenance';
       case 'offline': return 'status-offline';
@@ -476,6 +532,58 @@ const AdminDashboard = () => {
     ) : (
       <TrendingDown className="w-4 h-4 change-icon-negative" />
     );
+  };
+
+  // Filter and sort transactions for popup
+  const getFilteredTransactions = () => {
+    // Use all transactions from API, not just the limited recent ones
+    const allTransactions = overviewData.transactions.map((transaction, index) => ({
+      id: transaction.id || `TXN-${index + 1}`,
+      user: transaction.user || transaction.email || "Unknown User",
+      station: transaction.station || transaction.device_id || "Unknown Station",
+      amount: transaction.amount || "₱0.00",
+      type: transaction.type || "payment",
+      time: formatTransactionTime(transaction.time || transaction.timestamp || transaction.date_time)
+    }));
+    
+    let filtered = [...allTransactions];
+    
+    switch (transactionsFilter) {
+      case 'newest':
+        // Sort by time (newest first) - assuming time is in a sortable format
+        filtered.sort((a, b) => {
+          // Simple string comparison for time - you might need to adjust this
+          return b.time.localeCompare(a.time);
+        });
+        break;
+      case 'oldest':
+        // Sort by time (oldest first)
+        filtered.sort((a, b) => {
+          return a.time.localeCompare(b.time);
+        });
+        break;
+      case 'highest':
+        // Sort by amount (highest first)
+        filtered.sort((a, b) => {
+          // Extract numeric value from amount string
+          const getAmountValue = (amountStr) => {
+            if (!amountStr) return 0;
+            // Remove ₱ symbol and any commas, then parse
+            const cleanAmount = amountStr.toString().replace(/[₱,]/g, '').trim();
+            const parsed = parseFloat(cleanAmount);
+            return isNaN(parsed) ? 0 : parsed;
+          };
+          
+          const amountA = getAmountValue(a.amount);
+          const amountB = getAmountValue(b.amount);
+          return amountB - amountA;
+        });
+        break;
+      default:
+        break;
+    }
+    
+    return filtered;
   };
 
   const getChangeColor = (type) => {
@@ -578,7 +686,7 @@ const AdminDashboard = () => {
                       <div className="device-name">{device.name}</div>
                       <div className="device-location">
                         <MapPin className="w-3 h-3" />
-                        <span>{device.id}</span>
+                        <span>{device.location}</span>
                       </div>
                     </div>
                   </div>
@@ -661,6 +769,12 @@ const AdminDashboard = () => {
             <div className="card-header">
               <div className="card-title">Recent Transactions</div>
               <div className="card-description">Latest charging sessions and payments</div>
+              <button 
+                className="view-all-button"
+                onClick={() => setIsTransactionsPopupOpen(true)}
+              >
+                View All
+              </button>
             </div>
             <div className="card-content">
               {recentTransactions.map((transaction) => (
@@ -699,6 +813,66 @@ const AdminDashboard = () => {
           </>
         )}
       </div>
+
+      {/* Transactions Popup */}
+      {isTransactionsPopupOpen && (
+        <div className="transactions-popup-overlay">
+          <div className="transactions-popup">
+            <div className="popup-header">
+              <h2>All Transactions</h2>
+              <button 
+                className="popup-close"
+                onClick={() => setIsTransactionsPopupOpen(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="popup-filters">
+              <div className="filter-group">
+                <label>Sort by:</label>
+                <select 
+                  value={transactionsFilter} 
+                  onChange={(e) => setTransactionsFilter(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="highest">Highest Amount</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="popup-content">
+              {getFilteredTransactions().map((transaction) => (
+                <div key={transaction.id} className="transaction-item">
+                  <div className="transaction-info">
+                    <div className="transaction-icon">
+                      {transaction.type === 'rfid' ? (
+                        <Clock className="w-4 h-4" />
+                      ) : (
+                        <CreditCard className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="transaction-user">{transaction.user}</div>
+                      <div className="transaction-details">
+                        Station {transaction.station} • {transaction.time}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="transaction-amount">
+                    <div className="amount-value">{transaction.amount}</div>
+                    <div className={`amount-badge ${transaction.type === 'rfid' ? 'badge-rfid' : 'badge-payment'}`}>
+                      {transaction.type === 'rfid' ? 'RFID' : 'Payment'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

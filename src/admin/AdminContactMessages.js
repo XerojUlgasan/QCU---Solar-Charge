@@ -28,6 +28,7 @@ const AdminContactMessages = () => {
   const [responseText, setResponseText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('newest');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [error, setError] = useState(null);
 
@@ -174,11 +175,9 @@ const AdminContactMessages = () => {
       
       // Try to send response via API
       const responseData = {
+        id: selectedMessage.id,
         email: selectedMessage.from,
-        response: responseText.trim(),
-        message_id: selectedMessage.id,
-        responded: true,
-        hasRead: true
+        response: responseText.trim()
       };
       
       console.log('Response data:', responseData);
@@ -220,7 +219,7 @@ const AdminContactMessages = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              message_id: selectedMessage.id,
+              contact_id: selectedMessage.id,
               responded: true,
               hasRead: true,
               admin_response: responseText.trim(),
@@ -390,6 +389,18 @@ const AdminContactMessages = () => {
     }
     
     return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    // Sort by date based on dateFilter
+    const timestampA = a.timestamp?.seconds || 0;
+    const timestampB = b.timestamp?.seconds || 0;
+    
+    if (dateFilter === 'newest') {
+      return timestampB - timestampA; // Newest first
+    } else if (dateFilter === 'oldest') {
+      return timestampA - timestampB; // Oldest first
+    }
+    
+    return 0; // No sorting
   });
 
   const stats = {
@@ -470,6 +481,15 @@ const AdminContactMessages = () => {
                  <option value="all">All Status</option>
                  <option value="unread">Unread</option>
                  <option value="responded">Responded</option>
+               </select>
+               
+               <select 
+                 value={dateFilter} 
+                 onChange={(e) => setDateFilter(e.target.value)}
+                 className="filter-select"
+               >
+                 <option value="newest">Newest First</option>
+                 <option value="oldest">Oldest First</option>
                </select>
             </div>
 
@@ -555,18 +575,6 @@ const AdminContactMessages = () => {
                       "{message.message}"
                     </div>
                   </div>
-                  
-                  {message.admin_response && (
-                    <div className="admin-response-box">
-                      <div className="response-label">Admin Response:</div>
-                      <div className="response-text">
-                        "{message.admin_response}"
-                      </div>
-                      <div className="response-date">
-                        Responded: {message.responded_at ? formatDate(message.responded_at) : 'N/A'}
-                      </div>
-                    </div>
-                  )}
                 </div>
                 
                 <div className="message-actions">

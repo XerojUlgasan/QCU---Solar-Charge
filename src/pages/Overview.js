@@ -40,10 +40,16 @@ function Overview() {
     };
 
     const formatPower = (power) => {
-        if (power >= 1000) {
-            return `${(power / 1000).toFixed(1)}kW`;
+        // Handle null, undefined, or non-numeric values
+        if (power === null || power === undefined || isNaN(power)) {
+            return '0W';
         }
-        return `${power.toFixed(1)}W`;
+        
+        const numericPower = Number(power);
+        if (numericPower >= 1000) {
+            return `${(numericPower / 1000).toFixed(1)}kW`;
+        }
+        return `${numericPower.toFixed(1)}W`;
     };
 
     const formatLastUpdated = (timestamp) => {
@@ -144,7 +150,9 @@ function Overview() {
     ];
 
     const getStatusText = (status) => {
-        switch (status) {
+        // Normalize status to lowercase for comparison
+        const normalizedStatus = status?.toLowerCase();
+        switch (normalizedStatus) {
             case 'active': return 'Active';
             case 'maintenance': return 'Maintenance';
             case 'offline': return 'Offline';
@@ -216,18 +224,18 @@ function Overview() {
                             <div key={index} className="station-card">
                                 <div className="station-header">
                                     <div className="station-info">
-                                        <h3>{device.name}
-                                            <div className={`status-dot ${device.status}`}></div>
+                                        <h3>{device.name || 'Unknown Device'}
+                                            <div className={`status-dot ${(device.status || 'offline').toLowerCase()}`}></div>
                                         </h3>
                                         <div className="station-location">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
                                             </svg>
-                                            <span>{device.location}</span>
+                                            <span>{device.location || 'Unknown Location'}</span>
                                         </div>
                                     </div>
-                                    <span className="station-id">{device.id}</span>
+                                    <span className="station-id">{device.id || 'N/A'}</span>
                                 </div>
                                 <div className="station-details">
                                     <div className="detail-row">
@@ -240,7 +248,7 @@ function Overview() {
                                     </div>
                                     <div className="detail-row">
                                         <span className="label">Temperature</span>
-                                        <span className="value">{device.temperature}°C</span>
+                                        <span className="value">{device.temperature || 'N/A'}°C</span>
                                     </div>
                                     <div className="usage-container">
                                         <div className="detail-row">

@@ -210,6 +210,15 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
+    width: 100%;
+}
+
+/* Center loading and error states */
+#admin-contact-messages .loading-container,
+#admin-contact-messages .error-container {
+    grid-column: 1 / -1;
+    justify-self: center;
+    align-self: center;
 }
 
 @media (min-width: 768px) {
@@ -465,8 +474,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1.5rem;
+    padding: 4rem 1.5rem;
     text-align: center;
+    min-height: 300px;
+    width: 100%;
 }
 
 #admin-contact-messages .loading-spinner {
@@ -484,8 +495,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1.5rem;
+    padding: 4rem 1.5rem;
     text-align: center;
+    min-height: 300px;
+    width: 100%;
 }
 
 #admin-contact-messages .error-message {
@@ -590,6 +603,33 @@
 
 #admin-contact-messages .dialog-body {
     padding: 1rem 1.5rem 1.5rem 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar styling for dark mode */
+#admin-contact-messages .dialog-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#admin-contact-messages .dialog-body::-webkit-scrollbar-track {
+    background: #1e2633;
+    border-radius: 4px;
+}
+
+#admin-contact-messages .dialog-body::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+
+#admin-contact-messages .dialog-body::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Firefox scrollbar styling for dark mode */
+#admin-contact-messages .dialog-body {
+    scrollbar-width: thin;
+    scrollbar-color: #475569 #1e2633;
 }
 
 #admin-contact-messages .section-title {
@@ -858,6 +898,24 @@
 .light #admin-contact-messages .dialog-close:hover {
     background-color: #f3f4f6;
     color: #111827;
+}
+
+/* Light mode scrollbar styling */
+.light #admin-contact-messages .dialog-body::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+
+.light #admin-contact-messages .dialog-body::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+}
+
+.light #admin-contact-messages .dialog-body::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Firefox scrollbar styling for light mode */
+.light #admin-contact-messages .dialog-body {
+    scrollbar-color: #d1d5db #f3f4f6;
 }
 
 .light #admin-contact-messages .section-title {
