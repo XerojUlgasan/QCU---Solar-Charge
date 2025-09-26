@@ -42,9 +42,21 @@
 }
 
 #admin-devices .stat-icon {
-    width: 1rem;
-    height: 1rem;
     color: #9aa3b2;
+    opacity: 0.8;
+}
+
+/* Individual stat icon colors */
+#admin-devices .stat-card:nth-child(1) .stat-icon {
+    color: #22c55e; /* Green for Active Devices */
+}
+
+#admin-devices .stat-card:nth-child(2) .stat-icon {
+    color: #f59e0b; /* Amber for Total Power Output */
+}
+
+#admin-devices .stat-card:nth-child(3) .stat-icon {
+    color: #10b981; /* Emerald for Total Revenue */
 }
 
 #admin-devices .stat-content {
@@ -573,6 +585,19 @@
 
 .light #admin-devices .stat-icon {
     color: #4b5563;
+}
+
+/* Light mode individual stat icon colors */
+.light #admin-devices .stat-card:nth-child(1) .stat-icon {
+    color: #059669; /* Darker green for Active Devices */
+}
+
+.light #admin-devices .stat-card:nth-child(2) .stat-icon {
+    color: #d97706; /* Darker amber for Total Power Output */
+}
+
+.light #admin-devices .stat-card:nth-child(3) .stat-icon {
+    color: #047857; /* Darker emerald for Total Revenue */
 }
 
 .light #admin-devices .stat-value {

@@ -33,26 +33,15 @@
     gap: 0.5rem;
 }
 
-#admin-header .logo-icon-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    background: linear-gradient(90deg, #22c55e, #3b82f6);
-    border-radius: 0.5rem;
+#admin-header .logo-icon {
+    width: 3.5rem;
+    height: 3.5rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-#admin-header .logo-icon-container:hover {
+#admin-header .logo-icon:hover {
     transform: scale(1.05);
-}
-
-#admin-header .logo-icon {
-    width: 1.5rem;
-    height: 1.5rem;
-    color: #ffffff;
 }
 
 #admin-header .logo-text {

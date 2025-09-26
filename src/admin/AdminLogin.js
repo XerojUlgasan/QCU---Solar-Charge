@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import logo from '../logo.svg';
 import '../styles/AdminLogin.css';
 
 const AdminLogin = () => {
@@ -81,7 +82,11 @@ const AdminLogin = () => {
           {/* Logo/Header */}
           <div className="header">
             <div className="logo-container" onClick={handleLogoClick}>
-              <Zap className="logo-icon" />
+              <img 
+                src={logo} 
+                alt="QCU EcoCharge Logo" 
+                className="logo-icon"
+              />
             </div>
             <h1 className="title" onClick={handleLogoClick}>QCU EcoCharge</h1>
             <div className="badge">

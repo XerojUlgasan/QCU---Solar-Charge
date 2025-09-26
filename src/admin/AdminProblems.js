@@ -8,6 +8,7 @@ import {
   MapPin, 
   User, 
   Calendar,
+  Eye,
   MessageSquare,
   ExternalLink,
   RefreshCw
@@ -256,7 +257,7 @@ const AdminProblems = () => {
         issue: report.type || report.description || 'Unknown Issue',
         description: report.description || 'No description provided',
         urgency: urgencyLevel,
-        status: report.status || 'Scheduled',
+        status: report.status || 'For Review',
         reportedDate: formatDate(report.dateTime),
         reportedTime: formatTime(report.dateTime),
         solution: report.solution || null,
@@ -276,6 +277,7 @@ const AdminProblems = () => {
     switch (statusStr) {
       case 'resolved': return 'status-resolved';
       case 'investigating': return 'status-investigating';
+      case 'for review': return 'status-scheduled';
       case 'scheduled': return 'status-scheduled';
       case 'pending': return 'status-pending';
       default: return 'status-default';
@@ -298,6 +300,7 @@ const AdminProblems = () => {
     switch (statusStr) {
       case 'resolved': return <CheckCircle className="w-4 h-4" />;
       case 'investigating': return <Clock className="w-4 h-4" />;
+      case 'for review': return <Eye className="w-4 h-4" />;
       case 'scheduled': return <Calendar className="w-4 h-4" />;
       default: return <AlertTriangle className="w-4 h-4" />;
     }
@@ -563,7 +566,7 @@ const AdminProblems = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Total Reports</div>
-              <MessageSquare className="stat-icon" />
+              <MessageSquare className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value">{statsData.total}</div>
@@ -574,7 +577,7 @@ const AdminProblems = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Under Investigation</div>
-              <Clock className="stat-icon" />
+              <Clock className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value stat-yellow">{statsData.pending}</div>
@@ -585,7 +588,7 @@ const AdminProblems = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Resolved</div>
-              <CheckCircle className="stat-icon" />
+              <CheckCircle className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value stat-green">{statsData.resolved}</div>
@@ -596,7 +599,7 @@ const AdminProblems = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Critical Issues</div>
-              <AlertTriangle className="stat-icon" />
+              <AlertTriangle className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value stat-red">{statsData.critical}</div>
@@ -627,7 +630,7 @@ const AdminProblems = () => {
             >
               <option value="all">All Status</option>
               <option value="investigating">Investigating</option>
-              <option value="scheduled">Scheduled</option>
+              <option value="for review">For Review</option>
               <option value="resolved">Resolved</option>
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
@@ -748,7 +751,7 @@ const AdminProblems = () => {
                   </div>
                 </div>
                 
-                  {safeToLowerCase(report.status) === 'scheduled' && report.scheduledDate && (
+                  {(safeToLowerCase(report.status) === 'scheduled' || safeToLowerCase(report.status) === 'for review') && report.scheduledDate && (
                   <div className="status-info status-blue">
                     Scheduled for resolution: {report.scheduledDate}
                   </div>
@@ -857,10 +860,14 @@ const AdminProblems = () => {
                     <>
                       <button 
                         className="action-button"
-                        onClick={() => handleUpdateStatus(selectedReport.id, 'investigating')}
+                        onClick={() => handleUpdateStatus(selectedReport.id, 
+                          safeToLowerCase(selectedReport.status) === 'investigating' ? 'for review' : 'investigating'
+                        )}
                         disabled={updatingStatus}
                       >
-                        {updatingStatus ? 'Updating...' : 'Mark as Investigating'}
+                        {updatingStatus ? 'Updating...' : 
+                          safeToLowerCase(selectedReport.status) === 'investigating' ? 'Mark as For Review' : 'Mark as Investigating'
+                        }
                       </button>
                       <button 
                         className="action-button"
@@ -889,3 +896,5 @@ const AdminProblems = () => {
 };
 
 export default AdminProblems;
+
+

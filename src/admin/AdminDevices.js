@@ -409,7 +409,7 @@ const AdminDevices = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Active Devices</div>
-              <Activity className="stat-icon" />
+              <Activity className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value">{totalActive}/{devices.length}</div>
@@ -422,7 +422,7 @@ const AdminDevices = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Total Power Output</div>
-              <Zap className="stat-icon" />
+              <Zap className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value">{formatTotalPower(totalPower)}</div>
@@ -435,7 +435,7 @@ const AdminDevices = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Total Revenue</div>
-              <DollarSign className="stat-icon" />
+              <DollarSign className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value">₱{totalRevenue.toLocaleString()}</div>

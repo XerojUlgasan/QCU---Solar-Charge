@@ -42,9 +42,25 @@
 }
 
 #admin-problems .stat-icon {
-    width: 1rem;
-    height: 1rem;
     color: #cbd5e1;
+    opacity: 0.8;
+}
+
+/* Individual stat icon colors */
+#admin-problems .stat-card:nth-child(1) .stat-icon {
+    color: #3b82f6; /* Blue for Total Reports */
+}
+
+#admin-problems .stat-card:nth-child(2) .stat-icon {
+    color: #f59e0b; /* Amber for Under Investigation */
+}
+
+#admin-problems .stat-card:nth-child(3) .stat-icon {
+    color: #22c55e; /* Green for Resolved */
+}
+
+#admin-problems .stat-card:nth-child(4) .stat-icon {
+    color: #ef4444; /* Red for Critical Issues */
 }
 
 #admin-problems .stat-content {
@@ -780,6 +796,23 @@
 
 .light #admin-problems .stat-icon {
     color: #4b5563;
+}
+
+/* Light mode individual stat icon colors */
+.light #admin-problems .stat-card:nth-child(1) .stat-icon {
+    color: #2563eb; /* Darker blue for Total Reports */
+}
+
+.light #admin-problems .stat-card:nth-child(2) .stat-icon {
+    color: #d97706; /* Darker amber for Under Investigation */
+}
+
+.light #admin-problems .stat-card:nth-child(3) .stat-icon {
+    color: #059669; /* Darker green for Resolved */
+}
+
+.light #admin-problems .stat-card:nth-child(4) .stat-icon {
+    color: #dc2626; /* Darker red for Critical Issues */
 }
 
 .light #admin-problems .stat-value {

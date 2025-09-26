@@ -427,7 +427,7 @@ const AdminContactMessages = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Total Messages</div>
-              <Mail className="stat-icon" />
+              <Mail className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value">{stats.total}</div>
@@ -438,7 +438,7 @@ const AdminContactMessages = () => {
            <div className="stat-card">
              <div className="stat-header">
                <div className="stat-title">Unread</div>
-               <Clock className="stat-icon" />
+               <Clock className="w-6 h-6 stat-icon" />
              </div>
              <div className="stat-content">
                <div className="stat-value stat-yellow">{stats.unread}</div>
@@ -449,7 +449,7 @@ const AdminContactMessages = () => {
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-title">Responded</div>
-              <MessageSquare className="stat-icon" />
+              <MessageSquare className="w-6 h-6 stat-icon" />
             </div>
             <div className="stat-content">
               <div className="stat-value stat-blue">{stats.responded}</div>

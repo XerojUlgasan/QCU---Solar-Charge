@@ -233,7 +233,7 @@ function ReportProblem() {
                     id: report.transaction_id || report.id,
                     issue: report.type || report.description || 'Unknown Issue',
                     location: report.location || 'Unknown Location',
-                    status: report.status || 'Scheduled',
+                    status: report.status || 'For Review',
                     urgencyLevel: report.urgencyLevel || 'Medium',
                     reportedBy: report.email ? report.email.split('@')[0] : 'Anonymous',
                     reportedByName: report.name || report.user_name || 'Anonymous',

@@ -42,9 +42,21 @@
 }
 
 #admin-contact-messages .stat-icon {
-    width: 1rem;
-    height: 1rem;
     color: #cbd5e1;
+    opacity: 0.8;
+}
+
+/* Individual stat icon colors */
+#admin-contact-messages .stat-card:nth-child(1) .stat-icon {
+    color: #3b82f6; /* Blue for Total Messages */
+}
+
+#admin-contact-messages .stat-card:nth-child(2) .stat-icon {
+    color: #f59e0b; /* Amber for Unread */
+}
+
+#admin-contact-messages .stat-card:nth-child(3) .stat-icon {
+    color: #10b981; /* Emerald for Responded */
 }
 
 #admin-contact-messages .stat-content {
@@ -757,6 +769,23 @@
 
 .light #admin-contact-messages .stat-title {
     color: #6b7280;
+}
+
+.light #admin-contact-messages .stat-icon {
+    color: #6b7280;
+}
+
+/* Light mode individual stat icon colors */
+.light #admin-contact-messages .stat-card:nth-child(1) .stat-icon {
+    color: #2563eb; /* Darker blue for Total Messages */
+}
+
+.light #admin-contact-messages .stat-card:nth-child(2) .stat-icon {
+    color: #d97706; /* Darker amber for Unread */
+}
+
+.light #admin-contact-messages .stat-card:nth-child(3) .stat-icon {
+    color: #047857; /* Darker emerald for Responded */
 }
 
 .light #admin-contact-messages .stat-value {

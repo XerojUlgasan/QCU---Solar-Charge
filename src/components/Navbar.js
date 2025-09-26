@@ -6,6 +6,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLogout } from '../contexts/LogoutContext';
+import logo from '../logo.svg';
 
 function Navbar() {
     const { isDarkMode, toggleTheme } = useTheme();
@@ -97,11 +98,11 @@ function Navbar() {
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2">
-                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-white">
-                                <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
-                            </svg>
-                        </div>
+                        <img 
+                            src={logo} 
+                            alt="QCU EcoCharge Logo" 
+                            className="w-16 h-16"
+                        />
                         <span className={`font-semibold text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>QCU EcoCharge</span>
                     </Link>
 

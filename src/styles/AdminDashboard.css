@@ -43,6 +43,24 @@
 
 #admin-dashboard .stat-icon {
     color: #9aa3b2;
+    opacity: 0.8;
+}
+
+/* Individual stat icon colors */
+#admin-dashboard .stat-card:nth-child(1) .stat-icon {
+    color: #f59e0b; /* Amber for Energy */
+}
+
+#admin-dashboard .stat-card:nth-child(2) .stat-icon {
+    color: #10b981; /* Emerald for Revenue */
+}
+
+#admin-dashboard .stat-card:nth-child(3) .stat-icon {
+    color: #3b82f6; /* Blue for Device Uses */
+}
+
+#admin-dashboard .stat-card:nth-child(4) .stat-icon {
+    color: #8b5cf6; /* Purple for Active Devices */
 }
 
 #admin-dashboard .stat-content {
@@ -499,6 +517,23 @@
     color: #4b5563;
 }
 
+/* Light mode individual stat icon colors */
+.light #admin-dashboard .stat-card:nth-child(1) .stat-icon {
+    color: #d97706; /* Darker amber for light mode */
+}
+
+.light #admin-dashboard .stat-card:nth-child(2) .stat-icon {
+    color: #059669; /* Darker emerald for light mode */
+}
+
+.light #admin-dashboard .stat-card:nth-child(3) .stat-icon {
+    color: #2563eb; /* Darker blue for light mode */
+}
+
+.light #admin-dashboard .stat-card:nth-child(4) .stat-icon {
+    color: #7c3aed; /* Darker purple for light mode */
+}
+
 .light #admin-dashboard .stat-value {
     color: #1f2937;
 }
@@ -761,6 +796,19 @@
 }
 
 .light #admin-dashboard .system-metric span:first-child {
+    color: #6b7280;
+}
+
+/* Light mode change indicators */
+.light #admin-dashboard .change-positive {
+    color: #16a34a;
+}
+
+.light #admin-dashboard .change-negative {
+    color: #dc2626;
+}
+
+.light #admin-dashboard .change-neutral {
     color: #6b7280;
 }
 

@@ -15,6 +15,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useLogout } from '../contexts/LogoutContext';
+import logo from '../logo.svg';
 import '../styles/AdminHeader.css';
 
 const AdminHeader = ({ title, navigate }) => {
@@ -80,9 +81,12 @@ const AdminHeader = ({ title, navigate }) => {
         {/* Logo & Title */}
         <div className="logo-section">
           <div className="logo-group">
-            <div className="logo-icon-container" onClick={handleLogoClick}>
-              <Zap className="logo-icon" />
-            </div>
+            <img 
+              src={logo} 
+              alt="QCU EcoCharge Logo" 
+              className="logo-icon"
+              onClick={handleLogoClick}
+            />
             <span className="logo-text" onClick={handleLogoClick}>QCU EcoCharge</span>
             <div className="admin-badge">
               Admin

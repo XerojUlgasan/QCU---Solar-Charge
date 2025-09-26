@@ -1324,13 +1324,15 @@
 #rate-us-page .modal-app-icon {
     width: 52px;
     height: 52px;
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    box-shadow: 0 8px 16px rgba(34, 197, 94, 0.3);
+}
+
+#rate-us-page .modal-logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
 }
 
 #rate-us-page .modal-app-name {
