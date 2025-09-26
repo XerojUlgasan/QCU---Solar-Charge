@@ -10,6 +10,7 @@ function Overview() {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showAllStations, setShowAllStations] = useState(false);
 
     useEffect(() => {
         fetchOverviewData();
@@ -156,6 +157,7 @@ function Overview() {
             case 'active': return 'Active';
             case 'maintenance': return 'Maintenance';
             case 'offline': return 'Offline';
+            case 'inactive': return 'Inactive';
             default: return 'Unknown';
         }
     };
@@ -205,7 +207,17 @@ function Overview() {
 
                 {/* Station Status */}
                 <div id="station-status">
-                    <h2 className="section-header">Station Status</h2>
+                    <div className="section-header-container">
+                        <h2 className="section-header">Station Status</h2>
+                        {!loading && !error && overviewData.devices.length > 0 && (
+                            <button 
+                                className="view-all-button"
+                                onClick={() => setShowAllStations(true)}
+                            >
+                                View All ({overviewData.devices.length})
+                            </button>
+                        )}
+                    </div>
                     {loading ? (
                         <div className="loading-container">
                             <div className="loading-spinner"></div>
@@ -220,7 +232,7 @@ function Overview() {
                         </div>
                     ) : (
                     <div className="stations-grid">
-                        {overviewData.devices.map((device, index) => (
+                        {overviewData.devices.slice(0, 3).map((device, index) => (
                             <div key={index} className="station-card">
                                 <div className="station-header">
                                     <div className="station-info">
@@ -331,6 +343,82 @@ function Overview() {
                     </div>
                 </div>
             </div>
+
+            {/* All Stations Modal */}
+            {showAllStations && (
+                <div className="modal-overlay" onClick={() => setShowAllStations(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>All Stations ({overviewData.devices.length})</h2>
+                            <button 
+                                className="modal-close"
+                                onClick={() => setShowAllStations(false)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="stations-grid-modal">
+                                {overviewData.devices.map((device, index) => (
+                                    <div key={index} className="station-card">
+                                        <div className="station-header">
+                                            <div className="station-info">
+                                                <h3>{device.name || 'Unknown Device'}
+                                                    <div className={`status-dot ${(device.status || 'offline').toLowerCase()}`}></div>
+                                                </h3>
+                                                <div className="station-location">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+                                                        <circle cx="12" cy="10" r="3"></circle>
+                                                    </svg>
+                                                    <span>{device.location || 'Unknown Location'}</span>
+                                                </div>
+                                            </div>
+                                            <span className="station-id">{device.id || 'N/A'}</span>
+                                        </div>
+                                        <div className="station-details">
+                                            <div className="detail-row">
+                                                <span className="label">Status</span>
+                                                <span className="value">{getStatusText(device.status)}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="label">Power</span>
+                                                <span className="value">{formatPower(device.power)}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="label">Temperature</span>
+                                                <span className="value">{device.temperature || 'N/A'}°C</span>
+                                            </div>
+                                            <div className="usage-container">
+                                                <div className="detail-row">
+                                                    <span className="label">Battery Percentage</span>
+                                                    <span className="value">{device.percentage || 0}%</span>
+                                                </div>
+                                                <div className="progress-bar">
+                                                    <div 
+                                                        className="progress-fill" 
+                                                        style={{width: `${device.percentage || 0}%`}}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="last-updated">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10"></circle>
+                                                    <path d="M12 6v6l4 2"></path>
+                                                </svg>
+                                                <span>Last updated: {formatLastUpdated(device.last_updated)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

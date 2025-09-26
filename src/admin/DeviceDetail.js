@@ -187,7 +187,7 @@ const DeviceDetail = () => {
         return new Date(timestamp * 1000);
       } else {
         // Likely in milliseconds
-        return new Date(timestamp);
+    return new Date(timestamp);
       }
     }
     
@@ -999,7 +999,7 @@ const DeviceDetail = () => {
                       <History className="w-5 h-5" style={{ color: '#3b82f6' }} />
                       Recent Charging Sessions
                     </h3>
-                    <p className="sessions-description">Latest user sessions and transactions</p>
+                  <p className="sessions-description">Latest user sessions and transactions</p>
                   </div>
                   <div className="sessions-filter">
                     <select 
