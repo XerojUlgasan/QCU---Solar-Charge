@@ -661,7 +661,7 @@ const AdminProblems = () => {
                 className="refresh-button"
                 disabled={loading}
               >
-                <RefreshCw className="refresh-icon" />
+                <RefreshCw className={`refresh-icon ${loading ? 'spinning' : ''}`} />
                 Refresh
               </button>
             </div>

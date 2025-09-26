@@ -9,7 +9,8 @@ import {
   Battery, 
   Activity,
   Search,
-  Filter
+  Filter,
+  RefreshCw
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
@@ -247,6 +248,7 @@ const AdminDevices = () => {
       case 'active': return 'status-active';
       case 'maintenance': return 'status-maintenance';
       case 'offline': return 'status-offline';
+      case 'inactive': return 'status-inactive';
       default: return 'status-unknown';
     }
   };
@@ -351,7 +353,16 @@ const AdminDevices = () => {
     }
   };
 
-  const totalActive = devices.filter(d => d.status === 'active').length;
+  const totalActive = devices.filter(d => {
+    const status = d.status?.toLowerCase();
+    // Consider active if status is 'active' or any variation that indicates the device is working
+    return status === 'active' || 
+           status === 'online' || 
+           status === 'running' || 
+           status === 'operational' ||
+           status === 'connected' ||
+           (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
+  }).length;
   
   // Calculate total power from API data (convert to kW if needed)
   const totalPower = devices.reduce((sum, d) => {
@@ -471,6 +482,26 @@ const AdminDevices = () => {
               <option value="offline">Offline</option>
             </select>
           </div>
+          
+          <button 
+            onClick={async () => {
+              setLoading(true);
+              setError(null);
+              try {
+                await fetchDevicesData();
+              } catch (error) {
+                console.error('Refresh error:', error);
+                setError('Failed to refresh data');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="refresh-button"
+            disabled={loading}
+          >
+            <RefreshCw className={`refresh-icon ${loading ? 'spinning' : ''}`} />
+            Refresh
+          </button>
         </div>
 
         {/* Edit Device Dialog */}

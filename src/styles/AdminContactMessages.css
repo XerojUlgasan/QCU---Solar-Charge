@@ -138,11 +138,12 @@
 #admin-contact-messages .search-input {
     padding: 0.5rem 0.75rem 0.5rem 2.5rem;
     background-color: #0f141c;
-    border: 1px solid #1e2633;
+    border: 1px solid #374151;
     border-radius: 0.375rem;
     color: #ffffff;
     font-size: 0.875rem;
     width: 16rem;
+    height: 2.5rem;
 }
 
 #admin-contact-messages .search-input:focus {
@@ -158,11 +159,12 @@
 #admin-contact-messages .filter-select {
     padding: 0.5rem 0.75rem;
     background-color: #0f141c;
-    border: 1px solid #1e2633;
+    border: 1px solid #374151;
     border-radius: 0.375rem;
     color: #ffffff;
     font-size: 0.875rem;
     cursor: pointer;
+    height: 2.5rem;
 }
 
 #admin-contact-messages .filter-select:focus {
@@ -184,13 +186,15 @@
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     background-color: #0f141c;
-    border: 1px solid #1e2633;
+    border: 1px solid #374151;
     border-radius: 0.375rem;
     color: #ffffff;
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    height: 2.5rem;
+    min-width: 6rem;
 }
 
 #admin-contact-messages .refresh-button:hover:not(:disabled) {
@@ -797,9 +801,9 @@
 }
 
 .light #admin-contact-messages .search-input {
-    background-color: #ffffff;
+    background-color: #f9fafb;
     border-color: #d1d5db;
-    color: #374151;
+    color: #1f2937;
 }
 
 .light #admin-contact-messages .search-input:focus {
@@ -812,9 +816,9 @@
 }
 
 .light #admin-contact-messages .filter-select {
-    background-color: #ffffff;
+    background-color: #f9fafb;
     border-color: #d1d5db;
-    color: #374151;
+    color: #1f2937;
 }
 
 .light #admin-contact-messages .filter-select:focus {
@@ -824,7 +828,7 @@
 
 .light #admin-contact-messages .refresh-button {
     background-color: #f9fafb;
-    border-color: #e5e7eb;
+    border-color: #d1d5db;
     color: #374151;
 }
 

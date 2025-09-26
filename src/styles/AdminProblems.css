@@ -141,9 +141,10 @@
     padding: 0.5rem 0.75rem 0.5rem 2.5rem;
     border: 1px solid #374151;
     border-radius: 0.375rem;
-    background-color: #1e2633;
+    background-color: #0f141c;
     color: #ffffff;
     font-size: 0.875rem;
+    height: 2.5rem;
 }
 
 #admin-problems .search-input:focus {
@@ -161,10 +162,11 @@
     padding: 0.5rem 0.75rem;
     border: 1px solid #374151;
     border-radius: 0.375rem;
-    background-color: #1e2633;
+    background-color: #0f141c;
     color: #ffffff;
     font-size: 0.875rem;
     cursor: pointer;
+    height: 2.5rem;
 }
 
 #admin-problems .filter-select:focus {
@@ -174,32 +176,44 @@
 }
 
 #admin-problems .refresh-button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #1e2633;
-    border-radius: 0.375rem;
-    background: none;
-    color: #9aa3b2;
-    cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #0f141c;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    color: #ffffff;
+    cursor: pointer;
     font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    height: 2.5rem;
+    min-width: 6rem;
 }
 
 #admin-problems .refresh-button:hover:not(:disabled) {
-    background-color: #1e2633;
-    color: #ffffff;
+    background-color: #0c1622;
+    border-color: #2a3446;
 }
 
 #admin-problems .refresh-button:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
 #admin-problems .refresh-icon {
     width: 1rem;
     height: 1rem;
+}
+
+#admin-problems .refresh-icon.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Header Section */
@@ -830,6 +844,17 @@
     color: #1f2937;
 }
 
+.light #admin-problems .refresh-button {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.light #admin-problems .refresh-button:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+}
+
 .light #admin-problems .search-input:focus,
 .light #admin-problems .filter-select:focus {
     border-color: #22c55e;
@@ -840,15 +865,6 @@
     color: #4b5563;
 }
 
-.light #admin-problems .refresh-button {
-    border-color: #d1d5db;
-    color: #4b5563;
-}
-
-.light #admin-problems .refresh-button:hover:not(:disabled) {
-    background-color: #f3f4f6;
-    color: #1f2937;
-}
 
 .light #admin-problems .problems-title {
     color: #1f2937;

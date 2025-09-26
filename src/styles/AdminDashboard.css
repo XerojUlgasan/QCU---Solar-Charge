@@ -199,6 +199,10 @@
     background-color: #ef4444;
 }
 
+#admin-dashboard .status-inactive {
+    background-color: #ef4444;
+}
+
 #admin-dashboard .status-unknown {
     background-color: #6b7280;
 }
@@ -646,10 +650,55 @@
 
 
 
+#admin-dashboard .filters-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 #admin-dashboard .filter-group {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+#admin-dashboard .refresh-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 0.375rem;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#admin-dashboard .refresh-button:hover:not(:disabled) {
+    background-color: #0c1622;
+    border-color: #2a3446;
+}
+
+#admin-dashboard .refresh-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#admin-dashboard .refresh-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+#admin-dashboard .refresh-icon.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 #admin-dashboard .filter-icon {
@@ -697,6 +746,17 @@
 
 .light #admin-dashboard .filter-select:hover {
     border-color: #9ca3af;
+}
+
+.light #admin-dashboard .refresh-button {
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+    color: #374151;
+}
+
+.light #admin-dashboard .refresh-button:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
 }
 
 /* Loading and Error States */

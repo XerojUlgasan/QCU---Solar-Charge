@@ -13,7 +13,9 @@ import {
   CreditCard,
   Filter,
   X,
-  ArrowUpDown
+  ArrowUpDown,
+  Coins,
+  RefreshCw
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
@@ -136,10 +138,29 @@ const AdminDashboard = () => {
         let activeDevices = 0;
         
         if (data.devices && Array.isArray(data.devices)) {
-          activeDevices = data.devices.filter(device => device.status?.toLowerCase() === 'active').length;
+          // Count devices that are active (handle multiple case variations)
+          activeDevices = data.devices.filter(device => {
+            const status = device.status?.toLowerCase();
+            // Consider active if status is 'active' or any variation that indicates the device is working
+            return status === 'active' || 
+                   status === 'online' || 
+                   status === 'running' || 
+                   status === 'operational' ||
+                   status === 'connected' ||
+                   (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
+          }).length;
           
           // Calculate averages from active devices
-          const activeDevicesList = data.devices.filter(device => device.status?.toLowerCase() === 'active');
+          const activeDevicesList = data.devices.filter(device => {
+            const status = device.status?.toLowerCase();
+            return status === 'active' || 
+                   status === 'online' || 
+                   status === 'running' || 
+                   status === 'operational' ||
+                   status === 'connected' ||
+                   (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
+          });
+          
           if (activeDevicesList.length > 0) {
             aggregateVolt = activeDevicesList.reduce((sum, device) => sum + (device.volt || 0), 0) / activeDevicesList.length;
             aggregateCurrent = activeDevicesList.reduce((sum, device) => sum + (device.current || 0), 0) / activeDevicesList.length;
@@ -175,6 +196,7 @@ const AdminDashboard = () => {
         console.log('📊 Device Summary:', {
           total: mappedData.total_devices,
           active: mappedData.active_devices,
+          deviceStatuses: data.devices?.map(d => ({ id: d.id, status: d.status })) || [],
           avgVolt: aggregateVolt.toFixed(2),
           avgCurrent: aggregateCurrent.toFixed(2),
           avgPower: aggregatePower.toFixed(2),
@@ -329,6 +351,7 @@ const AdminDashboard = () => {
       case 'active': return 'Active';
       case 'maintenance': return 'Maintenance';
       case 'offline': return 'Offline';
+      case 'inactive': return 'Inactive';
       default: return 'Unknown';
     }
   };
@@ -599,6 +622,7 @@ const AdminDashboard = () => {
       case 'active': return 'status-active';
       case 'maintenance': return 'status-maintenance';
       case 'offline': return 'status-offline';
+      case 'inactive': return 'status-inactive';
       default: return 'status-unknown';
     }
   };
@@ -698,18 +722,39 @@ const AdminDashboard = () => {
               <div className="dashboard-header">
                 <h2 className="dashboard-title">Dashboard Overview</h2>
               </div>
-              <div className="filter-group">
-                <Filter className="w-4 h-4 filter-icon" />
-                <select 
-                  value={timeFilter} 
-                  onChange={(e) => setTimeFilter(e.target.value)}
-                  className="filter-select"
+              <div className="filters-right">
+                <div className="filter-group">
+                  <Filter className="w-4 h-4 filter-icon" />
+                  <select 
+                    value={timeFilter} 
+                    onChange={(e) => setTimeFilter(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="total">Total</option>
+                  </select>
+                </div>
+                <button 
+                  onClick={async () => {
+                    setLoading(true);
+                    setError(null);
+                    try {
+                      await fetchOverviewData();
+                    } catch (error) {
+                      console.error('Refresh error:', error);
+                      setError('Failed to refresh data');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="refresh-button"
+                  disabled={loading}
                 >
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="total">Total</option>
-                </select>
+                  <RefreshCw className={`refresh-icon ${loading ? 'spinning' : ''}`} />
+                  Refresh
+                </button>
               </div>
             </div>
 
@@ -863,7 +908,7 @@ const AdminDashboard = () => {
                       {transaction.type === 'rfid' ? (
                         <Clock className="w-4 h-4" />
                       ) : (
-                        <CreditCard className="w-4 h-4" />
+                        <Coins className="w-4 h-4" style={{ color: '#fbbf24' }} />
                       )}
                     </div>
                     <div>
@@ -930,7 +975,7 @@ const AdminDashboard = () => {
                       {transaction.type === 'rfid' ? (
                         <Clock className="w-4 h-4" />
                       ) : (
-                        <CreditCard className="w-4 h-4" />
+                        <Coins className="w-4 h-4" style={{ color: '#fbbf24' }} />
                       )}
                     </div>
                     <div>
