@@ -51,61 +51,71 @@ function About() {
       name: "Dr. Maria Santos",
       role: "Project Director",
       description: "Leading sustainable technology initiatives at QCU",
-      initials: "DMS"
+      initials: "DMS",
+      image: "/images/team/maria-santos.png"
     },
     {
       name: "John Chen",
       role: "Lead Engineer",
       description: "Expert in solar energy systems and IoT integration",
-      initials: "JC"
+      initials: "JC",
+      image: "/images/team/john-chen.png"
     },
     {
       name: "Sarah Kim",
       role: "UX Designer",
       description: "Designing user-friendly interfaces for charging stations",
-      initials: "SK"
+      initials: "SK",
+      image: "/images/team/sarah-kim.png"
     },
     {
       name: "Alex Rodriguez",
       role: "Campus Coordinator",
       description: "Managing station deployment and user support",
-      initials: "AR"
+      initials: "AR",
+      image: "/images/team/alex-rodriguez.png"
     },
     {
       name: "Emily Watson",
       role: "Software Developer",
       description: "Building the backend systems and mobile applications",
-      initials: "EW"
+      initials: "EW",
+      image: "/images/team/emily-watson.png"
     },
     {
       name: "Michael Torres",
       role: "Hardware Engineer",
       description: "Designing and implementing charging station hardware",
-      initials: "MT"
+      initials: "MT",
+      image: "/images/team/michael-torres.png"
     },
     {
       name: "Lisa Park",
       role: "Data Analyst",
       description: "Analyzing usage patterns and optimizing system performance",
-      initials: "LP"
+      initials: "LP",
+      image: "/images/team/lisa-park.png"
     },
     {
       name: "David Johnson",
       role: "Maintenance Specialist",
       description: "Ensuring optimal performance and reliability of stations",
-      initials: "DJ"
+      initials: "DJ",
+      image: "/images/team/david-johnson.png"
     },
     {
       name: "Rachel Green",
       role: "Marketing Coordinator",
       description: "Promoting sustainable charging solutions across campus",
-      initials: "RG"
+      initials: "RG",
+      image: "/images/team/rachel-green.png"
     },
     {
       name: "James Wilson",
       role: "Research Assistant",
       description: "Supporting research and development of new features",
-      initials: "JW"
+      initials: "JW",
+      image: "/images/team/james-wilson.png"
     }
   ];
 
@@ -185,98 +195,44 @@ function About() {
         {/* Team Section */}
         <div className="mb-20">
           <h2 className="font-bold text-center mb-12" style={{fontSize: '32px'}}>Meet Our Team</h2>
-          <div className="pyramid-container" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '12px'
+          <div className="team-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
+            maxWidth: '1200px',
+            margin: '0 auto'
           }}>
-            {/* Row 1 - 1 member (Director) */}
-            <div className="pyramid-row" style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '12px'
-            }}>
-              <div className="text-white flex flex-col rounded-lg text-center" style={{
+            {team.map((member, index) => (
+              <div key={index} className="text-white flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 hover:scale-105" style={{
                 backgroundColor: '#0f141c', 
                 border: '1px solid #1e2633', 
-                padding: '16px',
-                width: '220px'
+                padding: '24px',
+                minHeight: '200px'
               }}>
-                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
-                  {team[0].initials}
+                <div className="mx-auto w-20 h-20 rounded-full overflow-hidden mb-4" style={{
+                  background: 'linear-gradient(90deg, #22c55e, #3b82f6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <img 
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold" style={{display: 'none'}}>
+                    {member.initials}
+                  </div>
                 </div>
-                <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{team[0].name}</h4>
-                <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{team[0].role}</p>
+                <h4 className="font-semibold mb-2" style={{fontSize: '18px'}}>{member.name}</h4>
+                <p className="font-medium text-green-500 mb-3" style={{fontSize: '16px'}}>{member.role}</p>
+                <p style={{color: '#9aa3b2', fontSize: '14px', lineHeight: '1.5'}}>{member.description}</p>
               </div>
-            </div>
-
-            {/* Row 2 - 2 members (Lead roles) */}
-            <div className="pyramid-row" style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '12px'
-            }}>
-              {team.slice(1, 3).map((member, index) => (
-                <div key={index} className="text-white flex flex-col rounded-lg text-center" style={{
-                  backgroundColor: '#0f141c', 
-                  border: '1px solid #1e2633', 
-                  padding: '16px',
-                  width: '220px'
-                }}>
-                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
-                    {member.initials}
-                  </div>
-                  <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{member.name}</h4>
-                  <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{member.role}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Row 3 - 3 members (Core team) */}
-            <div className="pyramid-row" style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '12px'
-            }}>
-              {team.slice(3, 6).map((member, index) => (
-                <div key={index} className="text-white flex flex-col rounded-lg text-center" style={{
-                  backgroundColor: '#0f141c', 
-                  border: '1px solid #1e2633', 
-                  padding: '16px',
-                  width: '220px'
-                }}>
-                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
-                    {member.initials}
-                  </div>
-                  <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{member.name}</h4>
-                  <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{member.role}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Row 4 - 4 members (Support team) */}
-            <div className="pyramid-row" style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '12px',
-              flexWrap: 'wrap'
-            }}>
-              {team.slice(6, 10).map((member, index) => (
-                <div key={index} className="text-white flex flex-col rounded-lg text-center" style={{
-                  backgroundColor: '#0f141c', 
-                  border: '1px solid #1e2633', 
-                  padding: '16px',
-                  width: '220px'
-                }}>
-                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold mb-3" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)'}}>
-                    {member.initials}
-                  </div>
-                  <h4 className="font-semibold mb-2" style={{fontSize: '16px'}}>{member.name}</h4>
-                  <p className="font-medium text-green-500" style={{fontSize: '14px'}}>{member.role}</p>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
 
