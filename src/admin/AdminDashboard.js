@@ -25,6 +25,14 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { authenticatedAdminFetch } = useAdminAuth();
   
+  // Format energy values - only show 'k' when over 1000
+  const formatEnergy = (value) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}kWh`;
+    }
+    return `${value.toFixed(1)}Wh`;
+  };
+  
   // State management
   const [overviewData, setOverviewData] = useState({
     revenue: {
@@ -437,7 +445,7 @@ const AdminDashboard = () => {
     return [
       {
         title: "Energy Generated", 
-        value: `${currentEnergy} kWh`,
+        value: formatEnergy(currentEnergy),
         change: energyChange.change,
         changeType: energyChange.type,
         icon: <Zap className="w-6 h-6" />
@@ -867,20 +875,20 @@ const AdminDashboard = () => {
                 <div className="energy-generation">
                   <div className="generation-header">
                     <span className="generation-title">Energy Generated Today</span>
-                    <span className="generation-value">{overviewData.energy.daily}kWh</span>
+                    <span className="generation-value">{formatEnergy(overviewData.energy.daily)}</span>
                   </div>
                   <div className="generation-details">
                     <div className="generation-item">
                       <span>This Week:</span>
-                      <span>{overviewData.energy.weekly}kWh</span>
+                      <span>{formatEnergy(overviewData.energy.weekly)}</span>
                     </div>
                     <div className="generation-item">
                       <span>This Month:</span>
-                      <span>{overviewData.energy.monthly}kWh</span>
+                      <span>{formatEnergy(overviewData.energy.monthly)}</span>
                     </div>
                     <div className="generation-item">
                       <span>Total:</span>
-                      <span>{overviewData.energy.total}kWh</span>
+                      <span>{formatEnergy(overviewData.energy.total)}</span>
                     </div>
                   </div>
                 </div>

@@ -35,6 +35,14 @@ const AdminDevices = () => {
   const [error, setError] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('testing');
 
+  // Format energy values - only show 'k' when over 1000
+  const formatEnergy = (value) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}kWh`;
+    }
+    return `${value.toFixed(1)}Wh`;
+  };
+
   // Fetch devices data from API
   const fetchDevicesData = useCallback(async () => {
     try {
@@ -134,7 +142,7 @@ const AdminDevices = () => {
             voltage: `${device.volt || 0}V`,
             current: `${device.current || 0}A`,
             power: formatPower(device.power || 0),
-            energy: `${(device.energy || 0).toFixed(1)}kWh`,
+            energy: formatEnergy(device.energy || 0),
             usage: device.percentage || 0,
             revenue: `₱${deviceRevenue.toFixed(0)}`, // Use actual transaction revenue
             temperature: `${device.temperature || 0}°C`,
@@ -148,7 +156,16 @@ const AdminDevices = () => {
         // Calculate total power from mapped devices
         const calculatedTotalPower = mappedDevices.reduce((sum, d) => {
           const powerStr = d.power || '0W';
-          const powerValue = parseFloat(powerStr.replace(/[kW]/g, ''));
+          let powerValue;
+          
+          if (powerStr.includes('kW')) {
+            // Convert kW to W
+            powerValue = parseFloat(powerStr.replace('kW', '')) * 1000;
+          } else {
+            // Already in W
+            powerValue = parseFloat(powerStr.replace('W', ''));
+          }
+          
           return sum + powerValue;
         }, 0);
         
@@ -367,7 +384,16 @@ const AdminDevices = () => {
   // Calculate total power from API data (convert to kW if needed)
   const totalPower = devices.reduce((sum, d) => {
     const powerStr = d.power || '0W';
-    const powerValue = parseFloat(powerStr.replace(/[kW]/g, ''));
+    let powerValue;
+    
+    if (powerStr.includes('kW')) {
+      // Convert kW to W
+      powerValue = parseFloat(powerStr.replace('kW', '')) * 1000;
+    } else {
+      // Already in W
+      powerValue = parseFloat(powerStr.replace('W', ''));
+    }
+    
     return sum + powerValue;
   }, 0);
   

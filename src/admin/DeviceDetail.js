@@ -45,6 +45,14 @@ const DeviceDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Format energy values - only show 'k' when over 1000
+  const formatEnergy = (value) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}kWh`;
+    }
+    return `${value.toFixed(1)}Wh`;
+  };
+
 
   // Fetch device data from API
   const fetchDeviceData = useCallback(async () => {
@@ -634,7 +642,7 @@ const DeviceDetail = () => {
         batteryLevel: 0,
         efficiency: 0,
         errorRate: 0,
-        energy: "0kWh",
+        energy: "0Wh",
         revenue: "₱0",
         uses: 0,
         sessions: 0
@@ -655,7 +663,7 @@ const DeviceDetail = () => {
       return {
          revenue: `₱${deviceRevenue}`,
          uses: deviceUses,
-         energy: `${deviceEnergy.toFixed(1)}kWh`,
+         energy: formatEnergy(deviceEnergy),
          sessions: deviceTransactions.length
       };
     };
@@ -1250,7 +1258,7 @@ const DeviceDetail = () => {
                 </div>
                   <div className="analytics-content">
                     <div className="analytics-metric">
-                       <div className="analytics-value energy">{calculateEnergyFromHistory(timeFilter).toFixed(1)}kWh</div>
+                       <div className="analytics-value energy">{formatEnergy(calculateEnergyFromHistory(timeFilter))}</div>
                       <div className="analytics-trend positive">
                         <span>↗</span>
                         <span>+12.5% vs prev period</span>
