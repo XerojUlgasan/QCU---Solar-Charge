@@ -68,110 +68,16 @@ const DeviceDetail = () => {
       console.log('=== FETCHING DEVICE DATA ===');
       console.log('Device ID:', deviceId);
       
-      // Try the devices endpoint first, fallback to dashboard if it fails
+      // Try dashboard endpoint first (has device info), then get alerts from devices endpoint
       let response;
       let data;
       
       try {
-        console.log('Trying devices endpoint...');
-        console.log('API URL:', `https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
-        response = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
+        console.log('Trying dashboard endpoint first for device info...');
+        response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
         
-        console.log('Device response status:', response.status);
-        console.log('Device response ok:', response.ok);
-        console.log('Device response headers:', response.headers);
-      
-      if (!response.ok) {
-          throw new Error(`Devices endpoint failed with status: ${response.status}`);
-        }
-        
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        console.log('Response content-type:', contentType);
-        
-        if (!contentType || !contentType.includes('application/json')) {
-          const textResponse = await response.text();
-          console.log('Non-JSON response from devices endpoint:', textResponse.substring(0, 200));
-          throw new Error('Devices endpoint returned non-JSON response');
-        }
-        
-        data = await response.json();
-        console.log('Device data with alerts:', data);
-        console.log('Raw alerts from API:', data.alerts);
-        console.log('Alerts type:', typeof data.alerts);
-        console.log('Alerts is array:', Array.isArray(data.alerts));
-        console.log('Alerts length:', data.alerts?.length);
-        console.log('Device name from API:', data.name);
-        console.log('Device location from API:', data.location);
-        console.log('Device building from API:', data.building);
-        console.log('Complete API response structure:', Object.keys(data));
-        
-        // Try to fetch device history data as well
-        try {
-          console.log('Fetching device history...');
-          const historyResponse = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}/getDeviceHistory`);
-          if (historyResponse.ok) {
-            const historyData = await historyResponse.json();
-            console.log('Device history data:', historyData);
-            
-            // Merge history data with device data, preserving all original data
-            const mergedData = {
-              ...data, // Keep all original device data
-              // Only merge specific fields from history data
-              energy_history: historyData.energy_history || data.energy_history,
-              transactions: historyData.transactions || data.transactions,
-              // Preserve alerts from main response
-              alerts: data.alerts || []
-            };
-            
-            console.log('Merged device data:', mergedData);
-            console.log('Energy history in merged data:', mergedData.energy_history);
-            console.log('Device name in merged data:', mergedData.name);
-            console.log('Device location in merged data:', mergedData.location);
-            console.log('Device building in merged data:', mergedData.building);
-            console.log('Device alerts in merged data:', mergedData.alerts);
-            console.log('Merged alerts type:', typeof mergedData.alerts);
-            console.log('Merged alerts is array:', Array.isArray(mergedData.alerts));
-            console.log('Merged alerts length:', mergedData.alerts?.length);
-            console.log('Merged data structure:', Object.keys(mergedData));
-            setDeviceData(mergedData);
-            return;
-          }
-        } catch (historyError) {
-          console.log('Device history fetch failed, using main data only:', historyError.message);
-        }
-        
-        // The API returns the device data directly with alerts
-        if (data && data.device_id) {
-          console.log('Found device data from devices endpoint:', data);
-          console.log('Fallback alerts:', data.alerts);
-          console.log('Fallback alerts type:', typeof data.alerts);
-          console.log('Fallback alerts is array:', Array.isArray(data.alerts));
-          console.log('Fallback alerts length:', data.alerts?.length);
-          console.log('Fallback device name:', data.name);
-          console.log('Fallback device location:', data.location);
-          console.log('Fallback device building:', data.building);
-          console.log('Fallback data structure:', Object.keys(data));
-          setDeviceData(data);
-          return; // Success, exit early
-        } else {
-          throw new Error('Device data not found in devices endpoint response');
-        }
-        
-      } catch (devicesError) {
-        console.log('Devices endpoint failed, trying dashboard endpoint...', devicesError.message);
-        console.log('Error details:', devicesError);
-        
-        // Fallback to dashboard endpoint
-        try {
-          response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
-          
-          if (!response.ok) {
-            throw new Error(`Both endpoints failed. Devices: ${devicesError.message}, Dashboard: ${response.status}`);
-          }
-        } catch (dashboardError) {
-          console.log('Dashboard endpoint also failed:', dashboardError.message);
-          throw new Error(`Both endpoints failed. Devices: ${devicesError.message}, Dashboard: ${dashboardError.message}`);
+        if (!response.ok) {
+          throw new Error(`Dashboard endpoint failed with status: ${response.status}`);
         }
         
         data = await response.json();
@@ -181,10 +87,10 @@ const DeviceDetail = () => {
         const device = data.devices?.find(d => d.device_id === deviceId);
         if (device) {
           console.log('Found device in dashboard data:', device);
-        
-        // Create device data structure that matches what the component expects
-        const deviceData = {
-          device_id: device.device_id,
+          
+          // Create device data structure with device info from dashboard
+          const deviceData = {
+            device_id: device.device_id,
             name: device.name,
             location: device.location,
             building: device.building,
@@ -194,24 +100,65 @@ const DeviceDetail = () => {
             volt: device.volt,
             current: device.current,
             power: device.power,
-          energy: device.energy,
-          last_updated: device.last_updated,
-          // Add dashboard metrics
-          energy_generated: data.energy_generated,
-          revenue: data.revenue,
-          uses: data.uses,
-          transactions: data.transactions?.filter(t => t.device_id === deviceId) || [],
-          energy_history: data.energy_history?.filter(e => e.device_id === deviceId) || [],
-          total_devices: data.total_devices,
+            energy: device.energy,
+            last_updated: device.last_updated,
+            // Add dashboard metrics
+            energy_generated: data.energy_generated,
+            revenue: data.revenue,
+            uses: data.uses,
+            transactions: data.transactions?.filter(t => t.device_id === deviceId) || [],
+            energy_history: data.energy_history?.filter(e => e.device_id === deviceId) || [],
+            total_devices: data.total_devices,
             active_devices: data.active_devices,
-            // Add empty alerts array as fallback
-              alerts: []
-        };
-        
-        setDeviceData(deviceData);
+            alerts: [] // Will be populated from devices endpoint
+          };
+          
+          // Now try to get alerts from devices endpoint
+          try {
+            console.log('Fetching alerts from devices endpoint...');
+            const alertsResponse = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
+            if (alertsResponse.ok) {
+              const alertsData = await alertsResponse.json();
+              console.log('Alerts data:', alertsData);
+              deviceData.alerts = alertsData.alerts || [];
+              console.log('Updated device data with alerts:', deviceData);
+            }
+          } catch (alertsError) {
+            console.log('Failed to fetch alerts:', alertsError.message);
+            // Keep alerts as empty array
+          }
+          
+          setDeviceData(deviceData);
+          return;
         } else {
-          console.log('Device not found in dashboard data');
-        setError('Device not found');
+          throw new Error('Device not found in dashboard data');
+        }
+        
+      } catch (dashboardError) {
+        console.log('Dashboard endpoint failed, trying devices endpoint...', dashboardError.message);
+        
+        // Fallback to devices endpoint
+        try {
+          response = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
+          
+          if (!response.ok) {
+            throw new Error(`Devices endpoint failed with status: ${response.status}`);
+          }
+          
+          data = await response.json();
+          console.log('Devices endpoint data:', data);
+          
+          // The devices endpoint has alerts but might not have device info
+          if (data && data.device_id) {
+            console.log('Setting device data from devices endpoint (may be missing device info)');
+            setDeviceData(data);
+            return;
+          } else {
+            throw new Error('Device data not found in devices endpoint response');
+          }
+        } catch (devicesError) {
+          console.log('Both endpoints failed:', devicesError.message);
+          throw new Error(`Both endpoints failed. Dashboard: ${dashboardError.message}, Devices: ${devicesError.message}`);
         }
       }
     } catch (err) {
@@ -1252,12 +1199,12 @@ const DeviceDetail = () => {
   // Format device data for display
   const getFormattedDeviceData = () => {
     if (!deviceData) {
-      const deviceInfo = getDeviceInfo(deviceId);
+      console.log('No device data available, using fallback');
       return {
         id: deviceId || "QCU-001",
-        name: deviceInfo.name,
-        location: deviceInfo.location,
-        building: deviceInfo.building,
+        name: `Device ${deviceId}`,
+        location: "QCU Campus",
+        building: "Main Building",
         status: "loading",
         voltage: "0V",
         current: "0A",
@@ -1271,6 +1218,13 @@ const DeviceDetail = () => {
         sessions: 0
       };
     }
+
+    console.log('=== PROCESSING DEVICE DATA ===');
+    console.log('deviceData:', deviceData);
+    console.log('deviceData.name:', deviceData.name);
+    console.log('deviceData.location:', deviceData.location);
+    console.log('deviceData.building:', deviceData.building);
+    console.log('deviceId:', deviceId);
 
     const getTimeFilteredData = (timeFilter) => {
        // Calculate device-specific revenue from transactions
@@ -1292,14 +1246,13 @@ const DeviceDetail = () => {
     };
 
     const timeFilteredData = getTimeFilteredData(timeFilter);
-    const deviceInfoData = getDeviceInfo(deviceData.device_id || deviceId);
     
-    return {
+    const result = {
       id: deviceData.device_id || deviceId,
-      name: deviceInfoData.name,
-      location: deviceInfoData.location,
-      building: deviceInfoData.building,
-      status: deviceInfoData.status || "active",
+      name: deviceData.name || `Device ${deviceId}`,
+      location: deviceData.location || "QCU Campus",
+      building: deviceData.building || "Main Building",
+      status: deviceData.status || "active",
       voltage: `${deviceData.volt || 0}V`,
       current: `${deviceData.current || 0}A`,
       temperature: `${deviceData.temperature || 0}°C`,
@@ -1308,6 +1261,14 @@ const DeviceDetail = () => {
       errorRate: 0.8, // Mock error rate
       ...timeFilteredData
     };
+    
+    console.log('=== FINAL DEVICE DATA RESULT ===');
+    console.log('result:', result);
+    console.log('result.name:', result.name);
+    console.log('result.location:', result.location);
+    console.log('result.building:', result.building);
+    
+    return result;
   };
 
   const device = getFormattedDeviceData();
