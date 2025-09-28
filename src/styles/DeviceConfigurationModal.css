@@ -313,6 +313,24 @@
   color: #9aa3b2;
 }
 
+/* Email validation error styles */
+.config-input-error {
+  border-color: #ef4444 !important;
+  background-color: #1f2937;
+}
+
+.config-input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.config-error-text {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
 /* Toggle Options */
 .config-toggles {
   display: flex;
@@ -738,6 +756,124 @@
   color: #ffffff;
 }
 
+/* Close Confirmation Modal */
+.close-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.close-confirmation-modal {
+  background-color: #1e293b;
+  border: 1px solid #374151;
+  border-radius: 0.75rem;
+  padding: 0;
+  max-width: 28rem;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.close-confirmation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #374151;
+}
+
+.close-warning-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.close-confirmation-title {
+  color: #f9fafb;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-confirmation-content {
+  padding: 1rem 1.5rem;
+}
+
+.close-warning-text {
+  color: #f9fafb;
+  font-size: 0.875rem;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.5;
+}
+
+.close-instruction-text {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.close-confirmation-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  justify-content: flex-end;
+}
+
+.close-confirm-button {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.close-confirm-button:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Light mode styles for close confirmation */
+.light .close-confirmation-modal {
+  background-color: #ffffff;
+  border-color: #e5e7eb;
+}
+
+.light .close-confirmation-header {
+  border-bottom-color: #e5e7eb;
+}
+
+.light .close-warning-icon {
+  color: #d97706;
+}
+
+.light .close-confirmation-title {
+  color: #1f2937;
+}
+
+.light .close-warning-text {
+  color: #1f2937;
+}
+
+.light .close-instruction-text {
+  color: #6b7280;
+}
+
+.light .close-confirm-button {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.light .close-confirm-button:hover {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+}
+
 .light .device-config-save {
   background-color: #16a34a;
   border-color: #16a34a;
@@ -780,6 +916,20 @@
 
 .light .config-help {
   color: #4b5563;
+}
+
+.light .config-input-error {
+  border-color: #dc2626 !important;
+  background-color: #ffffff;
+}
+
+.light .config-input-error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+.light .config-error-text {
+  color: #dc2626;
 }
 
 .light .toggle-slider {

@@ -14,7 +14,8 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { authenticatedGet } from '../utils/api';
+import { authenticatedGet, authenticatedPost } from '../utils/api';
+import { useNotification } from '../contexts/NotificationContext';
 import '../styles/DeviceConfigurationModal.css';
 
 const DeviceConfigurationModal = ({ 
@@ -25,6 +26,7 @@ const DeviceConfigurationModal = ({
   onEnableDisable, 
   onDelete 
 }) => {
+  const { showSuccess, showError } = useNotification();
   const [formData, setFormData] = useState({
     minutesPerCoinRate: '',
     samplesPerHourRate: '',
@@ -43,27 +45,128 @@ const DeviceConfigurationModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [deviceEnabled, setDeviceEnabled] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showCloseConfirmation, setShowCloseConfirmation] = useState(false);
+  const [originalFormData, setOriginalFormData] = useState(null);
+  const [lastFetchedDeviceId, setLastFetchedDeviceId] = useState(null);
+  const [emailValidationError, setEmailValidationError] = useState('');
+
+  // Email validation function
+  const validateEmails = (emailString) => {
+    if (!emailString || emailString.trim() === '') {
+      return { isValid: true, error: '' }; // Empty is valid
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emails = emailString.split(',').map(email => email.trim()).filter(email => email);
+    
+    for (const email of emails) {
+      if (!emailRegex.test(email)) {
+        return { 
+          isValid: false, 
+          error: `Invalid email format: "${email}". Please use format: user@domain.com` 
+        };
+      }
+    }
+    
+    return { isValid: true, error: '' };
+  };
+
+  // Set default configuration when no config exists
+  const setDefaultConfiguration = () => {
+    const defaultFormData = {
+      minutesPerCoinRate: '5',
+      samplesPerHourRate: '60',
+      lowPowerMode: false,
+      temperatureThreshold: '35',
+      minVoltage: '12.06',
+      maxVoltage: '12.7',
+      enableDeviceAlerts: true,
+      emailsToNotify: ''
+    };
+
+    setFormData(defaultFormData);
+    setOriginalFormData({
+      ...defaultFormData,
+      deviceEnabled: device?.isEnabled || true
+    });
+    setDeviceEnabled(device?.isEnabled || true);
+    
+    console.log('Default configuration set for device:', device?.id);
+  };
 
   // Fetch device configuration from API
   const fetchDeviceConfiguration = async (deviceId) => {
+    console.log('fetchDeviceConfiguration called for device:', deviceId);
     if (!deviceId) return;
     
-    setIsLoading(true);
+    // Clear any previous data to prevent showing wrong device data
+    setFormData({
+      minutesPerCoinRate: '',
+      samplesPerHourRate: '',
+      lowPowerMode: false,
+      temperatureThreshold: '',
+      minVoltage: '',
+      maxVoltage: '',
+      enableDeviceAlerts: false,
+      emailsToNotify: ''
+    });
     setError(null);
+    setIsLoading(true);
     
     try {
-      const url = `https://api-qcusolarcharge.up.railway.app/admin/getDeviceConfig?device_id=${deviceId}`;
+      const url = `https://api-qcusolarcharge.up.railway.app/admin/getDeviceConfig?device_id=${deviceId}&t=${Date.now()}`;
+      console.log('Making API request to:', url);
       const response = await authenticatedGet(url);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch device configuration: ${response.status} ${response.statusText}`);
       }
       
-      const configData = await response.json();
-      console.log('API Response for device', deviceId, ':', configData);
+      // Check if response has content before parsing JSON
+      const responseText = await response.text();
+      console.log('Raw API response for device', deviceId, ':', responseText);
       
+      if (!responseText || responseText.trim() === '') {
+        console.log('Empty response detected for device', deviceId, ', using default configuration');
+        setDefaultConfiguration();
+        return;
+      }
+      
+      let configData;
+      try {
+        configData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.log('JSON parsing error for device', deviceId, ', using default configuration:', parseError.message);
+        setDefaultConfiguration();
+        return;
+      }
+      
+      console.log('Parsed config data for device', deviceId, ':', configData);
+      
+      // Verify the response is for the correct device
+      if (configData.device_id && configData.device_id !== deviceId) {
+        console.log('Device ID mismatch! Expected:', deviceId, 'Got:', configData.device_id);
+        console.log('Using default configuration instead');
+        setDefaultConfiguration();
+        return;
+      }
+      
+      // Handle empty or invalid response object
+      if (!configData || Object.keys(configData).length === 0) {
+        console.log('No configuration data found for device', deviceId, ', using defaults');
+        setDefaultConfiguration();
+        return;
+      }
+      
+      // Convert emails array to string for form display
+      const emailsString = Array.isArray(configData.emails) 
+        ? configData.emails.join(', ')
+        : (configData.emails || '');
+
       // Map API response to form data based on actual API field names
-      setFormData({
+      const newFormData = {
         minutesPerCoinRate: configData.minute_per_peso || '',
         samplesPerHourRate: configData.samples_per_hour || '',
         lowPowerMode: configData.low_power || false,
@@ -71,17 +174,34 @@ const DeviceConfigurationModal = ({
         minVoltage: configData.min_volt || '',
         maxVoltage: configData.max_volt || '',
         enableDeviceAlerts: configData.device_alert_enabled || false,
-        emailsToNotify: configData.emails_to_notify || ''
+        emailsToNotify: emailsString
+      };
+
+      setFormData(newFormData);
+      setOriginalFormData({
+        ...newFormData,
+        deviceEnabled: configData.device_enabled || false
       });
 
       // Update device enabled status from API response
       if (configData.device_enabled !== undefined) {
-        device.isEnabled = configData.device_enabled;
+        setDeviceEnabled(configData.device_enabled);
       }
       
     } catch (err) {
       console.error('Error fetching device configuration:', err);
+      
+      // Check if it's a JSON parsing error (empty response)
+      if (err.message.includes('Unexpected end of JSON input') || err.message.includes('JSON')) {
+        console.log('JSON parsing error detected, using default configuration');
+        setDefaultConfiguration();
+        return;
+      }
+      
       setError(err.message);
+      
+      // Show error notification
+      showError('Failed to load device configuration');
       
       // Fallback to device props if API fails
       if (device) {
@@ -103,16 +223,41 @@ const DeviceConfigurationModal = ({
 
   // Initialize form data when device changes
   useEffect(() => {
-    if (device && device.id) {
+    console.log('DeviceConfigurationModal useEffect triggered:', { 
+      deviceId: device?.id, 
+      isOpen, 
+      lastFetchedDeviceId 
+    });
+    
+    if (device?.id && isOpen && device.id !== lastFetchedDeviceId) {
+      console.log('Fetching configuration for device:', device.id);
+      setLastFetchedDeviceId(device.id);
       fetchDeviceConfiguration(device.id);
+      setDeviceEnabled(device.isEnabled || false);
     }
-  }, [device]);
+  }, [device?.id, isOpen, lastFetchedDeviceId]); // Only depend on device ID, not the entire device object
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+    setHasUnsavedChanges(true);
+  };
+
+  // Check if there are unsaved changes
+  const checkForUnsavedChanges = () => {
+    if (!originalFormData) return false;
+    
+    // Check form data changes
+    const formChanged = Object.keys(formData).some(key => 
+      formData[key] !== originalFormData[key]
+    );
+    
+    // Check device enabled state change
+    const deviceEnabledChanged = deviceEnabled !== (originalFormData.deviceEnabled || false);
+    
+    return formChanged || deviceEnabledChanged;
   };
 
   const handleSave = () => {
@@ -123,9 +268,14 @@ const DeviceConfigurationModal = ({
   };
 
   const handleEnableDisable = () => {
-    if (onEnableDisable) {
-      onEnableDisable(device.id, !device.isEnabled);
-    }
+    setDeviceEnabled(!deviceEnabled);
+    setHasUnsavedChanges(true);
+    
+    // Show immediate feedback notification
+    const newState = !deviceEnabled;
+    showSuccess(
+      `Device ${newState ? 'enabled' : 'disabled'} successfully!`
+    );
   };
 
   const handleDeleteClick = () => {
@@ -139,6 +289,10 @@ const DeviceConfigurationModal = ({
       if (onDelete) {
         onDelete(device.id);
       }
+      
+      // Show success notification
+      showSuccess('Device deleted successfully!');
+      
       setTimeout(() => {
         setIsDeleting(false);
         setShowDeleteConfirmation(false);
@@ -153,19 +307,57 @@ const DeviceConfigurationModal = ({
   };
 
   const handleSaveConfigurations = () => {
+    // Validate emails before showing save confirmation
+    const emailValidation = validateEmails(formData.emailsToNotify);
+    if (!emailValidation.isValid) {
+      setEmailValidationError(emailValidation.error);
+      showError(emailValidation.error);
+      return; // Don't show save confirmation modal
+    }
+    
+    // Clear any previous email validation errors
+    setEmailValidationError('');
     setShowSaveConfirmation(true);
   };
 
-  const handleSaveConfirm = () => {
+  const handleSaveConfirm = async () => {
     setIsSaving(true);
-    if (onSave) {
-      onSave(device.id, formData);
-    }
-    setTimeout(() => {
+    try {
+      await saveDeviceConfiguration(device.id, formData);
+      
+      // Update originalFormData to reflect the saved state
+      setOriginalFormData({
+        ...formData,
+        deviceEnabled: deviceEnabled
+      });
+      
+      // Clear unsaved changes flag
+      setHasUnsavedChanges(false);
+      
+      // Show success notification
+      showSuccess('Device configuration saved successfully!');
+      
+      // Close modal after successful save
+      setTimeout(() => {
+        setIsSaving(false);
+        setShowSaveConfirmation(false);
+        onClose();
+      }, 1000);
+    } catch (err) {
+      console.error('Failed to save configuration:', err);
+      console.error('Error details:', {
+        message: err.message,
+        stack: err.stack,
+        formData: formData,
+        deviceId: device.id
+      });
       setIsSaving(false);
       setShowSaveConfirmation(false);
-      onClose();
-    }, 1000);
+      
+      // Show error notification
+      const errorMessage = err.message || 'Unknown error occurred';
+      showError(`Failed to save configuration: ${errorMessage}`);
+    }
   };
 
   const handleSaveCancel = () => {
@@ -178,7 +370,128 @@ const DeviceConfigurationModal = ({
     }
   };
 
-  if (!isOpen || !device) return null;
+  const handleClose = () => {
+    if (checkForUnsavedChanges()) {
+      setShowCloseConfirmation(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleCloseConfirm = () => {
+    // Reset form data to original state
+    setFormData({
+      minutesPerCoinRate: originalFormData.minutesPerCoinRate || '',
+      samplesPerHourRate: originalFormData.samplesPerHourRate || '',
+      lowPowerMode: originalFormData.lowPowerMode || false,
+      temperatureThreshold: originalFormData.temperatureThreshold || '',
+      minVoltage: originalFormData.minVoltage || '',
+      maxVoltage: originalFormData.maxVoltage || '',
+      enableDeviceAlerts: originalFormData.enableDeviceAlerts || false,
+      emailsToNotify: originalFormData.emailsToNotify || ''
+    });
+    
+    // Reset device enabled state to original
+    setDeviceEnabled(originalFormData.deviceEnabled || true);
+    
+    // Clear unsaved changes flag
+    setHasUnsavedChanges(false);
+    
+    // Clear any email validation errors
+    setEmailValidationError('');
+    
+    setShowCloseConfirmation(false);
+    onClose();
+  };
+
+  const handleCloseCancel = () => {
+    setShowCloseConfirmation(false);
+  };
+
+  // Save device configuration to API
+  const saveDeviceConfiguration = async (deviceId, formData) => {
+    try {
+      // Validate required fields
+      if (!deviceId) {
+        throw new Error('Device ID is required');
+      }
+
+      console.log('Form data received:', formData);
+
+      // Convert emails to string format for API
+      let emailsString = '';
+      if (formData.emailsToNotify) {
+        if (typeof formData.emailsToNotify === 'string') {
+          // If it's already a string, clean it up
+          emailsString = formData.emailsToNotify.split(',').map(email => email.trim()).filter(email => email).join(', ');
+        } else if (Array.isArray(formData.emailsToNotify)) {
+          // If it's an array, join with commas
+          emailsString = formData.emailsToNotify.filter(email => email && email.trim()).join(', ');
+        }
+      }
+      
+      console.log('Emails processing:', {
+        original: formData.emailsToNotify,
+        type: typeof formData.emailsToNotify,
+        isArray: Array.isArray(formData.emailsToNotify),
+        processed: emailsString,
+        length: emailsString.split(',').length
+      });
+
+      // Map form data to API request format
+      const requestData = {
+        device_id: deviceId,
+        device_alert_enabled: formData.enableDeviceAlerts,
+        device_enabled: deviceEnabled,
+        emails: emailsString,
+        low_power: formData.lowPowerMode,
+        max_batt: 100, // Default value, can be made configurable later
+        max_temp: parseFloat(formData.temperatureThreshold) || 35,
+        max_volt: parseFloat(formData.maxVoltage) || 12.7,
+        min_batt: 50, // Default value, can be made configurable later
+        min_temp: 25, // Default value, can be made configurable later
+        min_volt: parseFloat(formData.minVoltage) || 12.06,
+        minute_per_peso: parseFloat(formData.minutesPerCoinRate) || 5,
+        samples_per_hour: parseFloat(formData.samplesPerHourRate) || 60,
+        update_gap_seconds: 60 // Default value, can be made configurable later
+      };
+
+      console.log('Saving device configuration:', requestData);
+      console.log('Email field in request:', {
+        emails: requestData.emails,
+        type: typeof requestData.emails,
+        isArray: Array.isArray(requestData.emails),
+        length: requestData.emails.split(',').length
+      });
+
+      const url = 'https://api-qcusolarcharge.up.railway.app/admin/setDeviceConfig';
+      console.log('Making POST request to:', url);
+      console.log('Request data:', requestData);
+      
+      const response = await authenticatedPost(url, requestData);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`Failed to save device configuration: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Save configuration result:', result);
+      
+      return result;
+    } catch (err) {
+      console.error('Error saving device configuration:', err);
+      throw err;
+    }
+  };
+
+  if (!isOpen || !device) {
+    console.log('Modal not rendering:', { isOpen, device: !!device });
+    return null;
+  }
 
   return (
     <div className="device-config-overlay">
@@ -204,7 +517,7 @@ const DeviceConfigurationModal = ({
             </button>
             <button 
               className="device-config-close"
-              onClick={onClose}
+              onClick={handleClose}
             >
               Close
             </button>
@@ -333,9 +646,13 @@ const DeviceConfigurationModal = ({
                   value={formData.emailsToNotify}
                   onChange={(e) => handleInputChange('emailsToNotify', e.target.value)}
                   placeholder="admin@example.com, tech@example.com"
-                  className="config-input"
+                  className={`config-input ${emailValidationError ? 'config-input-error' : ''}`}
                 />
-                <span className="config-help">Comma-separated email addresses</span>
+                {emailValidationError ? (
+                  <span className="config-error-text">{emailValidationError}</span>
+                ) : (
+                  <span className="config-help">Comma-separated email addresses</span>
+                )}
               </div>
             </div>
 
@@ -378,6 +695,25 @@ const DeviceConfigurationModal = ({
                   </div>
                 </label>
               </div>
+
+              <div className="config-toggle">
+                <label className="toggle-label">
+                  <input
+                    type="checkbox"
+                    checked={deviceEnabled}
+                    onChange={(e) => handleEnableDisable()}
+                    className="toggle-checkbox"
+                  />
+                  <span className="toggle-slider"></span>
+                  <div className="toggle-content">
+                    <Power className="toggle-icon power-icon" />
+                    <div>
+                      <span className="toggle-title">Device Enabled</span>
+                      <span className="toggle-description">{deviceEnabled ? 'Device is currently active' : 'Device is currently disabled'}</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -386,23 +722,6 @@ const DeviceConfigurationModal = ({
             <h3 className="config-section-title">Device Management</h3>
             
             <div className="device-management-buttons">
-              <button 
-                className={`management-button ${device.isEnabled ? 'disable-button' : 'enable-button'}`}
-                onClick={handleEnableDisable}
-              >
-                {device.isEnabled ? (
-                  <>
-                    <XCircle className="button-icon" />
-                    Disable Device
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="button-icon" />
-                    Enable Device
-                  </>
-                )}
-              </button>
-
               <button 
                 className="management-button delete-button"
                 onClick={handleDeleteClick}
@@ -508,6 +827,42 @@ const DeviceConfigurationModal = ({
                   disabled={isSaving}
                 >
                   {isSaving ? 'Saving...' : 'Save Configuration'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Close Confirmation Modal */}
+        {showCloseConfirmation && (
+          <div className="close-confirmation-overlay">
+            <div className="close-confirmation-modal">
+              <div className="close-confirmation-header">
+                <AlertTriangle className="close-warning-icon" />
+                <h3 className="close-confirmation-title">Unsaved Changes</h3>
+              </div>
+              
+              <div className="close-confirmation-content">
+                <p className="close-warning-text">
+                  You have unsaved changes. Are you sure you want to close without saving?
+                </p>
+                <p className="close-instruction-text">
+                  Your changes will be lost if you close now.
+                </p>
+              </div>
+              
+              <div className="close-confirmation-footer">
+                <button 
+                  className="config-button cancel-button"
+                  onClick={handleCloseCancel}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="config-button close-confirm-button"
+                  onClick={handleCloseConfirm}
+                >
+                  Close Without Saving
                 </button>
               </div>
             </div>
