@@ -1258,15 +1258,154 @@ const DeviceDetail = () => {
                 </div>
                   <div className="analytics-content">
                     <div className="analytics-metric">
-                       <div className="analytics-value energy">{formatEnergy(calculateEnergyFromHistory(timeFilter))}</div>
+                       <div className="analytics-value energy">{formatEnergy((() => {
+                         // Calculate energy from energy_history with time filtering
+                         if (deviceData?.energy_history && Array.isArray(deviceData.energy_history)) {
+                           const allEnergyData = deviceData.energy_history.flat();
+                           const deviceEnergyData = allEnergyData.filter(entry => entry.device_id === deviceId);
+                           
+                           // Apply time filter
+                           const now = new Date();
+                           let startDate;
+                           
+                           switch (timeFilter) {
+                             case 'daily':
+                               startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                               break;
+                             case 'weekly':
+                               startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                               break;
+                             case 'monthly':
+                               startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                               break;
+                             case 'total':
+                               startDate = new Date(0); // Beginning of time
+                               break;
+                             default:
+                               startDate = new Date(0);
+                           }
+                           
+                           // Filter by time period
+                           const filteredEnergyData = deviceEnergyData.filter(entry => {
+                             if (!entry.date_time) return false;
+                             let entryDate;
+                             if (entry.date_time.seconds) {
+                               entryDate = new Date(entry.date_time.seconds * 1000);
+                             } else {
+                               entryDate = new Date(entry.date_time);
+                             }
+                             return entryDate >= startDate;
+                           });
+                           
+                           return filteredEnergyData.reduce((sum, entry) => sum + (entry.energy_accumulated || 0), 0);
+                         }
+                         return 0;
+                       })())}</div>
                       <div className="analytics-trend positive">
                         <span>↗</span>
-                        <span>+12.5% vs prev period</span>
-                      </div>
+                        <span>{(() => {
+                          // Calculate improvement percentage based on actual energy data
+                          const currentEnergy = (() => {
+                            if (deviceData?.energy_history && Array.isArray(deviceData.energy_history)) {
+                              const allEnergyData = deviceData.energy_history.flat();
+                              const deviceEnergyData = allEnergyData.filter(entry => entry.device_id === deviceId);
+                              
+                              const now = new Date();
+                              let startDate;
+                              
+                              switch (timeFilter) {
+                                case 'daily':
+                                  startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                  break;
+                                case 'weekly':
+                                  startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                  break;
+                                case 'monthly':
+                                  startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                  break;
+                                case 'total':
+                                  startDate = new Date(0);
+                                  break;
+                                default:
+                                  startDate = new Date(0);
+                              }
+                              
+                              const filteredEnergyData = deviceEnergyData.filter(entry => {
+                                if (!entry.date_time) return false;
+                                let entryDate;
+                                if (entry.date_time.seconds) {
+                                  entryDate = new Date(entry.date_time.seconds * 1000);
+                                } else {
+                                  entryDate = new Date(entry.date_time);
+                                }
+                                return entryDate >= startDate;
+                              });
+                              
+                              return filteredEnergyData.reduce((sum, entry) => sum + (entry.energy_accumulated || 0), 0);
+                            }
+                            return 0;
+                          })();
+                          
+                          // Calculate previous period for comparison
+                          const previousEnergy = (() => {
+                            if (deviceData?.energy_history && Array.isArray(deviceData.energy_history)) {
+                              const allEnergyData = deviceData.energy_history.flat();
+                              const deviceEnergyData = allEnergyData.filter(entry => entry.device_id === deviceId);
+                              
+                              const now = new Date();
+                              let startDate, endDate;
+                              
+                              switch (timeFilter) {
+                                case 'daily':
+                                  // Previous day (yesterday)
+                                  endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                  startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+                                  break;
+                                case 'weekly':
+                                  // Previous week (7-14 days ago)
+                                  endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                  startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                  break;
+                                case 'monthly':
+                                  // Previous month
+                                  endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                  startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+                                  break;
+                                case 'total':
+                                  return 0; // No previous period for total
+                                default:
+                                  return 0;
+                              }
+                              
+                              const filteredEnergyData = deviceEnergyData.filter(entry => {
+                                if (!entry.date_time) return false;
+                                let entryDate;
+                                if (entry.date_time.seconds) {
+                                  entryDate = new Date(entry.date_time.seconds * 1000);
+                                } else {
+                                  entryDate = new Date(entry.date_time);
+                                }
+                                return entryDate >= startDate && entryDate < endDate;
+                              });
+                              
+                              return filteredEnergyData.reduce((sum, entry) => sum + (entry.energy_accumulated || 0), 0);
+                            }
+                            return 0;
+                          })();
+                          
+                          if (previousEnergy === 0) {
+                            return currentEnergy > 0 ? '+100% vs prev period' : 'No data';
+                          }
+                          
+                          const improvement = ((currentEnergy - previousEnergy) / previousEnergy) * 100;
+                          const sign = improvement >= 0 ? '+' : '';
+                          return `${sign}${improvement.toFixed(1)}% vs prev period`;
+                        })()}</span>
                     </div>
+                  </div>
                     <div className="analytics-icon energy">⚡</div>
                       </div>
-                    </div>
+                </div>
                     
                 <div className="analytics-card">
                   <div className="analytics-header">
@@ -1279,11 +1418,297 @@ const DeviceDetail = () => {
                     <div className="analytics-metric">
                        <div className="analytics-value revenue">₱{(() => {
                          const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
-                         return deviceTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                         
+                         // Apply time filter
+                         const now = new Date();
+                         let startDate;
+                         
+                         switch (timeFilter) {
+                           case 'daily':
+                             startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                             break;
+                           case 'weekly':
+                             startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                             break;
+                           case 'monthly':
+                             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                             break;
+                           case 'total':
+                             startDate = new Date(0); // Beginning of time
+                             break;
+                           default:
+                             startDate = new Date(0);
+                         }
+                         
+                         // Filter transactions by time period
+                         const filteredTransactions = deviceTransactions.filter(transaction => {
+                           if (!transaction.date_time) return false;
+                           let transactionDate;
+                           if (transaction.date_time.seconds) {
+                             transactionDate = new Date(transaction.date_time.seconds * 1000);
+                           } else {
+                             transactionDate = new Date(transaction.date_time);
+                           }
+                           return transactionDate >= startDate;
+                         });
+                         
+                         return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
                        })()}</div>
-                      <div className="analytics-trend positive">
-                        <span>↗</span>
-                        <span>+8.3% vs prev period</span>
+                      <div className={`analytics-trend ${(() => {
+                        const currentRevenue = (() => {
+                          const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                          const now = new Date();
+                          let startDate;
+                          
+                          switch (timeFilter) {
+                            case 'daily':
+                              startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              break;
+                            case 'weekly':
+                              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              break;
+                            case 'monthly':
+                              startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                              break;
+                            case 'total':
+                              startDate = new Date(0);
+                              break;
+                            default:
+                              startDate = new Date(0);
+                          }
+                          
+                          const filteredTransactions = deviceTransactions.filter(transaction => {
+                            if (!transaction.date_time) return false;
+                            let transactionDate;
+                            if (transaction.date_time.seconds) {
+                              transactionDate = new Date(transaction.date_time.seconds * 1000);
+                            } else {
+                              transactionDate = new Date(transaction.date_time);
+                            }
+                            return transactionDate >= startDate;
+                          });
+                          
+                          return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                        })();
+                        
+                        const previousRevenue = (() => {
+                          const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                          const now = new Date();
+                          let startDate, endDate;
+                          
+                          switch (timeFilter) {
+                            case 'daily':
+                              endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+                              break;
+                            case 'weekly':
+                              endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              break;
+                            case 'monthly':
+                              endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                              startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+                              break;
+                            case 'total':
+                              return 0;
+                            default:
+                              return 0;
+                          }
+                          
+                          const filteredTransactions = deviceTransactions.filter(transaction => {
+                            if (!transaction.date_time) return false;
+                            let transactionDate;
+                            if (transaction.date_time.seconds) {
+                              transactionDate = new Date(transaction.date_time.seconds * 1000);
+        } else {
+                              transactionDate = new Date(transaction.date_time);
+                            }
+                            return transactionDate >= startDate && transactionDate < endDate;
+                          });
+                          
+                          return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                        })();
+                        
+                        if (previousRevenue === 0) {
+                          return currentRevenue > 0 ? 'positive' : 'neutral';
+                        }
+                        
+                        const improvement = ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+                        if (improvement > 0) return 'positive';
+                        if (improvement < 0) return 'negative';
+                        return 'neutral';
+                      })()}`}>
+                        <span>{(() => {
+                          const currentRevenue = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                break;
+                              case 'weekly':
+                                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                break;
+                              case 'total':
+                                startDate = new Date(0);
+                                break;
+                              default:
+                                startDate = new Date(0);
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate;
+                            });
+                            
+                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                          })();
+                          
+                          const previousRevenue = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate, endDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+                                break;
+                              case 'weekly':
+                                endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+                                break;
+                              case 'total':
+                                return 0;
+                              default:
+                                return 0;
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate && transactionDate < endDate;
+                            });
+                            
+                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                          })();
+                          
+                          if (previousRevenue === 0) {
+                            return currentRevenue > 0 ? '↗' : '→';
+                          }
+                          
+                          const improvement = ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+                          if (improvement > 0) return '↗';
+                          if (improvement < 0) return '↘';
+                          return '→';
+                        })()}</span>
+                        <span>{(() => {
+                          // Calculate revenue improvement
+                          const currentRevenue = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                break;
+                              case 'weekly':
+                                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                break;
+                              case 'total':
+                                startDate = new Date(0);
+                                break;
+                              default:
+                                startDate = new Date(0);
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate;
+                            });
+                            
+                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                          })();
+                          
+                          const previousRevenue = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate, endDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+                                break;
+                              case 'weekly':
+                                endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+                                break;
+                              case 'total':
+                                return 0;
+                              default:
+                                return 0;
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate && transactionDate < endDate;
+                            });
+                            
+                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                          })();
+                          
+                          if (previousRevenue === 0) {
+                            return currentRevenue > 0 ? '+100% vs prev period' : 'No data';
+                          }
+                          
+                          const improvement = ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+                          
+                          // Cap extreme percentages to prevent unrealistic values
+                          const cappedImprovement = Math.max(-100, Math.min(100, improvement));
+                          const sign = cappedImprovement >= 0 ? '+' : '';
+                          return `${sign}${cappedImprovement.toFixed(1)}% vs prev period`;
+                        })()}</span>
                       </div>
                     </div>
                     <div className="analytics-icon revenue">$</div>
@@ -1301,17 +1726,303 @@ const DeviceDetail = () => {
                     <div className="analytics-metric">
                        <div className="analytics-value uses">{(() => {
                          const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
-                         return deviceTransactions.length;
+                         
+                         // Apply time filter
+                         const now = new Date();
+                         let startDate;
+                         
+                         switch (timeFilter) {
+                           case 'daily':
+                             startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                             break;
+                           case 'weekly':
+                             startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                             break;
+                           case 'monthly':
+                             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                             break;
+                           case 'total':
+                             startDate = new Date(0); // Beginning of time
+                             break;
+                           default:
+                             startDate = new Date(0);
+                         }
+                         
+                         // Filter transactions by time period
+                         const filteredTransactions = deviceTransactions.filter(transaction => {
+                           if (!transaction.date_time) return false;
+                           let transactionDate;
+                           if (transaction.date_time.seconds) {
+                             transactionDate = new Date(transaction.date_time.seconds * 1000);
+      } else {
+                             transactionDate = new Date(transaction.date_time);
+                           }
+                           return transactionDate >= startDate;
+                         });
+                         
+                         return filteredTransactions.length;
                        })()}</div>
-                      <div className="analytics-trend positive">
-                        <span>↗</span>
-                        <span>+15.2% vs prev period</span>
-                    </div>
+                      <div className={`analytics-trend ${(() => {
+                        const currentUses = (() => {
+                          const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                          const now = new Date();
+                          let startDate;
+                          
+                          switch (timeFilter) {
+                            case 'daily':
+                              startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              break;
+                            case 'weekly':
+                              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              break;
+                            case 'monthly':
+                              startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                              break;
+                            case 'total':
+                              startDate = new Date(0);
+                              break;
+                            default:
+                              startDate = new Date(0);
+                          }
+                          
+                          const filteredTransactions = deviceTransactions.filter(transaction => {
+                            if (!transaction.date_time) return false;
+                            let transactionDate;
+                            if (transaction.date_time.seconds) {
+                              transactionDate = new Date(transaction.date_time.seconds * 1000);
+                            } else {
+                              transactionDate = new Date(transaction.date_time);
+                            }
+                            return transactionDate >= startDate;
+                          });
+                          
+                          return filteredTransactions.length;
+                        })();
+                        
+                        const previousUses = (() => {
+                          const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                          const now = new Date();
+                          let startDate, endDate;
+                          
+                          switch (timeFilter) {
+                            case 'daily':
+                              endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+        break;
+                            case 'weekly':
+                              endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+                            case 'monthly':
+                              endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                              startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+        break;
+                            case 'total':
+                              return 0;
+      default:
+                              return 0;
+                          }
+                          
+                          const filteredTransactions = deviceTransactions.filter(transaction => {
+                            if (!transaction.date_time) return false;
+                            let transactionDate;
+                            if (transaction.date_time.seconds) {
+                              transactionDate = new Date(transaction.date_time.seconds * 1000);
+                            } else {
+                              transactionDate = new Date(transaction.date_time);
+                            }
+                            return transactionDate >= startDate && transactionDate < endDate;
+                          });
+                          
+                          return filteredTransactions.length;
+                        })();
+                        
+                        if (previousUses === 0) {
+                          return currentUses > 0 ? 'positive' : 'neutral';
+                        }
+                        
+                        const improvement = ((currentUses - previousUses) / previousUses) * 100;
+                        if (improvement > 0) return 'positive';
+                        if (improvement < 0) return 'negative';
+                        return 'neutral';
+                      })()}`}>
+                        <span>{(() => {
+                          const currentUses = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                break;
+                              case 'weekly':
+                                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                break;
+                              case 'total':
+                                startDate = new Date(0);
+                                break;
+                              default:
+                                startDate = new Date(0);
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate;
+                            });
+                            
+                            return filteredTransactions.length;
+                          })();
+                          
+                          const previousUses = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate, endDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+                                break;
+                              case 'weekly':
+                                endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+                                break;
+                              case 'total':
+                                return 0;
+                              default:
+                                return 0;
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate && transactionDate < endDate;
+                            });
+                            
+                            return filteredTransactions.length;
+                          })();
+                          
+                          if (previousUses === 0) {
+                            return currentUses > 0 ? '↗' : '→';
+                          }
+                          
+                          const improvement = ((currentUses - previousUses) / previousUses) * 100;
+                          if (improvement > 0) return '↗';
+                          if (improvement < 0) return '↘';
+                          return '→';
+                        })()}</span>
+                        <span>{(() => {
+                          // Calculate uses improvement
+                          const currentUses = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                break;
+                              case 'weekly':
+                                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                break;
+                              case 'total':
+                                startDate = new Date(0);
+                                break;
+                              default:
+                                startDate = new Date(0);
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate;
+                            });
+                            
+                            return filteredTransactions.length;
+                          })();
+                          
+                          const previousUses = (() => {
+                            const deviceTransactions = deviceData?.transactions?.filter(t => t.device_id === deviceId) || [];
+                            const now = new Date();
+                            let startDate, endDate;
+                            
+                            switch (timeFilter) {
+                              case 'daily':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+                                break;
+                              case 'weekly':
+                                endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                break;
+                              case 'monthly':
+                                endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+                                break;
+                              case 'total':
+                                return 0;
+                              default:
+                                return 0;
+                            }
+                            
+                            const filteredTransactions = deviceTransactions.filter(transaction => {
+                              if (!transaction.date_time) return false;
+                              let transactionDate;
+                              if (transaction.date_time.seconds) {
+                                transactionDate = new Date(transaction.date_time.seconds * 1000);
+                              } else {
+                                transactionDate = new Date(transaction.date_time);
+                              }
+                              return transactionDate >= startDate && transactionDate < endDate;
+                            });
+                            
+                            return filteredTransactions.length;
+                          })();
+                          
+                          if (previousUses === 0) {
+                            return currentUses > 0 ? '+100% vs prev period' : 'No data';
+                          }
+                          
+                          const improvement = ((currentUses - previousUses) / previousUses) * 100;
+                          
+                          // Cap extreme percentages to prevent unrealistic values
+                          const cappedImprovement = Math.max(-100, Math.min(100, improvement));
+                          const sign = cappedImprovement >= 0 ? '+' : '';
+                          return `${sign}${cappedImprovement.toFixed(1)}% vs prev period`;
+                        })()}</span>
+                </div>
                     </div>
                     <div className="analytics-icon uses">👥</div>
-                  </div>
-                </div>
-              </div>
+                    </div>
+                    </div>
+                    </div>
 
               {/* Two Charts in One Row */}
               <div className="analytics-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -1344,7 +2055,7 @@ const DeviceDetail = () => {
                     <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '0.125rem' }}>
                       {getMetricInfo(selectedMetric).description}
                     </p>
-                  </div>
+                </div>
                   <div className="analytics-content">
                     <div style={{ 
                       height: '400px', 
@@ -1416,12 +2127,12 @@ const DeviceDetail = () => {
                           />
                         </LineChart>
                       </ResponsiveContainer>
-                    </div>
                       </div>
-                </div>
+                      </div>
+                    </div>
                     
                 {/* Chart 2: Revenue & Usage Trends */}
-                <div className="analytics-card">
+              <div className="analytics-card">
                   <div className="analytics-header">
                     <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>
                       <DollarSign className="w-6 h-6" style={{ color: '#10b981' }} />
@@ -1545,13 +2256,13 @@ const DeviceDetail = () => {
                           />
                         </LineChart>
                       </ResponsiveContainer>
+                      </div>
+                      </div>
+              </div>
             </div>
           </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
+        </div>
       </div>
     </div>
   );
