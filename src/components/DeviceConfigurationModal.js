@@ -8,13 +8,14 @@ import {
   AlertTriangle, 
   Mail, 
   Power, 
+  Battery,
   Trash2,
   CheckCircle,
   XCircle,
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { authenticatedGet, authenticatedPost } from '../utils/api';
+import { authenticatedGet, authenticatedPost, authenticatedDelete } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import '../styles/DeviceConfigurationModal.css';
 
@@ -31,9 +32,11 @@ const DeviceConfigurationModal = ({
     minutesPerCoinRate: '',
     samplesPerHourRate: '',
     lowPowerMode: false,
-    temperatureThreshold: '',
-    minVoltage: '',
-    maxVoltage: '',
+    minTemperature: '',
+    maxTemperature: '',
+    minBattery: '',
+    maxBattery: '',
+    updateLatency: '',
     enableDeviceAlerts: false,
     emailsToNotify: ''
   });
@@ -51,6 +54,59 @@ const DeviceConfigurationModal = ({
   const [originalFormData, setOriginalFormData] = useState(null);
   const [lastFetchedDeviceId, setLastFetchedDeviceId] = useState(null);
   const [emailValidationError, setEmailValidationError] = useState('');
+  const [fieldValidationErrors, setFieldValidationErrors] = useState({});
+
+  // Validate field limits
+  const validateFieldLimits = (field, value, formDataToValidate = formData) => {
+    const numValue = parseFloat(value);
+    
+    switch (field) {
+      case 'samplesPerHourRate':
+        if (numValue > 120) {
+          return { isValid: false, error: 'Samples per hour cannot exceed 120' };
+        }
+        break;
+      case 'minTemperature':
+        if (numValue < 20) {
+          return { isValid: false, error: 'Minimum temperature cannot be less than 20°C' };
+        }
+        if (formDataToValidate.maxTemperature && numValue >= parseFloat(formDataToValidate.maxTemperature)) {
+          return { isValid: false, error: 'Minimum temperature must be less than maximum temperature' };
+        }
+        break;
+      case 'maxTemperature':
+        if (numValue > 100) {
+          return { isValid: false, error: 'Maximum temperature cannot exceed 100°C' };
+        }
+        if (formDataToValidate.minTemperature && numValue <= parseFloat(formDataToValidate.minTemperature)) {
+          return { isValid: false, error: 'Maximum temperature must be greater than minimum temperature' };
+        }
+        break;
+      case 'minBattery':
+        if (numValue < 50) {
+          return { isValid: false, error: 'Minimum battery cannot be less than 50%' };
+        }
+        if (formDataToValidate.maxBattery && numValue >= parseFloat(formDataToValidate.maxBattery)) {
+          return { isValid: false, error: 'Minimum battery must be less than maximum battery' };
+        }
+        break;
+      case 'maxBattery':
+        if (numValue > 100) {
+          return { isValid: false, error: 'Maximum battery cannot exceed 100%' };
+        }
+        if (formDataToValidate.minBattery && numValue <= parseFloat(formDataToValidate.minBattery)) {
+          return { isValid: false, error: 'Maximum battery must be greater than minimum battery' };
+        }
+        break;
+      case 'updateLatency':
+        if (numValue < 3) {
+          return { isValid: false, error: 'Update latency cannot be less than 3 seconds' };
+        }
+        break;
+    }
+    
+    return { isValid: true, error: '' };
+  };
 
   // Email validation function
   const validateEmails = (emailString) => {
@@ -79,9 +135,11 @@ const DeviceConfigurationModal = ({
       minutesPerCoinRate: '5',
       samplesPerHourRate: '60',
       lowPowerMode: false,
-      temperatureThreshold: '35',
-      minVoltage: '12.06',
-      maxVoltage: '12.7',
+      minTemperature: '20',
+      maxTemperature: '40',
+      minBattery: '50',
+      maxBattery: '100',
+      updateLatency: '3',
       enableDeviceAlerts: true,
       emailsToNotify: ''
     };
@@ -106,9 +164,11 @@ const DeviceConfigurationModal = ({
       minutesPerCoinRate: '',
       samplesPerHourRate: '',
       lowPowerMode: false,
-      temperatureThreshold: '',
-      minVoltage: '',
-      maxVoltage: '',
+      minTemperature: '',
+      maxTemperature: '',
+      minBattery: '',
+      maxBattery: '',
+      updateLatency: '',
       enableDeviceAlerts: false,
       emailsToNotify: ''
     });
@@ -170,9 +230,11 @@ const DeviceConfigurationModal = ({
         minutesPerCoinRate: configData.minute_per_peso || '',
         samplesPerHourRate: configData.samples_per_hour || '',
         lowPowerMode: configData.low_power || false,
-        temperatureThreshold: configData.max_temp || '',
-        minVoltage: configData.min_volt || '',
-        maxVoltage: configData.max_volt || '',
+        minTemperature: configData.min_temp || '',
+        maxTemperature: configData.max_temp || '',
+        minBattery: configData.min_batt || '',
+        maxBattery: configData.max_batt || '',
+        updateLatency: configData.update_gap_seconds || '',
         enableDeviceAlerts: configData.device_alert_enabled || false,
         emailsToNotify: emailsString
       };
@@ -209,9 +271,11 @@ const DeviceConfigurationModal = ({
           minutesPerCoinRate: device.minutesPerCoinRate || '',
           samplesPerHourRate: device.samplesPerHourRate || '',
           lowPowerMode: device.lowPowerMode || false,
-          temperatureThreshold: device.temperatureThreshold || '',
-          minVoltage: device.minVoltage || '',
-          maxVoltage: device.maxVoltage || '',
+          minTemperature: device.minTemperature || '',
+          maxTemperature: device.maxTemperature || '',
+          minBattery: device.minBattery || '',
+          maxBattery: device.maxBattery || '',
+          updateLatency: device.updateLatency || '',
           enableDeviceAlerts: device.enableDeviceAlerts || false,
           emailsToNotify: device.emailsToNotify || ''
         });
@@ -238,11 +302,35 @@ const DeviceConfigurationModal = ({
   }, [device?.id, isOpen, lastFetchedDeviceId]); // Only depend on device ID, not the entire device object
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    const newFormData = { ...formData, [field]: value };
+    
+    setFormData(newFormData);
     setHasUnsavedChanges(true);
+    
+    // Validate current field
+    const validation = validateFieldLimits(field, value);
+    setFieldValidationErrors(prev => ({
+      ...prev,
+      [field]: validation.isValid ? '' : validation.error
+    }));
+    
+    // Re-validate related fields
+    const relatedFields = [];
+    if (field === 'minTemperature') relatedFields.push('maxTemperature');
+    if (field === 'maxTemperature') relatedFields.push('minTemperature');
+    if (field === 'minBattery') relatedFields.push('maxBattery');
+    if (field === 'maxBattery') relatedFields.push('minBattery');
+    
+    relatedFields.forEach(relatedField => {
+      const relatedValue = newFormData[relatedField];
+      if (relatedValue) {
+        const relatedValidation = validateFieldLimits(relatedField, relatedValue, newFormData);
+        setFieldValidationErrors(prev => ({
+          ...prev,
+          [relatedField]: relatedValidation.isValid ? '' : relatedValidation.error
+        }));
+      }
+    });
   };
 
   // Check if there are unsaved changes
@@ -278,26 +366,79 @@ const DeviceConfigurationModal = ({
     );
   };
 
+  const handleResetToDefault = () => {
+    const defaultFormData = {
+      minutesPerCoinRate: '5',
+      samplesPerHourRate: '60',
+      lowPowerMode: false,
+      minTemperature: '20',
+      maxTemperature: '40',
+      minBattery: '50',
+      maxBattery: '100',
+      updateLatency: '3',
+      enableDeviceAlerts: true,
+      emailsToNotify: ''
+    };
+
+    setFormData(defaultFormData);
+    setDeviceEnabled(true);
+    setHasUnsavedChanges(true);
+    setFieldValidationErrors({});
+    setEmailValidationError('');
+    
+    showSuccess('Configuration reset to default values');
+  };
+
   const handleDeleteClick = () => {
     setShowDeleteConfirmation(true);
     setDeleteConfirmationText('');
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteConfirmationText === device.id) {
       setIsDeleting(true);
-      if (onDelete) {
-        onDelete(device.id);
-      }
       
-      // Show success notification
-      showSuccess('Device deleted successfully!');
-      
-      setTimeout(() => {
+      try {
+        const url = `https://api-qcusolarcharge.up.railway.app/admin/deleteDevice?device_id=${device.id}`;
+        console.log('Deleting device:', device.id);
+        console.log('API URL:', url);
+        
+        const response = await authenticatedDelete(url);
+        console.log('Delete response status:', response.status);
+        console.log('Delete response ok:', response.ok);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Delete API Error Response:', errorText);
+          throw new Error(`Failed to delete device: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Delete device result:', result);
+        
+        // Show success notification
+        showSuccess('Device deleted successfully!');
+        
+        // Call the onDelete callback if provided
+        if (onDelete) {
+          onDelete(device.id);
+        }
+        
+        setTimeout(() => {
+          setIsDeleting(false);
+          setShowDeleteConfirmation(false);
+          onClose();
+        }, 1000);
+        
+      } catch (err) {
+        console.error('Error deleting device:', err);
         setIsDeleting(false);
         setShowDeleteConfirmation(false);
-        onClose();
-      }, 1000);
+        
+        // Show error notification
+        const errorMessage = err.message || 'Unknown error occurred';
+        showError(`Failed to delete device: ${errorMessage}`);
+      }
     }
   };
 
@@ -307,6 +448,13 @@ const DeviceConfigurationModal = ({
   };
 
   const handleSaveConfigurations = () => {
+    // Check for field validation errors
+    const hasFieldErrors = Object.values(fieldValidationErrors).some(error => error !== '');
+    if (hasFieldErrors) {
+      showError('Please fix validation errors before saving');
+      return;
+    }
+    
     // Validate emails before showing save confirmation
     const emailValidation = validateEmails(formData.emailsToNotify);
     if (!emailValidation.isValid) {
@@ -384,9 +532,11 @@ const DeviceConfigurationModal = ({
       minutesPerCoinRate: originalFormData.minutesPerCoinRate || '',
       samplesPerHourRate: originalFormData.samplesPerHourRate || '',
       lowPowerMode: originalFormData.lowPowerMode || false,
-      temperatureThreshold: originalFormData.temperatureThreshold || '',
-      minVoltage: originalFormData.minVoltage || '',
-      maxVoltage: originalFormData.maxVoltage || '',
+      minTemperature: originalFormData.minTemperature || '',
+      maxTemperature: originalFormData.maxTemperature || '',
+      minBattery: originalFormData.minBattery || '',
+      maxBattery: originalFormData.maxBattery || '',
+      updateLatency: originalFormData.updateLatency || '',
       enableDeviceAlerts: originalFormData.enableDeviceAlerts || false,
       emailsToNotify: originalFormData.emailsToNotify || ''
     });
@@ -445,15 +595,13 @@ const DeviceConfigurationModal = ({
         device_enabled: deviceEnabled,
         emails: emailsString,
         low_power: formData.lowPowerMode,
-        max_batt: 100, // Default value, can be made configurable later
-        max_temp: parseFloat(formData.temperatureThreshold) || 35,
-        max_volt: parseFloat(formData.maxVoltage) || 12.7,
-        min_batt: 50, // Default value, can be made configurable later
-        min_temp: 25, // Default value, can be made configurable later
-        min_volt: parseFloat(formData.minVoltage) || 12.06,
+        max_batt: parseFloat(formData.maxBattery) || 100,
+        max_temp: parseFloat(formData.maxTemperature) || 40,
+        min_batt: parseFloat(formData.minBattery) || 50,
+        min_temp: parseFloat(formData.minTemperature) || 20,
         minute_per_peso: parseFloat(formData.minutesPerCoinRate) || 5,
         samples_per_hour: parseFloat(formData.samplesPerHourRate) || 60,
-        update_gap_seconds: 60 // Default value, can be made configurable later
+        update_gap_seconds: parseFloat(formData.updateLatency) || 3
       };
 
       console.log('Saving device configuration:', requestData);
@@ -583,56 +731,108 @@ const DeviceConfigurationModal = ({
                   value={formData.samplesPerHourRate}
                   onChange={(e) => handleInputChange('samplesPerHourRate', e.target.value)}
                   placeholder="e.g., 60"
-                  className="config-input"
+                  className={`config-input ${fieldValidationErrors.samplesPerHourRate ? 'config-input-error' : ''}`}
                 />
-                <span className="config-help">Higher = more accurate (1-3600)</span>
+                {fieldValidationErrors.samplesPerHourRate ? (
+                  <span className="config-error-text">{fieldValidationErrors.samplesPerHourRate}</span>
+                ) : (
+                  <span className="config-help">Higher = more accurate (max: 120)</span>
+                )}
               </div>
 
               {/* Temperature threshold */}
+              {/* Min/Max Temperature */}
               <div className="config-field">
                 <label className="config-label">
                   <Thermometer className="config-field-icon thermometer-icon" />
-                  Temperature Threshold
+                  Min Temperature
                 </label>
                 <input
                   type="number"
-                  value={formData.temperatureThreshold}
-                  onChange={(e) => handleInputChange('temperatureThreshold', e.target.value)}
-                  placeholder="e.g., 45"
-                  className="config-input"
+                  value={formData.minTemperature}
+                  onChange={(e) => handleInputChange('minTemperature', e.target.value)}
+                  placeholder="e.g., 20"
+                  className={`config-input ${fieldValidationErrors.minTemperature ? 'config-input-error' : ''}`}
                 />
-                <span className="config-help">Temperature limit in °C</span>
-              </div>
-
-              {/* Min/Max Voltage */}
-              <div className="config-field">
-                <label className="config-label">
-                  <Zap className="config-field-icon voltage-icon" />
-                  Min Voltage
-                </label>
-                <input
-                  type="number"
-                  value={formData.minVoltage}
-                  onChange={(e) => handleInputChange('minVoltage', e.target.value)}
-                  placeholder="e.g., 3.0"
-                  className="config-input"
-                />
-                <span className="config-help">Minimum voltage in V</span>
+                {fieldValidationErrors.minTemperature ? (
+                  <span className="config-error-text">{fieldValidationErrors.minTemperature}</span>
+                ) : (
+                  <span className="config-help">Minimum temperature in °C (min: 20)</span>
+                )}
               </div>
 
               <div className="config-field">
                 <label className="config-label">
-                  <Zap className="config-field-icon voltage-icon" />
-                  Max Voltage
+                  <Thermometer className="config-field-icon thermometer-icon" />
+                  Max Temperature
                 </label>
                 <input
                   type="number"
-                  value={formData.maxVoltage}
-                  onChange={(e) => handleInputChange('maxVoltage', e.target.value)}
-                  placeholder="e.g., 5.0"
+                  value={formData.maxTemperature}
+                  onChange={(e) => handleInputChange('maxTemperature', e.target.value)}
+                  placeholder="e.g., 100"
+                  className={`config-input ${fieldValidationErrors.maxTemperature ? 'config-input-error' : ''}`}
+                />
+                {fieldValidationErrors.maxTemperature ? (
+                  <span className="config-error-text">{fieldValidationErrors.maxTemperature}</span>
+                ) : (
+                  <span className="config-help">Maximum temperature in °C (max: 100)</span>
+                )}
+              </div>
+
+              {/* Min/Max Battery */}
+              <div className="config-field">
+                <label className="config-label">
+                  <Battery className="config-field-icon battery-icon" />
+                  Min Battery
+                </label>
+                <input
+                  type="number"
+                  value={formData.minBattery}
+                  onChange={(e) => handleInputChange('minBattery', e.target.value)}
+                  placeholder="e.g., 20"
+                  className={`config-input ${fieldValidationErrors.minBattery ? 'config-input-error' : ''}`}
+                />
+                {fieldValidationErrors.minBattery ? (
+                  <span className="config-error-text">{fieldValidationErrors.minBattery}</span>
+                ) : (
+                  <span className="config-help">Minimum battery percentage (min: 50%)</span>
+                )}
+              </div>
+
+              <div className="config-field">
+                <label className="config-label">
+                  <Battery className="config-field-icon battery-icon" />
+                  Max Battery
+                </label>
+                <input
+                  type="number"
+                  value={formData.maxBattery}
+                  onChange={(e) => handleInputChange('maxBattery', e.target.value)}
+                  placeholder="e.g., 100"
+                  className={`config-input ${fieldValidationErrors.maxBattery ? 'config-input-error' : ''}`}
+                />
+                {fieldValidationErrors.maxBattery ? (
+                  <span className="config-error-text">{fieldValidationErrors.maxBattery}</span>
+                ) : (
+                  <span className="config-help">Maximum battery percentage (max: 100%)</span>
+                )}
+              </div>
+
+              {/* Update Latency */}
+              <div className="config-field">
+                <label className="config-label">
+                  <Clock className="config-field-icon clock-icon" />
+                  Update Latency
+                </label>
+                <input
+                  type="number"
+                  value={formData.updateLatency}
+                  onChange={(e) => handleInputChange('updateLatency', e.target.value)}
+                  placeholder="e.g., 3"
                   className="config-input"
                 />
-                <span className="config-help">Maximum voltage in V</span>
+                <span className="config-help">Update interval in seconds (min: 3)</span>
               </div>
 
               {/* Emails to notify */}
@@ -641,12 +841,12 @@ const DeviceConfigurationModal = ({
                   <Mail className="config-field-icon mail-icon" />
                   Emails to Notify
                 </label>
-                <input
-                  type="text"
+                <textarea
                   value={formData.emailsToNotify}
                   onChange={(e) => handleInputChange('emailsToNotify', e.target.value)}
                   placeholder="admin@example.com, tech@example.com"
-                  className={`config-input ${emailValidationError ? 'config-input-error' : ''}`}
+                  className={`config-input config-textarea ${emailValidationError ? 'config-input-error' : ''}`}
+                  rows={3}
                 />
                 {emailValidationError ? (
                   <span className="config-error-text">{emailValidationError}</span>
@@ -722,6 +922,14 @@ const DeviceConfigurationModal = ({
             <h3 className="config-section-title">Device Management</h3>
             
             <div className="device-management-buttons">
+              <button 
+                className="management-button reset-button"
+                onClick={handleResetToDefault}
+              >
+                <RefreshCw className="button-icon" />
+                Reset to Default
+              </button>
+              
               <button 
                 className="management-button delete-button"
                 onClick={handleDeleteClick}

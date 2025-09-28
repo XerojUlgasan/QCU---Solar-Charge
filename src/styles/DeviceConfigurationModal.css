@@ -270,6 +270,10 @@
   color: #8b5cf6; /* Purple for voltage settings */
 }
 
+.config-field-icon.battery-icon {
+  color: #22c55e; /* Green for battery settings */
+}
+
 .config-field-icon.mail-icon {
   color: #22c55e; /* Green for notifications */
 }
@@ -296,6 +300,12 @@
   color: #ffffff;
   font-size: 0.875rem;
   transition: all 0.2s;
+}
+
+.config-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
 }
 
 .config-input:focus {
@@ -465,6 +475,18 @@
 .delete-button:hover {
   background-color: #dc2626;
   border-color: #dc2626;
+  color: #ffffff;
+}
+
+.reset-button {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.reset-button:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
   color: #ffffff;
 }
 
@@ -961,6 +983,18 @@
 .light .delete-button:hover {
   background-color: #b91c1c;
   border-color: #b91c1c;
+  color: #ffffff;
+}
+
+.light .reset-button {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.light .reset-button:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
   color: #ffffff;
 }
 
