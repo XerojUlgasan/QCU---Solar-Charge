@@ -242,12 +242,15 @@ const DeviceConfigurationModal = ({
       setFormData(newFormData);
       setOriginalFormData({
         ...newFormData,
-        deviceEnabled: configData.device_enabled || false
+        deviceEnabled: configData.device_enabled !== undefined ? configData.device_enabled : (device?.isEnabled || false)
       });
 
       // Update device enabled status from API response
       if (configData.device_enabled !== undefined) {
         setDeviceEnabled(configData.device_enabled);
+      } else {
+        // If API doesn't return device_enabled, use device.isEnabled
+        setDeviceEnabled(device?.isEnabled || false);
       }
       
     } catch (err) {
@@ -298,6 +301,14 @@ const DeviceConfigurationModal = ({
       setLastFetchedDeviceId(device.id);
       fetchDeviceConfiguration(device.id);
       setDeviceEnabled(device.isEnabled || false);
+      
+      // Ensure originalFormData.deviceEnabled is set to current device state
+      if (originalFormData) {
+        setOriginalFormData(prev => ({
+          ...prev,
+          deviceEnabled: device.isEnabled || false
+        }));
+      }
     }
   }, [device?.id, isOpen, lastFetchedDeviceId]); // Only depend on device ID, not the entire device object
 
@@ -541,8 +552,11 @@ const DeviceConfigurationModal = ({
       emailsToNotify: originalFormData.emailsToNotify || ''
     });
     
-    // Reset device enabled state to original
-    setDeviceEnabled(originalFormData.deviceEnabled || true);
+    // Reset device enabled state to original (use device.isEnabled as fallback)
+    const originalDeviceEnabled = originalFormData.deviceEnabled !== undefined 
+      ? originalFormData.deviceEnabled 
+      : (device?.isEnabled || true);
+    setDeviceEnabled(originalDeviceEnabled);
     
     // Clear unsaved changes flag
     setHasUnsavedChanges(false);
