@@ -39,7 +39,7 @@ const DeviceDetail = () => {
   const { showSuccess, showError } = useNotification();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('realtime');
-  const [timeFilter, setTimeFilter] = useState('total');
+  const [timeFilter, setTimeFilter] = useState('daily');
   const [selectedMetric, setSelectedMetric] = useState('temperature');
   const [sessionsFilter, setSessionsFilter] = useState('newest');
   const [deviceData, setDeviceData] = useState(null);

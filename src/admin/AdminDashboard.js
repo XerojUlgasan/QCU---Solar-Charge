@@ -69,7 +69,7 @@ const AdminDashboard = () => {
   const [recentReports, setRecentReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeFilter, setTimeFilter] = useState('total');
+  const [timeFilter, setTimeFilter] = useState('daily');
   const [connectionStatus, setConnectionStatus] = useState('testing');
   const [isTransactionsPopupOpen, setIsTransactionsPopupOpen] = useState(false);
   const [transactionsFilter, setTransactionsFilter] = useState('newest');
