@@ -17,6 +17,7 @@ import {
   Coins,
   RefreshCw
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/AdminDashboard.css';
@@ -74,6 +75,7 @@ const AdminDashboard = () => {
   const [isTransactionsPopupOpen, setIsTransactionsPopupOpen] = useState(false);
   const [transactionsFilter, setTransactionsFilter] = useState('newest');
   const [previousPeriodData, setPreviousPeriodData] = useState(null);
+  const [selectedMetric, setSelectedMetric] = useState('energy');
 
   // Test API endpoint availability
   const testAPIEndpoint = async () => {
@@ -699,6 +701,510 @@ const AdminDashboard = () => {
     return type === 'positive' ? 'change-positive' : 'change-negative';
   };
 
+  // Get metric info for technical metrics dropdown
+  const getMetricInfo = (metricType) => {
+    const metrics = {
+      temperature: { label: 'Temperature', unit: '°C', color: '#ef4444', description: 'Average temperature readings' },
+      voltage: { label: 'Voltage', unit: 'V', color: '#3b82f6', description: 'Average voltage levels' },
+      energy: { label: 'Energy Accumulated', unit: 'Wh', color: '#f59e0b', description: 'Total energy generated' },
+      current: { label: 'Current', unit: 'A', color: '#8b5cf6', description: 'Average current draw' }
+    };
+    return metrics[metricType] || metrics.energy;
+  };
+
+  // Generate technical metrics data for charts from all devices
+  const getTechnicalMetrics = (timeFilter, metricType) => {
+    if (!overviewData || !overviewData.devices) {
+      return [{ period: 'No Data', value: 0 }];
+    }
+
+    // Collect all energy_history data from all devices
+    const allEnergyData = [];
+    overviewData.devices.forEach(device => {
+      if (device.energy_history && Array.isArray(device.energy_history)) {
+        const deviceEnergyData = device.energy_history.flat();
+        allEnergyData.push(...deviceEnergyData);
+      }
+    });
+
+    if (allEnergyData.length === 0) {
+      return [{ period: 'No Data', value: 0 }];
+    }
+
+    // Map metric types to actual field names
+    const fieldMapping = {
+      'energy': 'energy_accumulated',
+      'voltage': 'voltage', 
+      'current': 'current',
+      'temperature': 'temperature'
+    };
+    
+    const actualFieldName = fieldMapping[metricType] || metricType;
+    
+    const filteredEnergyData = allEnergyData.filter(entry => 
+      entry && entry[actualFieldName] !== undefined
+    );
+
+    if (filteredEnergyData.length === 0) {
+      return [{ period: 'No Data', value: 0 }];
+    }
+
+    // Apply time filter to energy data first
+    const now = new Date();
+    let startDate;
+    
+    switch (timeFilter) {
+      case 'daily':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case 'weekly':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'total':
+        // Show last 12 months only
+        startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+        break;
+      default:
+        startDate = new Date(0);
+    }
+
+    // Filter by time period
+    const timeFilteredData = filteredEnergyData.filter(entry => {
+      if (!entry.date_time) return false;
+      let entryDate;
+      if (entry.date_time.seconds) {
+        entryDate = new Date(entry.date_time.seconds * 1000);
+      } else {
+        entryDate = new Date(entry.date_time);
+      }
+      return entryDate >= startDate;
+    });
+
+    if (timeFilteredData.length === 0) {
+      return [{ period: 'No Data', value: 0 }];
+    }
+
+    // Sort by date and group by time period
+    const sortedData = timeFilteredData.sort((a, b) => {
+      const dateA = new Date(a.date_time?.seconds ? a.date_time.seconds * 1000 : a.date_time);
+      const dateB = new Date(b.date_time?.seconds ? b.date_time.seconds * 1000 : b.date_time);
+      return dateA - dateB;
+    });
+
+    // Group data by time period using the actual metric field
+    const groupedData = groupDataByTimePeriod(sortedData, timeFilter, actualFieldName);
+    return groupedData;
+  };
+
+  // Generate transaction data from all devices
+  const getTransactionData = (timeFilter) => {
+    if (!overviewData || !overviewData.transactions) {
+      return [{ period: 'No Data', revenue: 0, sessions: 0 }];
+    }
+
+    // Use all transaction data
+    const allTransactions = overviewData.transactions;
+
+    if (allTransactions.length === 0) {
+      return [{ period: 'No Data', revenue: 0, sessions: 0 }];
+    }
+
+    // Apply time filter to transactions first
+    const now = new Date();
+    let startDate;
+    
+    switch (timeFilter) {
+      case 'daily':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case 'weekly':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'total':
+        // Show last 12 months only
+        startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+        break;
+      default:
+        startDate = new Date(0);
+    }
+
+    // Filter transactions by time period
+    const filteredTransactions = allTransactions.filter(transaction => {
+      if (!transaction.date_time) return false;
+      let transactionDate;
+      if (transaction.date_time.seconds) {
+        transactionDate = new Date(transaction.date_time.seconds * 1000);
+      } else {
+        transactionDate = new Date(transaction.date_time);
+      }
+      return transactionDate >= startDate;
+    });
+
+    if (filteredTransactions.length === 0) {
+      return [{ period: 'No Data', revenue: 0, sessions: 0 }];
+    }
+
+    // Sort transactions by date
+    const sortedTransactions = filteredTransactions.sort((a, b) => {
+      const dateA = new Date(a.date_time?.seconds ? a.date_time.seconds * 1000 : a.date_time);
+      const dateB = new Date(b.date_time?.seconds ? b.date_time.seconds * 1000 : b.date_time);
+      return dateA - dateB;
+    });
+
+    // Group transactions by time period
+    const groups = {};
+    
+    sortedTransactions.forEach(transaction => {
+      const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+      let periodKey;
+
+      switch (timeFilter) {
+        case 'daily':
+          periodKey = transactionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          break;
+        case 'weekly':
+          periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          break;
+        case 'monthly':
+          // Calculate week ranges for the month
+          const dayOfMonth = transactionDate.getDate();
+          const month = transactionDate.getMonth();
+          const year = transactionDate.getFullYear();
+          
+          // Calculate week ranges
+          let weekStart, weekEnd;
+          if (dayOfMonth <= 7) {
+            weekStart = 1;
+            weekEnd = 7;
+          } else if (dayOfMonth <= 14) {
+            weekStart = 8;
+            weekEnd = 14;
+          } else if (dayOfMonth <= 21) {
+            weekStart = 15;
+            weekEnd = 21;
+          } else {
+            weekStart = 22;
+            weekEnd = new Date(year, month + 1, 0).getDate(); // Last day of month
+          }
+          
+          const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+          periodKey = `${monthName} ${weekStart}-${weekEnd}`;
+          break;
+        case 'total':
+          // Show last 12 months only
+          const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+          
+          // Only include transactions from the last 12 months
+          if (transactionDate >= twelveMonthsAgo) {
+            periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+          } else {
+            return; // Skip transactions older than 12 months
+          }
+          break;
+        default:
+          periodKey = transactionDate.toLocaleDateString();
+      }
+
+      if (!groups[periodKey]) {
+        groups[periodKey] = { revenue: 0, sessions: 0 };
+      }
+      
+      groups[periodKey].revenue += transaction.amount || 0;
+      groups[periodKey].sessions += 1;
+    });
+
+    // Convert groups to chart data
+    const chartData = Object.entries(groups).map(([period, data]) => {
+      // For weekly and monthly filters, we need to find the actual date for tooltip
+      let fullDate = period;
+      if (timeFilter === 'weekly') {
+        // Find a transaction with this period to get the full date
+        const sampleTransaction = filteredTransactions.find(transaction => {
+          const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+          const transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return transactionPeriod === period;
+        });
+        if (sampleTransaction) {
+          const transactionDate = new Date(sampleTransaction.date_time?.seconds ? sampleTransaction.date_time.seconds * 1000 : sampleTransaction.date_time);
+          fullDate = transactionDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+        }
+      } else if (timeFilter === 'monthly') {
+        // For monthly, show the full date range
+        const sampleTransaction = filteredTransactions.find(transaction => {
+          const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+          const dayOfMonth = transactionDate.getDate();
+          const month = transactionDate.getMonth();
+          const year = transactionDate.getFullYear();
+          
+          let weekStart, weekEnd;
+          if (dayOfMonth <= 7) {
+            weekStart = 1;
+            weekEnd = 7;
+          } else if (dayOfMonth <= 14) {
+            weekStart = 8;
+            weekEnd = 14;
+          } else if (dayOfMonth <= 21) {
+            weekStart = 15;
+            weekEnd = 21;
+          } else {
+            weekStart = 22;
+            weekEnd = new Date(year, month + 1, 0).getDate();
+          }
+          
+          const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+          const transactionPeriod = `${monthName} ${weekStart}-${weekEnd}`;
+          return transactionPeriod === period;
+        });
+        if (sampleTransaction) {
+          const transactionDate = new Date(sampleTransaction.date_time?.seconds ? sampleTransaction.date_time.seconds * 1000 : sampleTransaction.date_time);
+          const dayOfMonth = transactionDate.getDate();
+          const month = transactionDate.getMonth();
+          const year = transactionDate.getFullYear();
+          
+          let weekStart, weekEnd;
+          if (dayOfMonth <= 7) {
+            weekStart = 1;
+            weekEnd = 7;
+          } else if (dayOfMonth <= 14) {
+            weekStart = 8;
+            weekEnd = 14;
+          } else if (dayOfMonth <= 21) {
+            weekStart = 15;
+            weekEnd = 21;
+          } else {
+            weekStart = 22;
+            weekEnd = new Date(year, month + 1, 0).getDate();
+          }
+          
+          fullDate = `${transactionDate.toLocaleDateString('en-US', { month: 'long' })} ${weekStart}-${weekEnd}, ${year}`;
+        }
+      } else if (timeFilter === 'total') {
+        // For total, show full month/year
+        const sampleTransaction = filteredTransactions.find(transaction => {
+          const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+          const transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+          return transactionPeriod === period;
+        });
+        if (sampleTransaction) {
+          const transactionDate = new Date(sampleTransaction.date_time?.seconds ? sampleTransaction.date_time.seconds * 1000 : sampleTransaction.date_time);
+          fullDate = transactionDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long' 
+          });
+        }
+      }
+
+      return {
+        period,
+        revenue: Math.round(data.revenue * 100) / 100,
+        sessions: data.sessions,
+        fullDate
+      };
+    });
+
+    // Sort chart data chronologically
+    return chartData.sort((a, b) => {
+      if (timeFilter === 'weekly' || timeFilter === 'monthly' || timeFilter === 'total') {
+        // For these filters, sort by the actual date
+        const sampleTransactionA = filteredTransactions.find(transaction => {
+          const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+          let transactionPeriod;
+          if (timeFilter === 'weekly') {
+            transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          } else if (timeFilter === 'monthly') {
+            const dayOfMonth = transactionDate.getDate();
+            const month = transactionDate.getMonth();
+            const year = transactionDate.getFullYear();
+            
+            let weekStart, weekEnd;
+            if (dayOfMonth <= 7) {
+              weekStart = 1;
+              weekEnd = 7;
+            } else if (dayOfMonth <= 14) {
+              weekStart = 8;
+              weekEnd = 14;
+            } else if (dayOfMonth <= 21) {
+              weekStart = 15;
+              weekEnd = 21;
+            } else {
+              weekStart = 22;
+              weekEnd = new Date(year, month + 1, 0).getDate();
+            }
+            
+            const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+            transactionPeriod = `${monthName} ${weekStart}-${weekEnd}`;
+          } else if (timeFilter === 'total') {
+            transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+          }
+          return transactionPeriod === a.period;
+        });
+        
+        const sampleTransactionB = filteredTransactions.find(transaction => {
+          const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+          let transactionPeriod;
+          if (timeFilter === 'weekly') {
+            transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          } else if (timeFilter === 'monthly') {
+            const dayOfMonth = transactionDate.getDate();
+            const month = transactionDate.getMonth();
+            const year = transactionDate.getFullYear();
+            
+            let weekStart, weekEnd;
+            if (dayOfMonth <= 7) {
+              weekStart = 1;
+              weekEnd = 7;
+            } else if (dayOfMonth <= 14) {
+              weekStart = 8;
+              weekEnd = 14;
+            } else if (dayOfMonth <= 21) {
+              weekStart = 15;
+              weekEnd = 21;
+            } else {
+              weekStart = 22;
+              weekEnd = new Date(year, month + 1, 0).getDate();
+            }
+            
+            const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+            transactionPeriod = `${monthName} ${weekStart}-${weekEnd}`;
+          } else if (timeFilter === 'total') {
+            transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+          }
+          return transactionPeriod === b.period;
+        });
+        
+        if (sampleTransactionA && sampleTransactionB) {
+          const dateA = new Date(sampleTransactionA.date_time?.seconds ? sampleTransactionA.date_time.seconds * 1000 : sampleTransactionA.date_time);
+          const dateB = new Date(sampleTransactionB.date_time?.seconds ? sampleTransactionB.date_time.seconds * 1000 : sampleTransactionB.date_time);
+          return dateA - dateB;
+        }
+      }
+      return 0;
+    });
+  };
+
+  // Helper function to group data by time period
+  const groupDataByTimePeriod = (data, timeFilter, valueKey) => {
+    const groups = {};
+
+    data.forEach(entry => {
+      const entryDate = new Date(entry.date_time?.seconds ? entry.date_time.seconds * 1000 : entry.date_time);
+      let periodKey;
+      let fullDate;
+
+      switch (timeFilter) {
+        case 'daily':
+          periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          break;
+        case 'weekly':
+          periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          break;
+        case 'monthly':
+          // Calculate week ranges (1-7, 8-14, 15-21, 22-28, 29+)
+          const day = entryDate.getDate();
+          const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
+          let weekStart, weekEnd;
+          
+          if (day <= 7) {
+            weekStart = 1;
+            weekEnd = 7;
+          } else if (day <= 14) {
+            weekStart = 8;
+            weekEnd = 14;
+          } else if (day <= 21) {
+            weekStart = 15;
+            weekEnd = 21;
+          } else if (day <= 28) {
+            weekStart = 22;
+            weekEnd = 28;
+          } else {
+            weekStart = 29;
+            weekEnd = new Date(entryDate.getFullYear(), entryDate.getMonth() + 1, 0).getDate();
+          }
+          
+          periodKey = `${monthName} ${weekStart}-${weekEnd}`;
+          fullDate = `${entryDate.toLocaleDateString('en-US', { month: 'long' })} ${weekStart}-${weekEnd}, ${entryDate.getFullYear()}`;
+          break;
+        case 'total':
+          periodKey = entryDate.toLocaleDateString('en-US', { month: 'short' });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long' 
+          });
+          break;
+        default:
+          periodKey = entryDate.toLocaleDateString();
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+      }
+
+      if (!groups[periodKey]) {
+        groups[periodKey] = [];
+      }
+      groups[periodKey].push({
+        value: entry[valueKey] || 0,
+        fullDate: fullDate,
+        date: entryDate
+      });
+    });
+
+    // Convert groups to chart data
+    const chartData = Object.entries(groups).map(([period, entries]) => {
+      let value;
+      let fullDate = entries[0]?.fullDate || period;
+      
+      if (valueKey === 'energy_accumulated') {
+        // For energy, sum all values in the time period to get total accumulated energy
+        value = entries.reduce((sum, entry) => sum + entry.value, 0);
+      } else {
+        // For voltage, current, and temperature, use average (instantaneous measurements)
+        const values = entries.map(e => e.value);
+        value = values.reduce((sum, val) => sum + val, 0) / values.length;
+      }
+      
+      return {
+        period,
+        value: Math.round(value * 10) / 10,
+        fullDate,
+        date: entries[0]?.date
+      };
+    });
+
+    // Sort by the actual date for proper chronological order
+    return chartData.sort((a, b) => {
+      if (a.date && b.date) {
+        return a.date - b.date;
+      }
+      return 0;
+    });
+  };
+
   return (
     <div id="admin-dashboard">
       <AdminHeader 
@@ -731,18 +1237,18 @@ const AdminDashboard = () => {
                 <h2 className="dashboard-title">Dashboard Overview</h2>
               </div>
               <div className="filters-right">
-                <div className="filter-group">
-                  <Filter className="w-4 h-4 filter-icon" />
-                  <select 
-                    value={timeFilter} 
-                    onChange={(e) => setTimeFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="total">Total</option>
-                  </select>
+              <div className="filter-group">
+                <Filter className="w-4 h-4 filter-icon" />
+                <select 
+                  value={timeFilter} 
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="total">Total</option>
+                </select>
                 </div>
                 <button 
                   onClick={async () => {
@@ -940,7 +1446,251 @@ const AdminDashboard = () => {
 
         {/* Energy & Revenue Charts Section */}
         <div className="charts-grid">
-
+          {/* Chart 1: Technical Metrics */}
+          <div className="analytics-card">
+            <div className="analytics-header">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>
+                  <Activity className="w-6 h-6" style={{ color: '#3b82f6' }} />
+                  <span>Technical Metrics</span>
+                </h3>
+                <select 
+                  value={selectedMetric} 
+                  onChange={(e) => setSelectedMetric(e.target.value)}
+                  style={{ 
+                    padding: '0.5rem', 
+                    borderRadius: '0.375rem', 
+                    border: '1px solid #374151',
+                    backgroundColor: '#1f2937',
+                    color: '#ffffff',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <option value="temperature">Temperature</option>
+                  <option value="voltage">Voltage</option>
+                  <option value="energy">Energy Accumulated</option>
+                  <option value="current">Current</option>
+                </select>
+              </div>
+              <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '0.125rem' }}>
+                {getMetricInfo(selectedMetric).description}
+              </p>
+            </div>
+            <div className="analytics-content">
+              <div style={{ 
+                height: '400px', 
+                width: '100%', 
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={getTechnicalMetrics(timeFilter, selectedMetric)}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke="#374151" 
+                      opacity={0.3}
+                    />
+                    <XAxis 
+                      dataKey="period" 
+                      stroke="#9ca3af"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: '#9ca3af' }}
+                    />
+                    <YAxis 
+                      stroke="#9ca3af"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: '#9ca3af' }}
+                      domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
+                      tickFormatter={(value) => Math.round(value)}
+                      label={{ 
+                        value: `${getMetricInfo(selectedMetric).label} (${getMetricInfo(selectedMetric).unit})`, 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#9ca3af' }
+                      }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
+                      }}
+                      labelStyle={{ color: '#ffffff', fontWeight: '500' }}
+                      formatter={(value) => [`${value} ${getMetricInfo(selectedMetric).unit}`, getMetricInfo(selectedMetric).label]}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={getMetricInfo(selectedMetric).color}
+                      strokeWidth={3}
+                      dot={{ 
+                        r: 5, 
+                        fill: getMetricInfo(selectedMetric).color,
+                        stroke: '#ffffff',
+                        strokeWidth: 2
+                      }}
+                      activeDot={{ 
+                        r: 7, 
+                        stroke: getMetricInfo(selectedMetric).color,
+                        strokeWidth: 2,
+                        fill: '#ffffff'
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+          
+          {/* Chart 2: Revenue & Usage Trends */}
+          <div className="analytics-card">
+            <div className="analytics-header">
+              <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>
+                <DollarSign className="w-6 h-6" style={{ color: '#10b981' }} />
+                <span>Revenue & Usage Trends</span>
+              </h3>
+              <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '0.125rem' }}>
+                Payment revenue and usage patterns over {timeFilter} period
+              </p>
+            </div>
+            <div className="analytics-content">
+              <div style={{ 
+                height: '400px', 
+                width: '100%', 
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={getTransactionData(timeFilter)}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke="#374151" 
+                      opacity={0.3}
+                    />
+                    <XAxis 
+                      dataKey="period" 
+                      stroke="#9ca3af"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: '#9ca3af' }}
+                    />
+                    <YAxis 
+                      yAxisId="left"
+                      stroke="#9ca3af"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: '#9ca3af' }}
+                      domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
+                      tickFormatter={(value) => Math.round(value)}
+                      label={{ 
+                        value: 'Revenue (₱)', 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#9ca3af' }
+                      }}
+                    />
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="#9ca3af"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: '#9ca3af' }}
+                      domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
+                      tickFormatter={(value) => Math.round(value)}
+                      label={{ 
+                        value: 'Sessions', 
+                        angle: 90, 
+                        position: 'insideRight',
+                        style: { textAnchor: 'middle', fill: '#9ca3af' }
+                      }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
+                      }}
+                      labelStyle={{ color: '#ffffff', fontWeight: '500' }}
+                      labelFormatter={(label, payload) => {
+                        if (payload && payload[0] && payload[0].payload && payload[0].payload.fullDate) {
+                          return payload[0].payload.fullDate;
+                        }
+                        return label;
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ 
+                        paddingTop: '20px',
+                        color: '#ffffff'
+                      }}
+                    />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="#10b981"
+                      strokeWidth={3}
+                      name="Revenue (₱)"
+                      dot={{ 
+                        r: 5, 
+                        fill: '#10b981',
+                        stroke: '#ffffff',
+                        strokeWidth: 2
+                      }}
+                      activeDot={{ 
+                        r: 7, 
+                        stroke: '#10b981',
+                        strokeWidth: 2,
+                        fill: '#ffffff'
+                      }}
+                    />
+                    <Line 
+                      yAxisId="right"
+                      type="monotone" 
+                      dataKey="sessions" 
+                      stroke="#6366f1"
+                      strokeWidth={3}
+                      name="Charging Sessions"
+                      dot={{ 
+                        r: 5, 
+                        fill: '#6366f1',
+                        stroke: '#ffffff',
+                        strokeWidth: 2
+                      }}
+                      activeDot={{ 
+                        r: 7, 
+                        stroke: '#6366f1',
+                        strokeWidth: 2,
+                        fill: '#ffffff'
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
         </div>
           </>
         )}

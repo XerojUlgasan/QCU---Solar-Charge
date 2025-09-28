@@ -300,8 +300,42 @@
 /* Charts Grid */
 #admin-dashboard .charts-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
+}
+
+#admin-dashboard .analytics-card {
+    background-color: #0f141c;
+    border: 1px solid #1e2633;
+    border-radius: 12px;
+    padding: 1rem;
+    transition: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#admin-dashboard .analytics-header {
+    margin-bottom: 0.5rem;
+    padding: 0;
+    border-bottom: none;
+}
+
+#admin-dashboard .analytics-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#admin-dashboard .analytics-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
 }
 
 /* Energy Stats */
@@ -476,6 +510,10 @@
 /* Responsive Design */
 @media (max-width: 767px) {
     #admin-dashboard .main-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #admin-dashboard .charts-grid {
         grid-template-columns: 1fr;
     }
 }
