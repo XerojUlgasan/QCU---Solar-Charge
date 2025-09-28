@@ -382,8 +382,46 @@ const DeviceDetail = () => {
       );
 
       if (deviceTransactions.length > 0) {
+        // Apply time filter to transactions first
+        const now = new Date();
+        let startDate;
+        
+        switch (timeFilter) {
+          case 'daily':
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            break;
+          case 'weekly':
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'monthly':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+          case 'total':
+            // Show last 12 months only
+            startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+            break;
+          default:
+            startDate = new Date(0);
+        }
+
+        // Filter transactions by time period
+        const filteredTransactions = deviceTransactions.filter(transaction => {
+          if (!transaction.date_time) return false;
+          let transactionDate;
+          if (transaction.date_time.seconds) {
+            transactionDate = new Date(transaction.date_time.seconds * 1000);
+          } else {
+            transactionDate = new Date(transaction.date_time);
+          }
+          return transactionDate >= startDate;
+        });
+
+        if (filteredTransactions.length === 0) {
+          return [{ period: 'No Data', revenue: 0, sessions: 0 }];
+        }
+
         // Sort transactions by date
-        const sortedTransactions = deviceTransactions.sort((a, b) => {
+        const sortedTransactions = filteredTransactions.sort((a, b) => {
           const dateA = new Date(a.date_time?.seconds ? a.date_time.seconds * 1000 : a.date_time);
           const dateB = new Date(b.date_time?.seconds ? b.date_time.seconds * 1000 : b.date_time);
           return dateA - dateB;
@@ -401,14 +439,43 @@ const DeviceDetail = () => {
               periodKey = transactionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
               break;
             case 'weekly':
-              periodKey = transactionDate.toLocaleDateString('en-US', { weekday: 'short' });
+              periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
               break;
             case 'monthly':
-              const weekOfMonth = Math.ceil(transactionDate.getDate() / 7);
-              periodKey = `Week ${weekOfMonth}`;
+              // Calculate week ranges for the month
+              const dayOfMonth = transactionDate.getDate();
+              const month = transactionDate.getMonth();
+              const year = transactionDate.getFullYear();
+              
+              // Calculate week ranges
+              let weekStart, weekEnd;
+              if (dayOfMonth <= 7) {
+                weekStart = 1;
+                weekEnd = 7;
+              } else if (dayOfMonth <= 14) {
+                weekStart = 8;
+                weekEnd = 14;
+              } else if (dayOfMonth <= 21) {
+                weekStart = 15;
+                weekEnd = 21;
+              } else {
+                weekStart = 22;
+                weekEnd = new Date(year, month + 1, 0).getDate(); // Last day of month
+              }
+              
+              const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              periodKey = `${monthName} ${weekStart}-${weekEnd}`;
               break;
             case 'total':
-              periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              // Show last 12 months only
+              const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+              
+              // Only include transactions from the last 12 months
+              if (transactionDate >= twelveMonthsAgo) {
+                periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              } else {
+                return; // Skip transactions older than 12 months
+              }
               break;
             default:
               periodKey = transactionDate.toLocaleDateString();
@@ -423,70 +490,208 @@ const DeviceDetail = () => {
         });
 
         // Convert groups to chart data
-        const chartData = Object.entries(groups).map(([period, data]) => ({
-          period,
-          revenue: Math.round(data.revenue),
-          sessions: data.sessions
-        }));
+        const chartData = Object.entries(groups).map(([period, data]) => {
+          // For weekly and monthly filters, we need to find the actual date for tooltip
+          let fullDate = period;
+          if (timeFilter === 'weekly') {
+            // Find a transaction with this period to get the full date
+            const sampleTransaction = filteredTransactions.find(transaction => {
+              const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+              const transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              return transactionPeriod === period;
+            });
+            if (sampleTransaction) {
+              const transactionDate = new Date(sampleTransaction.date_time?.seconds ? sampleTransaction.date_time.seconds * 1000 : sampleTransaction.date_time);
+              fullDate = transactionDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+            }
+          } else if (timeFilter === 'monthly') {
+            // For monthly, show the full date range
+            const sampleTransaction = filteredTransactions.find(transaction => {
+              const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+              const dayOfMonth = transactionDate.getDate();
+              const month = transactionDate.getMonth();
+              const year = transactionDate.getFullYear();
+              
+              let weekStart, weekEnd;
+              if (dayOfMonth <= 7) {
+                weekStart = 1;
+                weekEnd = 7;
+              } else if (dayOfMonth <= 14) {
+                weekStart = 8;
+                weekEnd = 14;
+              } else if (dayOfMonth <= 21) {
+                weekStart = 15;
+                weekEnd = 21;
+              } else {
+                weekStart = 22;
+                weekEnd = new Date(year, month + 1, 0).getDate();
+              }
+              
+              const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              const transactionPeriod = `${monthName} ${weekStart}-${weekEnd}`;
+              return transactionPeriod === period;
+            });
+            
+            if (sampleTransaction) {
+              const transactionDate = new Date(sampleTransaction.date_time?.seconds ? sampleTransaction.date_time.seconds * 1000 : sampleTransaction.date_time);
+              const dayOfMonth = transactionDate.getDate();
+              const month = transactionDate.getMonth();
+              const year = transactionDate.getFullYear();
+              
+              let weekStart, weekEnd;
+              if (dayOfMonth <= 7) {
+                weekStart = 1;
+                weekEnd = 7;
+              } else if (dayOfMonth <= 14) {
+                weekStart = 8;
+                weekEnd = 14;
+              } else if (dayOfMonth <= 21) {
+                weekStart = 15;
+                weekEnd = 21;
+              } else {
+                weekStart = 22;
+                weekEnd = new Date(year, month + 1, 0).getDate();
+              }
+              
+              const monthName = transactionDate.toLocaleDateString('en-US', { month: 'long' });
+              const yearStr = transactionDate.getFullYear();
+              fullDate = `${monthName} ${weekStart}-${weekEnd}, ${yearStr}`;
+            }
+          } else if (timeFilter === 'total') {
+            // For total, show month and year
+            const sampleTransaction = filteredTransactions.find(transaction => {
+              const transactionDate = new Date(transaction.date_time?.seconds ? transaction.date_time.seconds * 1000 : transaction.date_time);
+              const transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              return transactionPeriod === period;
+            });
+            
+            if (sampleTransaction) {
+              const transactionDate = new Date(sampleTransaction.date_time?.seconds ? sampleTransaction.date_time.seconds * 1000 : sampleTransaction.date_time);
+              const monthName = transactionDate.toLocaleDateString('en-US', { month: 'long' });
+              const yearStr = transactionDate.getFullYear();
+              fullDate = `${monthName} ${yearStr}`;
+            }
+          }
+          
+          return {
+            period,
+            fullDate,
+            revenue: Math.round(data.revenue),
+            sessions: data.sessions
+          };
+        });
 
         // Sort by period for better chart display
         return chartData.sort((a, b) => {
           if (timeFilter === 'daily') {
             return new Date(`2000-01-01 ${a.period}`) - new Date(`2000-01-01 ${b.period}`);
+          } else if (timeFilter === 'weekly') {
+            // Sort weekly dates by actual date
+            const dateA = filteredTransactions.find(t => {
+              const transactionDate = new Date(t.date_time?.seconds ? t.date_time.seconds * 1000 : t.date_time);
+              return transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === a.period;
+            });
+            const dateB = filteredTransactions.find(t => {
+              const transactionDate = new Date(t.date_time?.seconds ? t.date_time.seconds * 1000 : t.date_time);
+              return transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === b.period;
+            });
+            
+            if (dateA && dateB) {
+              const transactionDateA = new Date(dateA.date_time?.seconds ? dateA.date_time.seconds * 1000 : dateA.date_time);
+              const transactionDateB = new Date(dateB.date_time?.seconds ? dateB.date_time.seconds * 1000 : dateB.date_time);
+              return transactionDateA - transactionDateB;
+            }
+          } else if (timeFilter === 'monthly') {
+            // Sort monthly date ranges by actual date
+            const dateA = filteredTransactions.find(t => {
+              const transactionDate = new Date(t.date_time?.seconds ? t.date_time.seconds * 1000 : t.date_time);
+              const dayOfMonth = transactionDate.getDate();
+              const month = transactionDate.getMonth();
+              const year = transactionDate.getFullYear();
+              
+              let weekStart, weekEnd;
+              if (dayOfMonth <= 7) {
+                weekStart = 1;
+                weekEnd = 7;
+              } else if (dayOfMonth <= 14) {
+                weekStart = 8;
+                weekEnd = 14;
+              } else if (dayOfMonth <= 21) {
+                weekStart = 15;
+                weekEnd = 21;
+              } else {
+                weekStart = 22;
+                weekEnd = new Date(year, month + 1, 0).getDate();
+              }
+              
+              const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              const transactionPeriod = `${monthName} ${weekStart}-${weekEnd}`;
+              return transactionPeriod === a.period;
+            });
+            
+            const dateB = filteredTransactions.find(t => {
+              const transactionDate = new Date(t.date_time?.seconds ? t.date_time.seconds * 1000 : t.date_time);
+              const dayOfMonth = transactionDate.getDate();
+              const month = transactionDate.getMonth();
+              const year = transactionDate.getFullYear();
+              
+              let weekStart, weekEnd;
+              if (dayOfMonth <= 7) {
+                weekStart = 1;
+                weekEnd = 7;
+              } else if (dayOfMonth <= 14) {
+                weekStart = 8;
+                weekEnd = 14;
+              } else if (dayOfMonth <= 21) {
+                weekStart = 15;
+                weekEnd = 21;
+              } else {
+                weekStart = 22;
+                weekEnd = new Date(year, month + 1, 0).getDate();
+              }
+              
+              const monthName = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              const transactionPeriod = `${monthName} ${weekStart}-${weekEnd}`;
+              return transactionPeriod === b.period;
+            });
+            
+            if (dateA && dateB) {
+              const transactionDateA = new Date(dateA.date_time?.seconds ? dateA.date_time.seconds * 1000 : dateA.date_time);
+              const transactionDateB = new Date(dateB.date_time?.seconds ? dateB.date_time.seconds * 1000 : dateB.date_time);
+              return transactionDateA - transactionDateB;
+            }
+          } else if (timeFilter === 'total') {
+            // Sort total months by actual date
+            const dateA = filteredTransactions.find(t => {
+              const transactionDate = new Date(t.date_time?.seconds ? t.date_time.seconds * 1000 : t.date_time);
+              const transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              return transactionPeriod === a.period;
+            });
+            
+            const dateB = filteredTransactions.find(t => {
+              const transactionDate = new Date(t.date_time?.seconds ? t.date_time.seconds * 1000 : t.date_time);
+              const transactionPeriod = transactionDate.toLocaleDateString('en-US', { month: 'short' });
+              return transactionPeriod === b.period;
+            });
+            
+            if (dateA && dateB) {
+              const transactionDateA = new Date(dateA.date_time?.seconds ? dateA.date_time.seconds * 1000 : dateA.date_time);
+              const transactionDateB = new Date(dateB.date_time?.seconds ? dateB.date_time.seconds * 1000 : dateB.date_time);
+              return transactionDateA - transactionDateB;
+            }
           }
           return a.period.localeCompare(b.period);
         });
       }
     }
 
-    // Fallback to aggregated API data if no individual transactions
-    const apiRevenue = deviceData.revenue?.[timeFilter] || 0;
-    const apiUses = deviceData.uses?.[timeFilter] || 0;
-    
-    if (apiRevenue === 0 && apiUses === 0) {
-      return [{ period: 'No Data', revenue: 0, sessions: 0 }];
-    }
-
-    // Use aggregated data with time distribution
-    const timePeriods = getTimePeriods(timeFilter);
-    const revenuePerPeriod = apiRevenue / timePeriods.length;
-    const sessionsPerPeriod = apiUses / timePeriods.length;
-    
-    return timePeriods.map((period, index) => {
-      // Create realistic usage patterns
-      let revenueMultiplier = 1;
-      let sessionsMultiplier = 1;
-      
-      if (timeFilter === 'daily') {
-        // Higher usage during business hours
-        const hour = parseInt(period.split(':')[0]);
-        if (hour >= 8 && hour <= 18) {
-          revenueMultiplier = 1.2;
-          sessionsMultiplier = 1.3;
-        } else if (hour >= 19 && hour <= 22) {
-          revenueMultiplier = 1.1;
-          sessionsMultiplier = 1.1;
-        } else {
-          revenueMultiplier = 0.3;
-          sessionsMultiplier = 0.2;
-        }
-      } else if (timeFilter === 'weekly') {
-        // Higher usage on weekdays
-        if (['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(period)) {
-          revenueMultiplier = 1.2;
-          sessionsMultiplier = 1.2;
-        } else {
-          revenueMultiplier = 0.6;
-          sessionsMultiplier = 0.5;
-        }
-      }
-      
-      return {
-        period,
-        revenue: Math.round(revenuePerPeriod * revenueMultiplier),
-        sessions: Math.round(sessionsPerPeriod * sessionsMultiplier)
-      };
-    });
+    // If no transaction data, return no data
+    return [{ period: 'No Data', revenue: 0, sessions: 0 }];
   };
 
   const getMetricInfo = (metricType) => {
@@ -1790,7 +1995,7 @@ const DeviceDetail = () => {
                             let transactionDate;
                             if (transaction.date_time.seconds) {
                               transactionDate = new Date(transaction.date_time.seconds * 1000);
-                            } else {
+      } else {
                               transactionDate = new Date(transaction.date_time);
                             }
                             return transactionDate >= startDate;
@@ -1855,17 +2060,17 @@ const DeviceDetail = () => {
                             switch (timeFilter) {
                               case 'daily':
                                 startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                                break;
+        break;
                               case 'weekly':
                                 startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                                break;
+        break;
                               case 'monthly':
                                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                                break;
+        break;
                               case 'total':
                                 startDate = new Date(0);
-                                break;
-                              default:
+        break;
+      default:
                                 startDate = new Date(0);
                             }
                             
@@ -2020,9 +2225,9 @@ const DeviceDetail = () => {
                 </div>
                     </div>
                     <div className="analytics-icon uses">👥</div>
-                    </div>
-                    </div>
-                    </div>
+                        </div>
+                </div>
+              </div>
 
               {/* Two Charts in One Row */}
               <div className="analytics-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -2176,6 +2381,8 @@ const DeviceDetail = () => {
                             tickLine={false}
                             axisLine={false}
                             tick={{ fill: '#9ca3af' }}
+                            domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
+                            tickFormatter={(value) => Math.round(value)}
                             label={{ 
                               value: 'Revenue (₱)', 
                               angle: -90, 
@@ -2191,6 +2398,8 @@ const DeviceDetail = () => {
                             tickLine={false}
                             axisLine={false}
                             tick={{ fill: '#9ca3af' }}
+                            domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
+                            tickFormatter={(value) => Math.round(value)}
                             label={{ 
                               value: 'Sessions', 
                               angle: 90, 
@@ -2207,6 +2416,12 @@ const DeviceDetail = () => {
                               boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
                             }}
                             labelStyle={{ color: '#ffffff', fontWeight: '500' }}
+                            labelFormatter={(label, payload) => {
+                              if (payload && payload[0] && payload[0].payload && payload[0].payload.fullDate) {
+                                return payload[0].payload.fullDate;
+                              }
+                              return label;
+                            }}
                           />
                           <Legend 
                             wrapperStyle={{ 
