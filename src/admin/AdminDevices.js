@@ -10,9 +10,11 @@ import {
   Activity,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Settings
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
+import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/AdminDevices.css';
@@ -30,6 +32,8 @@ const AdminDevices = () => {
     location: '',
     building: ''
   });
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [configuringDevice, setConfiguringDevice] = useState(null);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -292,6 +296,34 @@ const AdminDevices = () => {
       building: device.building
     });
     setIsEditDialogOpen(true);
+  };
+
+  const handleConfigureDevice = (device) => {
+    setConfiguringDevice({
+      ...device,
+      isEnabled: device.status?.toLowerCase() === 'active' || device.status?.toLowerCase() === 'online'
+    });
+    setIsConfigModalOpen(true);
+  };
+
+  const handleSaveConfiguration = (deviceId, configData) => {
+    console.log('Saving configuration for device:', deviceId, configData);
+    showSuccess(`Configuration saved for device ${deviceId}`);
+    // TODO: Implement API call to save configuration
+  };
+
+  const handleEnableDisableDevice = (deviceId, isEnabled) => {
+    console.log(`${isEnabled ? 'Enabling' : 'Disabling'} device:`, deviceId);
+    showSuccess(`Device ${isEnabled ? 'enabled' : 'disabled'} successfully`);
+    // TODO: Implement API call to enable/disable device
+  };
+
+  const handleDeleteDevice = (deviceId) => {
+    console.log('Deleting device:', deviceId);
+    showSuccess(`Device ${deviceId} deleted successfully`);
+    // TODO: Implement API call to delete device
+    // Refresh devices list after deletion
+    fetchDevicesData();
   };
 
   const handleSaveDevice = async (e) => {
@@ -594,6 +626,16 @@ const AdminDevices = () => {
           </div>
         )}
 
+        {/* Device Configuration Modal */}
+        <DeviceConfigurationModal
+          isOpen={isConfigModalOpen}
+          onClose={() => setIsConfigModalOpen(false)}
+          device={configuringDevice}
+          onSave={handleSaveConfiguration}
+          onEnableDisable={handleEnableDisableDevice}
+          onDelete={handleDeleteDevice}
+        />
+
         {/* Device Grid */}
         <div className="devices-grid">
           {filteredDevices.map((device) => (
@@ -675,6 +717,17 @@ const AdminDevices = () => {
                   >
                     <Edit className="button-icon" />
                     Edit Device
+                  </button>
+                  
+                  <button 
+                    className="configure-device-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleConfigureDevice(device);
+                    }}
+                  >
+                    <Settings className="button-icon" />
+                    Configure Device
                   </button>
                 </div>
 

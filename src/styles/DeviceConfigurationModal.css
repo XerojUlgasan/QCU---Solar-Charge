@@ -1,0 +1,811 @@
+/* Device Configuration Modal Styles */
+.device-config-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.device-config-modal {
+  background-color: #0f141c;
+  border: 1px solid #1e2633;
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 48rem;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Header */
+.device-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #1e2633;
+}
+
+.device-config-title-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.device-config-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #3b82f6;
+}
+
+.device-config-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.device-config-subtitle {
+  font-size: 0.875rem;
+  color: #9aa3b2;
+  margin: 0.25rem 0 0 0;
+}
+
+.device-config-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.device-config-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background-color: #22c55e;
+  border: 1px solid #22c55e;
+  border-radius: 0.375rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.device-config-save:hover {
+  background-color: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
+}
+
+.device-config-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background-color: #ef4444;
+  border: 1px solid #ef4444;
+  border-radius: 0.375rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.device-config-close:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* Content */
+.device-config-content {
+  padding: 1.5rem;
+  max-height: calc(90vh - 8rem);
+  overflow-y: auto;
+}
+
+.config-section {
+  margin-bottom: 2rem;
+}
+
+.config-section:last-child {
+  margin-bottom: 0;
+}
+
+.config-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1e2633;
+}
+
+/* Configuration Grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-field-wide {
+  grid-column: 1 / -1;
+}
+
+.config-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.config-field-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #9aa3b2;
+}
+
+/* Icon Colors */
+.config-field-icon.clock-icon {
+  color: #f59e0b; /* Amber for time-related settings */
+}
+
+.config-field-icon.zap-icon {
+  color: #3b82f6; /* Blue for power/electrical settings */
+}
+
+.config-field-icon.thermometer-icon {
+  color: #ef4444; /* Red for temperature */
+}
+
+.config-field-icon.voltage-icon {
+  color: #8b5cf6; /* Purple for voltage settings */
+}
+
+.config-field-icon.mail-icon {
+  color: #22c55e; /* Green for notifications */
+}
+
+.toggle-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #9aa3b2;
+}
+
+.toggle-icon.power-icon {
+  color: #f59e0b; /* Amber for power mode */
+}
+
+.toggle-icon.alert-icon {
+  color: #ef4444; /* Red for alerts */
+}
+
+.config-input {
+  padding: 0.75rem;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  background-color: #1e2633;
+  color: #ffffff;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.config-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.config-input::placeholder {
+  color: #6b7280;
+}
+
+.config-help {
+  font-size: 0.75rem;
+  color: #9aa3b2;
+}
+
+/* Toggle Options */
+.config-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.config-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 3rem;
+  height: 1.5rem;
+  background-color: #374151;
+  border-radius: 9999px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+  background-color: #3b82f6;
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+  transform: translateX(1.5rem);
+}
+
+.toggle-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.toggle-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #9aa3b2;
+}
+
+.toggle-title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.toggle-description {
+  display: block;
+  font-size: 0.75rem;
+  color: #9aa3b2;
+}
+
+/* Device Management */
+.device-management-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.management-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  min-width: 8rem;
+  justify-content: center;
+}
+
+.enable-button {
+  background-color: #22c55e;
+  border-color: #22c55e;
+  color: #ffffff;
+}
+
+.enable-button:hover {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+.disable-button {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.disable-button:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.delete-button {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.delete-button:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Footer */
+.device-config-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid #1e2633;
+  background-color: #0a0e13;
+}
+
+.config-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+}
+
+.cancel-button {
+  background-color: transparent;
+  border-color: #374151;
+  color: #9aa3b2;
+}
+
+.cancel-button:hover {
+  background-color: #1e2633;
+  border-color: #4b5563;
+  color: #ffffff;
+}
+
+.save-button {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.save-button:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Delete Confirmation Modal */
+.delete-confirmation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.delete-confirmation-modal {
+  background-color: #0f141c;
+  border: 1px solid #ef4444;
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 28rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.delete-confirmation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.delete-warning-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #ef4444;
+}
+
+.delete-confirmation-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.delete-confirmation-content {
+  padding: 1.5rem;
+}
+
+.delete-warning-text {
+  font-size: 0.875rem;
+  color: #ef4444;
+  margin: 0 0 1rem 0;
+}
+
+.delete-instruction-text {
+  font-size: 0.875rem;
+  color: #9aa3b2;
+  margin: 0 0 1rem 0;
+}
+
+.delete-confirmation-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  background-color: #1e2633;
+  color: #ffffff;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.delete-confirmation-input:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.delete-confirmation-input::placeholder {
+  color: #6b7280;
+}
+
+.delete-confirmation-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.delete-confirm-button {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.delete-confirm-button:hover:not(.disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.delete-confirm-button.disabled {
+  background-color: #374151;
+  border-color: #374151;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Save Confirmation Modal */
+.save-confirmation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.save-confirmation-modal {
+  background-color: #0f141c;
+  border: 1px solid #3b82f6;
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 28rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.save-confirmation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.save-confirmation-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #3b82f6;
+}
+
+.save-confirmation-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.save-confirmation-content {
+  padding: 1.5rem;
+}
+
+.save-confirmation-text {
+  font-size: 0.875rem;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+}
+
+.save-confirmation-warning {
+  font-size: 0.875rem;
+  color: #f59e0b;
+  margin: 0 0 1rem 0;
+}
+
+.save-confirmation-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.save-confirm-button {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.save-confirm-button:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.save-confirm-button:disabled {
+  background-color: #374151;
+  border-color: #374151;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+  .config-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .config-field-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 768px) {
+  .device-management-buttons {
+    flex-wrap: nowrap;
+  }
+  
+  .management-button {
+    flex: 1;
+  }
+}
+
+/* Light Mode Support */
+.light .device-config-modal {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.light .device-config-header {
+  border-bottom-color: #e2e8f0;
+}
+
+.light .device-config-title {
+  color: #1f2937;
+}
+
+.light .device-config-subtitle {
+  color: #4b5563;
+}
+
+.light .device-config-close {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.light .device-config-close:hover {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+  color: #ffffff;
+}
+
+.light .device-config-save {
+  background-color: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
+}
+
+.light .device-config-save:hover {
+  background-color: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+}
+
+.light .config-section-title {
+  color: #1f2937;
+  border-bottom-color: #e2e8f0;
+}
+
+.light .config-label {
+  color: #1f2937;
+}
+
+.light .config-field-icon {
+  color: #4b5563;
+}
+
+.light .config-input {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  color: #1f2937;
+}
+
+.light .config-input:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+}
+
+.light .config-input::placeholder {
+  color: #6b7280;
+}
+
+.light .config-help {
+  color: #4b5563;
+}
+
+.light .toggle-slider {
+  background-color: #d1d5db;
+}
+
+.light .toggle-checkbox:checked + .toggle-slider {
+  background-color: #3b82f6;
+}
+
+.light .toggle-icon {
+  color: #4b5563;
+}
+
+.light .toggle-title {
+  color: #1f2937;
+}
+
+.light .toggle-description {
+  color: #4b5563;
+}
+
+.light .delete-button {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.light .delete-button:hover {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+  color: #ffffff;
+}
+
+.light .device-config-footer {
+  background-color: #f8fafc;
+  border-top-color: #e2e8f0;
+}
+
+.light .cancel-button {
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+
+.light .cancel-button:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #1f2937;
+}
+
+.light .delete-confirmation-modal {
+  background-color: #ffffff;
+  border-color: #ef4444;
+}
+
+.light .delete-confirmation-title {
+  color: #1f2937;
+}
+
+.light .delete-warning-text {
+  color: #dc2626;
+}
+
+.light .delete-instruction-text {
+  color: #4b5563;
+}
+
+.light .delete-confirmation-input {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  color: #1f2937;
+}
+
+.light .delete-confirmation-input:focus {
+  border-color: #ef4444;
+  background-color: #ffffff;
+}
+
+.light .delete-confirm-button.disabled {
+  background-color: #d1d5db;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+/* Light mode styles for new elements */
+
+.light .save-confirmation-modal {
+  background-color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.light .save-confirmation-title {
+  color: #1f2937;
+}
+
+.light .save-confirmation-text {
+  color: #1f2937;
+}
+
+.light .save-confirmation-warning {
+  color: #d97706;
+}
+
+.light .save-confirm-button {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.light .save-confirm-button:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.light .save-confirm-button:disabled {
+  background-color: #d1d5db;
+  border-color: #d1d5db;
+  color: #6b7280;
+}

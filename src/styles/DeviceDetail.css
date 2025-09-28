@@ -113,6 +113,31 @@
     animation: spin 1s linear infinite;
 }
 
+#device-detail .configure-device-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: #1e2633;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    color: #ffffff;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+#device-detail .configure-device-button:hover {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+#device-detail .configure-device-button .button-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -1459,6 +1484,17 @@
     background-color: #ffffff;
     border-color: #d1d5db;
     color: #374151;
+}
+
+.light #device-detail .configure-device-button {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.light #device-detail .configure-device-button:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
 }
 
 .light #device-detail .analytics-filter .analytics-title {

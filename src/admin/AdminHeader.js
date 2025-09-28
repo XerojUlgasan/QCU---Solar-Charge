@@ -10,7 +10,8 @@ import {
   Moon, 
   Sun,
   Menu,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -124,6 +125,17 @@ const AdminHeader = ({ title, navigate }) => {
             )}
           </button>
 
+          {/* Settings */}
+          <button
+            className="action-button"
+            onClick={() => {
+              // TODO: Add settings functionality
+              console.log('Settings clicked');
+            }}
+            title="Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
 
           {/* Logout */}
           <button className="action-button" onClick={handleLogout}>

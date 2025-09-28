@@ -22,10 +22,12 @@ import {
   Info,
   Wrench,
   Banknote,
-  Coins
+  Coins,
+  Settings
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import AdminHeader from './AdminHeader';
+import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import '../styles/DeviceDetail.css';
@@ -44,6 +46,7 @@ const DeviceDetail = () => {
   const [deviceInfo, setDeviceInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
@@ -1151,6 +1154,35 @@ const DeviceDetail = () => {
     });
   };
 
+  const handleConfigureDevice = () => {
+    // Get device info from the formatted data
+    const formattedData = getFormattedDeviceData();
+    if (formattedData) {
+      setDeviceInfo(formattedData);
+      setIsConfigModalOpen(true);
+    }
+  };
+
+  const handleSaveConfiguration = (deviceId, configData) => {
+    console.log('Saving configuration for device:', deviceId, configData);
+    showSuccess(`Configuration saved for device ${deviceId}`);
+    // TODO: Implement API call to save configuration
+  };
+
+  const handleEnableDisableDevice = (deviceId, isEnabled) => {
+    console.log(`${isEnabled ? 'Enabling' : 'Disabling'} device:`, deviceId);
+    showSuccess(`Device ${isEnabled ? 'enabled' : 'disabled'} successfully`);
+    // TODO: Implement API call to enable/disable device
+  };
+
+  const handleDeleteDevice = (deviceId) => {
+    console.log('Deleting device:', deviceId);
+    showSuccess(`Device ${deviceId} deleted successfully`);
+    // TODO: Implement API call to delete device
+    // Navigate back to devices list after deletion
+    navigate('/admin/devices');
+  };
+
   const handleNavigation = (route, deviceId) => {
     switch (route) {
       case 'admin-dashboard':
@@ -1237,6 +1269,14 @@ const DeviceDetail = () => {
           >
               <RefreshCw className={`refresh-icon ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
+          </button>
+          
+          <button 
+            className="configure-device-button"
+            onClick={handleConfigureDevice}
+          >
+            <Settings className="button-icon" />
+            Configure Device
           </button>
           </div>
         </div>
@@ -2594,6 +2634,20 @@ const DeviceDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Device Configuration Modal */}
+      <DeviceConfigurationModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        device={deviceInfo || getFormattedDeviceData() ? {
+          ...(deviceInfo || getFormattedDeviceData()),
+          id: deviceId,
+          isEnabled: (deviceInfo || getFormattedDeviceData())?.status?.toLowerCase() === 'active' || (deviceInfo || getFormattedDeviceData())?.status?.toLowerCase() === 'online'
+        } : null}
+        onSave={handleSaveConfiguration}
+        onEnableDisable={handleEnableDisableDevice}
+        onDelete={handleDeleteDevice}
+      />
     </div>
   );
 };
