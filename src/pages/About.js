@@ -48,18 +48,18 @@ function About() {
 
   const team = [
     {
-      name: "Dr. Maria Santos",
-      role: "Project Director",
+      name: "Xeroj N. Ulgasan",
+      role: "Project Manager",
       description: "Leading sustainable technology initiatives at QCU",
-      initials: "DMS",
+      initials: "XU",
       image: "/images/team/maria-santos.png"
     },
     {
-      name: "John Chen",
-      role: "Lead Engineer",
+      name: "Ernesto C. Agustin III",
+      role: "Programmer",
       description: "Expert in solar energy systems and IoT integration",
-      initials: "JC",
-      image: "/images/team/john-chen.png"
+      initials: "EA",
+      image: "/images/team/ErnestoAgustin.png"
     },
     {
       name: "Sarah Kim",
@@ -206,10 +206,10 @@ function About() {
               <div key={index} className="text-white flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 hover:scale-105" style={{
                 backgroundColor: '#0f141c', 
                 border: '1px solid #1e2633', 
-                padding: '24px',
-                minHeight: '200px'
+                padding: '16px',
+                minHeight: '160px'
               }}>
-                <div className="mx-auto w-20 h-20 rounded-full overflow-hidden mb-4" style={{
+                <div className="mx-auto w-36 h-36 rounded-full overflow-hidden mb-4" style={{
                   background: 'linear-gradient(90deg, #22c55e, #3b82f6)',
                   display: 'flex',
                   alignItems: 'center',
@@ -228,9 +228,8 @@ function About() {
                     {member.initials}
                   </div>
                 </div>
-                <h4 className="font-semibold mb-2" style={{fontSize: '18px'}}>{member.name}</h4>
-                <p className="font-medium text-green-500 mb-3" style={{fontSize: '16px'}}>{member.role}</p>
-                <p style={{color: '#9aa3b2', fontSize: '14px', lineHeight: '1.5'}}>{member.description}</p>
+                <h4 className="font-semibold mb-2" style={{fontSize: '19px'}}>{member.name}</h4>
+                <p className="font-medium text-green-500 mb-3" style={{fontSize: '17px'}}>{member.role}</p>
               </div>
             ))}
           </div>
