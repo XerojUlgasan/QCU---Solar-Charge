@@ -10,8 +10,11 @@ import {
   Power, 
   Trash2,
   CheckCircle,
-  XCircle
+  XCircle,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
+import { authenticatedGet } from '../utils/api';
 import '../styles/DeviceConfigurationModal.css';
 
 const DeviceConfigurationModal = ({ 
@@ -38,20 +41,70 @@ const DeviceConfigurationModal = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch device configuration from API
+  const fetchDeviceConfiguration = async (deviceId) => {
+    if (!deviceId) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const url = `https://api-qcusolarcharge.up.railway.app/admin/getDeviceConfig?device_id=${deviceId}`;
+      const response = await authenticatedGet(url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch device configuration: ${response.status} ${response.statusText}`);
+      }
+      
+      const configData = await response.json();
+      console.log('API Response for device', deviceId, ':', configData);
+      
+      // Map API response to form data based on actual API field names
+      setFormData({
+        minutesPerCoinRate: configData.minute_per_peso || '',
+        samplesPerHourRate: configData.samples_per_hour || '',
+        lowPowerMode: configData.low_power || false,
+        temperatureThreshold: configData.max_temp || '',
+        minVoltage: configData.min_volt || '',
+        maxVoltage: configData.max_volt || '',
+        enableDeviceAlerts: configData.device_alert_enabled || false,
+        emailsToNotify: configData.emails_to_notify || ''
+      });
+
+      // Update device enabled status from API response
+      if (configData.device_enabled !== undefined) {
+        device.isEnabled = configData.device_enabled;
+      }
+      
+    } catch (err) {
+      console.error('Error fetching device configuration:', err);
+      setError(err.message);
+      
+      // Fallback to device props if API fails
+      if (device) {
+        setFormData({
+          minutesPerCoinRate: device.minutesPerCoinRate || '',
+          samplesPerHourRate: device.samplesPerHourRate || '',
+          lowPowerMode: device.lowPowerMode || false,
+          temperatureThreshold: device.temperatureThreshold || '',
+          minVoltage: device.minVoltage || '',
+          maxVoltage: device.maxVoltage || '',
+          enableDeviceAlerts: device.enableDeviceAlerts || false,
+          emailsToNotify: device.emailsToNotify || ''
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Initialize form data when device changes
   useEffect(() => {
-    if (device) {
-      setFormData({
-        minutesPerCoinRate: device.minutesPerCoinRate || '',
-        samplesPerHourRate: device.samplesPerHourRate || '',
-        lowPowerMode: device.lowPowerMode || false,
-        temperatureThreshold: device.temperatureThreshold || '',
-        minVoltage: device.minVoltage || '',
-        maxVoltage: device.maxVoltage || '',
-        enableDeviceAlerts: device.enableDeviceAlerts || false,
-        emailsToNotify: device.emailsToNotify || ''
-      });
+    if (device && device.id) {
+      fetchDeviceConfiguration(device.id);
     }
   }, [device]);
 
@@ -119,6 +172,12 @@ const DeviceConfigurationModal = ({
     setShowSaveConfirmation(false);
   };
 
+  const handleRetry = () => {
+    if (device && device.id) {
+      fetchDeviceConfiguration(device.id);
+    }
+  };
+
   if (!isOpen || !device) return null;
 
   return (
@@ -154,8 +213,33 @@ const DeviceConfigurationModal = ({
 
         {/* Content */}
         <div className="device-config-content">
+          {/* Loading State */}
+          {isLoading && (
+            <div className="config-loading">
+              <Loader2 className="loading-spinner" />
+              <p className="loading-text">Loading device configuration...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
+            <div className="config-error">
+              <AlertTriangle className="error-icon" />
+              <div className="error-content">
+                <h4 className="error-title">Failed to Load Configuration</h4>
+                <p className="error-message">{error}</p>
+                <button className="retry-button" onClick={handleRetry}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Configuration Settings */}
-          <div className="config-section">
+          {!isLoading && !error && (
+            <>
+            <div className="config-section">
             <h3 className="config-section-title">Device Settings</h3>
             
             <div className="config-grid">
@@ -328,6 +412,8 @@ const DeviceConfigurationModal = ({
               </button>
             </div>
           </div>
+          </>
+          )}
         </div>
 
         {/* Footer */}
