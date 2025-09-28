@@ -40,7 +40,7 @@ const DeviceDetail = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('realtime');
   const [timeFilter, setTimeFilter] = useState('daily');
-  const [selectedMetric, setSelectedMetric] = useState('temperature');
+  const [selectedMetric, setSelectedMetric] = useState('all');
   const [sessionsFilter, setSessionsFilter] = useState('newest');
   const [deviceData, setDeviceData] = useState(null);
   const [deviceInfo, setDeviceInfo] = useState(null);
@@ -259,10 +259,271 @@ const DeviceDetail = () => {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
+  // Get all metrics data for "all" option
+  const getAllMetricsData = (timeFilter) => {
+    if (!deviceData || !deviceData.energy_history || !Array.isArray(deviceData.energy_history)) {
+      return [{ period: 'No Data', temperature: 0, voltage: 0, energy: 0, current: 0 }];
+    }
+
+    const allEnergyData = deviceData.energy_history.flat();
+    const deviceEnergyData = allEnergyData.filter(entry => 
+      entry && entry.device_id === deviceId
+    );
+
+    if (deviceEnergyData.length === 0) {
+      return [{ period: 'No Data', temperature: 0, voltage: 0, energy: 0, current: 0 }];
+    }
+
+    // Apply time filter to energy data first
+    const now = new Date();
+    let startDate;
+    
+    switch (timeFilter) {
+      case 'daily':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case 'weekly':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'total':
+        // Show last 12 months only
+        startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+        break;
+      default:
+        startDate = new Date(0);
+    }
+
+    // Filter by time period
+    const timeFilteredData = deviceEnergyData.filter(entry => {
+      if (!entry.date_time) return false;
+      let entryDate;
+      if (entry.date_time.seconds) {
+        entryDate = new Date(entry.date_time.seconds * 1000);
+      } else {
+        entryDate = new Date(entry.date_time);
+      }
+      return entryDate >= startDate;
+    });
+
+    if (timeFilteredData.length === 0) {
+      return [{ period: 'No Data', temperature: 0, voltage: 0, energy: 0, current: 0 }];
+    }
+
+    // Sort by date and group by time period
+    const sortedData = timeFilteredData.sort((a, b) => {
+      const dateA = new Date(a.date_time?.seconds ? a.date_time.seconds * 1000 : a.date_time);
+      const dateB = new Date(b.date_time?.seconds ? b.date_time.seconds * 1000 : b.date_time);
+      return dateA - dateB;
+    });
+
+    // Group data by time period for all metrics
+    const groups = {};
+    
+    sortedData.forEach(entry => {
+      const entryDate = new Date(entry.date_time?.seconds ? entry.date_time.seconds * 1000 : entry.date_time);
+      let periodKey;
+      let fullDate;
+
+      switch (timeFilter) {
+        case 'daily':
+          periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          break;
+        case 'weekly':
+          periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          break;
+        case 'monthly':
+          // Calculate week ranges (1-7, 8-14, 15-21, 22-28, 29+)
+          const day = entryDate.getDate();
+          const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
+          let weekStart, weekEnd;
+          
+          if (day <= 7) {
+            weekStart = 1;
+            weekEnd = 7;
+          } else if (day <= 14) {
+            weekStart = 8;
+            weekEnd = 14;
+          } else if (day <= 21) {
+            weekStart = 15;
+            weekEnd = 21;
+          } else if (day <= 28) {
+            weekStart = 22;
+            weekEnd = 28;
+          } else {
+            weekStart = 29;
+            weekEnd = new Date(entryDate.getFullYear(), entryDate.getMonth() + 1, 0).getDate();
+          }
+          
+          periodKey = `${monthName} ${weekStart}-${weekEnd}`;
+          fullDate = `${entryDate.toLocaleDateString('en-US', { month: 'long' })} ${weekStart}-${weekEnd}, ${entryDate.getFullYear()}`;
+          break;
+        case 'total':
+          periodKey = entryDate.toLocaleDateString('en-US', { month: 'short' });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long' 
+          });
+          break;
+        default:
+          periodKey = entryDate.toLocaleDateString();
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+      }
+
+      if (!groups[periodKey]) {
+        groups[periodKey] = [];
+      }
+      groups[periodKey].push({
+        temperature: entry.temperature || 0,
+        voltage: entry.voltage || 0,
+        energy_accumulated: entry.energy_accumulated || 0,
+        current: entry.current || 0,
+        fullDate: fullDate,
+        date: entryDate
+      });
+    });
+
+    // Convert groups to chart data
+    const chartData = Object.entries(groups).map(([period, entries]) => {
+      const avgTemperature = entries.reduce((sum, entry) => sum + entry.temperature, 0) / entries.length;
+      const avgVoltage = entries.reduce((sum, entry) => sum + entry.voltage, 0) / entries.length;
+      const totalEnergy = entries.reduce((sum, entry) => sum + entry.energy_accumulated, 0);
+      const avgCurrent = entries.reduce((sum, entry) => sum + entry.current, 0) / entries.length;
+      const fullDate = entries[0]?.fullDate || period;
+      
+      return {
+        period,
+        temperature: Math.round(avgTemperature * 10) / 10,
+        voltage: Math.round(avgVoltage * 10) / 10,
+        energy: Math.round(totalEnergy * 10) / 10,
+        current: Math.round(avgCurrent * 10) / 10,
+        fullDate
+      };
+    });
+
+    // Sort by the actual date for proper chronological order
+    return chartData.sort((a, b) => {
+      const sampleEntryA = sortedData.find(entry => {
+        const entryDate = new Date(entry.date_time?.seconds ? entry.date_time.seconds * 1000 : entry.date_time);
+        let periodKey;
+        switch (timeFilter) {
+          case 'daily':
+            periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            break;
+          case 'weekly':
+            periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            break;
+          case 'monthly':
+            const day = entryDate.getDate();
+            const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
+            let weekStart, weekEnd;
+            if (day <= 7) {
+              weekStart = 1;
+              weekEnd = 7;
+            } else if (day <= 14) {
+              weekStart = 8;
+              weekEnd = 14;
+            } else if (day <= 21) {
+              weekStart = 15;
+              weekEnd = 21;
+            } else if (day <= 28) {
+              weekStart = 22;
+              weekEnd = 28;
+            } else {
+              weekStart = 29;
+              weekEnd = new Date(entryDate.getFullYear(), entryDate.getMonth() + 1, 0).getDate();
+            }
+            periodKey = `${monthName} ${weekStart}-${weekEnd}`;
+            break;
+          case 'total':
+            periodKey = entryDate.toLocaleDateString('en-US', { month: 'short' });
+            break;
+          default:
+            periodKey = entryDate.toLocaleDateString();
+        }
+        return periodKey === a.period;
+      });
+      
+      const sampleEntryB = sortedData.find(entry => {
+        const entryDate = new Date(entry.date_time?.seconds ? entry.date_time.seconds * 1000 : entry.date_time);
+        let periodKey;
+        switch (timeFilter) {
+          case 'daily':
+            periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            break;
+          case 'weekly':
+            periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            break;
+          case 'monthly':
+            const day = entryDate.getDate();
+            const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
+            let weekStart, weekEnd;
+            if (day <= 7) {
+              weekStart = 1;
+              weekEnd = 7;
+            } else if (day <= 14) {
+              weekStart = 8;
+              weekEnd = 14;
+            } else if (day <= 21) {
+              weekStart = 15;
+              weekEnd = 21;
+            } else if (day <= 28) {
+              weekStart = 22;
+              weekEnd = 28;
+            } else {
+              weekStart = 29;
+              weekEnd = new Date(entryDate.getFullYear(), entryDate.getMonth() + 1, 0).getDate();
+            }
+            periodKey = `${monthName} ${weekStart}-${weekEnd}`;
+            break;
+          case 'total':
+            periodKey = entryDate.toLocaleDateString('en-US', { month: 'short' });
+            break;
+          default:
+            periodKey = entryDate.toLocaleDateString();
+        }
+        return periodKey === b.period;
+      });
+      
+      if (sampleEntryA && sampleEntryB) {
+        const dateA = new Date(sampleEntryA.date_time?.seconds ? sampleEntryA.date_time.seconds * 1000 : sampleEntryA.date_time);
+        const dateB = new Date(sampleEntryB.date_time?.seconds ? sampleEntryB.date_time.seconds * 1000 : sampleEntryB.date_time);
+        return dateA - dateB;
+      }
+      return 0;
+    });
+  };
+
   // Generate technical metrics data for charts from real API data
   const getTechnicalMetrics = (timeFilter, metricType) => {
     if (!deviceData) {
-      return [{ period: 'No Data', value: 0 }];
+      return metricType === 'all' ? 
+        [{ period: 'No Data', temperature: 0, voltage: 0, energy: 0, current: 0 }] :
+        [{ period: 'No Data', value: 0 }];
+    }
+
+    // Handle "all" option - return data for all metrics
+    if (metricType === 'all') {
+      return getAllMetricsData(timeFilter);
     }
 
     // For energy metrics, use the API's energy data directly first
@@ -812,6 +1073,13 @@ const DeviceDetail = () => {
 
   const getMetricInfo = (metricType) => {
     const metricConfig = {
+      all: { 
+        label: 'All Metrics', 
+        unit: '', 
+        color: '#3b82f6', 
+        icon: <Activity className="w-4 h-4" />,
+        description: 'Display all technical metrics simultaneously'
+      },
       temperature: { 
         label: 'Temperature', 
         unit: '°C', 
@@ -2404,6 +2672,7 @@ const DeviceDetail = () => {
                           fontSize: '0.875rem'
                         }}
                       >
+                        <option value="all">All</option>
                         <option value="temperature">Temperature</option>
                         <option value="voltage">Voltage</option>
                         <option value="energy">Energy Accumulated</option>
@@ -2450,7 +2719,7 @@ const DeviceDetail = () => {
                             domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
                             tickFormatter={(value) => Math.round(value)}
                             label={{ 
-                              value: `${getMetricInfo(selectedMetric).label} (${getMetricInfo(selectedMetric).unit})`, 
+                              value: selectedMetric === 'all' ? 'Technical Metrics' : `${getMetricInfo(selectedMetric).label} (${getMetricInfo(selectedMetric).unit})`, 
                               angle: -90, 
                               position: 'insideLeft',
                               style: { textAnchor: 'middle', fill: '#9ca3af' }
@@ -2465,26 +2734,124 @@ const DeviceDetail = () => {
                               boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
                             }}
                             labelStyle={{ color: '#ffffff', fontWeight: '500' }}
-                            formatter={(value) => [`${value} ${getMetricInfo(selectedMetric).unit}`, getMetricInfo(selectedMetric).label]}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="value" 
-                            stroke={getMetricInfo(selectedMetric).color}
-                            strokeWidth={3}
-                            dot={{ 
-                              r: 5, 
-                              fill: getMetricInfo(selectedMetric).color,
-                              stroke: '#ffffff',
-                              strokeWidth: 2
-                            }}
-                            activeDot={{ 
-                              r: 7, 
-                              stroke: getMetricInfo(selectedMetric).color,
-                              strokeWidth: 2,
-                              fill: '#ffffff'
+                            formatter={(value, name) => {
+                              if (selectedMetric === 'all') {
+                                const unitMap = {
+                                  temperature: '°C',
+                                  voltage: 'V',
+                                  energy: 'Wh',
+                                  current: 'A'
+                                };
+                                return [`${value} ${unitMap[name] || ''}`, name];
+                              }
+                              return [`${value} ${getMetricInfo(selectedMetric).unit}`, getMetricInfo(selectedMetric).label];
                             }}
                           />
+                          <Legend 
+                            wrapperStyle={{ 
+                              paddingTop: '20px',
+                              color: '#ffffff'
+                            }}
+                          />
+                          {selectedMetric === 'all' ? (
+                            <>
+                              <Line 
+                                type="monotone" 
+                                dataKey="temperature" 
+                                stroke="#f59e0b"
+                                strokeWidth={3}
+                                name="Temperature"
+                                dot={{ 
+                                  r: 4, 
+                                  fill: '#f59e0b',
+                                  stroke: '#ffffff',
+                                  strokeWidth: 2
+                                }}
+                                activeDot={{ 
+                                  r: 6, 
+                                  stroke: '#f59e0b',
+                                  strokeWidth: 2,
+                                  fill: '#ffffff'
+                                }}
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="voltage" 
+                                stroke="#3b82f6"
+                                strokeWidth={3}
+                                name="Voltage"
+                                dot={{ 
+                                  r: 4, 
+                                  fill: '#3b82f6',
+                                  stroke: '#ffffff',
+                                  strokeWidth: 2
+                                }}
+                                activeDot={{ 
+                                  r: 6, 
+                                  stroke: '#3b82f6',
+                                  strokeWidth: 2,
+                                  fill: '#ffffff'
+                                }}
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="energy" 
+                                stroke="#10b981"
+                                strokeWidth={3}
+                                name="Energy"
+                                dot={{ 
+                                  r: 4, 
+                                  fill: '#10b981',
+                                  stroke: '#ffffff',
+                                  strokeWidth: 2
+                                }}
+                                activeDot={{ 
+                                  r: 6, 
+                                  stroke: '#10b981',
+                                  strokeWidth: 2,
+                                  fill: '#ffffff'
+                                }}
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="current" 
+                                stroke="#8b5cf6"
+                                strokeWidth={3}
+                                name="Current"
+                                dot={{ 
+                                  r: 4, 
+                                  fill: '#8b5cf6',
+                                  stroke: '#ffffff',
+                                  strokeWidth: 2
+                                }}
+                                activeDot={{ 
+                                  r: 6, 
+                                  stroke: '#8b5cf6',
+                                  strokeWidth: 2,
+                                  fill: '#ffffff'
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <Line 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke={getMetricInfo(selectedMetric).color}
+                              strokeWidth={3}
+                              dot={{ 
+                                r: 5, 
+                                fill: getMetricInfo(selectedMetric).color,
+                                stroke: '#ffffff',
+                                strokeWidth: 2
+                              }}
+                              activeDot={{ 
+                                r: 7, 
+                                stroke: getMetricInfo(selectedMetric).color,
+                                strokeWidth: 2,
+                                fill: '#ffffff'
+                              }}
+                            />
+                          )}
                         </LineChart>
                       </ResponsiveContainer>
                       </div>
