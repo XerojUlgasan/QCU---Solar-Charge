@@ -110,6 +110,7 @@ const DeviceDetail = () => {
             };
             
             console.log('Merged device data:', mergedData);
+            console.log('Energy history in merged data:', mergedData.energy_history);
             setDeviceData(mergedData);
             return;
           }
@@ -272,32 +273,92 @@ const DeviceDetail = () => {
 
     // Check if we have energy_history data for any metric
     if (deviceData.energy_history && Array.isArray(deviceData.energy_history)) {
-      const energyData = deviceData.energy_history.flat().filter(entry => 
-        entry.device_id === deviceId && entry[metricType] !== undefined
+      const allEnergyData = deviceData.energy_history.flat();
+      
+      // Map metric types to actual field names
+      const fieldMapping = {
+        'energy': 'energy_accumulated',
+        'voltage': 'voltage', 
+        'current': 'current',
+        'temperature': 'temperature'
+      };
+      
+      const actualFieldName = fieldMapping[metricType] || metricType;
+      
+      const deviceEnergyData = allEnergyData.filter(entry => 
+        entry && entry.device_id === deviceId && entry[actualFieldName] !== undefined
       );
 
-      if (energyData.length > 0) {
+      console.log('Technical Metrics Debug:', {
+        metricType,
+        actualFieldName,
+        timeFilter,
+        allEnergyDataLength: allEnergyData.length,
+        deviceEnergyDataLength: deviceEnergyData.length,
+        sampleEntry: deviceEnergyData[0],
+        rawEnergyHistory: deviceData.energy_history
+      });
+
+      if (deviceEnergyData.length > 0) {
+        // Apply time filter to energy data first
+        const now = new Date();
+        let startDate;
+        
+        switch (timeFilter) {
+          case 'daily':
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            break;
+          case 'weekly':
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'monthly':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+          case 'total':
+            // Show last 12 months only
+            startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+            break;
+          default:
+            startDate = new Date(0);
+        }
+
+        // Filter by time period
+        const filteredEnergyData = deviceEnergyData.filter(entry => {
+          if (!entry.date_time) return false;
+          let entryDate;
+          if (entry.date_time.seconds) {
+            entryDate = new Date(entry.date_time.seconds * 1000);
+          } else {
+            entryDate = new Date(entry.date_time);
+          }
+          return entryDate >= startDate;
+        });
+
+        if (filteredEnergyData.length === 0) {
+          return [{ period: 'No Data', value: 0 }];
+        }
+
         // Sort by date and group by time period
-        const sortedData = energyData.sort((a, b) => {
+        const sortedData = filteredEnergyData.sort((a, b) => {
           const dateA = new Date(a.date_time?.seconds ? a.date_time.seconds * 1000 : a.date_time);
           const dateB = new Date(b.date_time?.seconds ? b.date_time.seconds * 1000 : b.date_time);
           return dateA - dateB;
         });
 
         // Group data by time period using the actual metric field
-        const groupedData = groupDataByTimePeriod(sortedData, timeFilter, metricType);
+        const groupedData = groupDataByTimePeriod(sortedData, timeFilter, actualFieldName);
         return groupedData;
       }
     }
 
-    // If no historical data available, show current value only
+    // If no historical data available, use current API values
     const currentValue = deviceData[metricType] || 0;
     
     if (currentValue === 0) {
       return [{ period: 'No Data', value: 0 }];
     }
 
-    // Show current value as a single data point
+    // For current values, create a simple data point showing the current reading
     return [{ period: 'Current', value: currentValue }];
   };
 
@@ -308,46 +369,98 @@ const DeviceDetail = () => {
     data.forEach(entry => {
       const entryDate = new Date(entry.date_time?.seconds ? entry.date_time.seconds * 1000 : entry.date_time);
       let periodKey;
+      let fullDate;
 
       switch (timeFilter) {
         case 'daily':
           periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
           break;
         case 'weekly':
-          periodKey = entryDate.toLocaleDateString('en-US', { weekday: 'short' });
+          periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
           break;
         case 'monthly':
-          const weekOfMonth = Math.ceil(entryDate.getDate() / 7);
-          periodKey = `Week ${weekOfMonth}`;
+          // Calculate week ranges (1-7, 8-14, 15-21, 22-28, 29+)
+          const day = entryDate.getDate();
+          const monthName = entryDate.toLocaleDateString('en-US', { month: 'short' });
+          let weekStart, weekEnd;
+          
+          if (day <= 7) {
+            weekStart = 1;
+            weekEnd = 7;
+          } else if (day <= 14) {
+            weekStart = 8;
+            weekEnd = 14;
+          } else if (day <= 21) {
+            weekStart = 15;
+            weekEnd = 21;
+          } else if (day <= 28) {
+            weekStart = 22;
+            weekEnd = 28;
+          } else {
+            weekStart = 29;
+            weekEnd = new Date(entryDate.getFullYear(), entryDate.getMonth() + 1, 0).getDate();
+          }
+          
+          periodKey = `${monthName} ${weekStart}-${weekEnd}`;
+          fullDate = `${entryDate.toLocaleDateString('en-US', { month: 'long' })} ${weekStart}-${weekEnd}, ${entryDate.getFullYear()}`;
           break;
         case 'total':
           periodKey = entryDate.toLocaleDateString('en-US', { month: 'short' });
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long' 
+          });
           break;
         default:
           periodKey = entryDate.toLocaleDateString();
+          fullDate = entryDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
       }
 
       if (!groups[periodKey]) {
         groups[periodKey] = [];
       }
-      groups[periodKey].push(entry[valueKey] || 0);
+      groups[periodKey].push({
+        value: entry[valueKey] || 0,
+        fullDate: fullDate,
+        date: entryDate
+      });
     });
 
     // Convert groups to chart data
-    return Object.entries(groups).map(([period, values]) => {
+    return Object.entries(groups).map(([period, entries]) => {
       let value;
+      let fullDate = entries[0]?.fullDate || period;
       
       if (valueKey === 'energy_accumulated') {
-        // For energy, use the maximum value (cumulative total) instead of average
-        value = Math.max(...values);
+        // For energy, sum all values in the time period to get total accumulated energy
+        value = entries.reduce((sum, entry) => sum + entry.value, 0);
       } else {
-        // For other metrics (temperature, voltage, current), use average
+        // For voltage, current, and temperature, use average (instantaneous measurements)
+        const values = entries.map(e => e.value);
         value = values.reduce((sum, val) => sum + val, 0) / values.length;
       }
       
       return {
         period,
-        value: Math.round(value * 10) / 10
+        value: Math.round(value * 10) / 10,
+        fullDate
       };
     }).sort((a, b) => {
       // Sort by period for better chart display
@@ -2294,6 +2407,8 @@ const DeviceDetail = () => {
                             tickLine={false}
                             axisLine={false}
                             tick={{ fill: '#9ca3af' }}
+                            domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
+                            tickFormatter={(value) => Math.round(value)}
                             label={{ 
                               value: `${getMetricInfo(selectedMetric).label} (${getMetricInfo(selectedMetric).unit})`, 
                               angle: -90, 
