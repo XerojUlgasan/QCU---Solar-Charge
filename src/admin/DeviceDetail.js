@@ -74,7 +74,7 @@ const DeviceDetail = () => {
       
       try {
         console.log('Trying devices endpoint...');
-        response = await authenticatedAdminFetch(`/admin/devices?device_id=${deviceId}`);
+        response = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
         
         console.log('Device response status:', response.status);
         console.log('Device response ok:', response.ok);
@@ -95,35 +95,53 @@ const DeviceDetail = () => {
         
         data = await response.json();
         console.log('Device data with alerts:', data);
+        console.log('Raw alerts from API:', data.alerts);
+        console.log('Alerts type:', typeof data.alerts);
+        console.log('Alerts is array:', Array.isArray(data.alerts));
+        console.log('Alerts length:', data.alerts?.length);
+        console.log('Device name from API:', data.name);
+        console.log('Device location from API:', data.location);
+        console.log('Device building from API:', data.building);
+        console.log('Complete API response structure:', Object.keys(data));
+        console.log('Full API response:', JSON.stringify(data, null, 2));
         
-        // Try to fetch device history data as well
-        try {
-          console.log('Fetching device history...');
-          const historyResponse = await authenticatedAdminFetch(`/admin/devices?device_id=${deviceId}/getDeviceHistory`);
-          if (historyResponse.ok) {
-            const historyData = await historyResponse.json();
-            console.log('Device history data:', historyData);
-            
-            // Merge history data with device data
-            const mergedData = {
-              ...data,
-              ...historyData,
-              // Keep original device_id from main response
-              device_id: data.device_id || deviceId
-            };
-            
-            console.log('Merged device data:', mergedData);
-            console.log('Energy history in merged data:', mergedData.energy_history);
-            setDeviceData(mergedData);
-            return;
-          }
-        } catch (historyError) {
-          console.log('Device history fetch failed, using main data only:', historyError.message);
-        }
-        
-        // The API returns the device data directly with alerts
+        // The API returns the device data directly with alerts - no need to merge anything
         if (data && data.device_id) {
-          console.log('Found device data from devices endpoint:', data);
+          console.log('Setting device data directly from API response');
+          
+          // Also fetch device metadata from dashboard endpoint
+          try {
+            console.log('Fetching device metadata from dashboard...');
+            const dashboardResponse = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+            if (dashboardResponse.ok) {
+              const dashboardData = await dashboardResponse.json();
+              console.log('Dashboard data:', dashboardData);
+              
+              // Find the specific device in the dashboard data
+              const deviceFromDashboard = dashboardData.devices?.find(d => d.device_id === deviceId);
+              if (deviceFromDashboard) {
+                console.log('Found device in dashboard data:', deviceFromDashboard);
+                
+                // Merge device metadata with operational data
+                const mergedDeviceData = {
+                  ...data, // Keep all operational data (alerts, analytics, etc.)
+                  // Add device metadata
+                  name: deviceFromDashboard.name,
+                  location: deviceFromDashboard.location,
+                  building: deviceFromDashboard.building,
+                  status: deviceFromDashboard.status || data.status
+                };
+                
+                console.log('Merged device data with metadata:', mergedDeviceData);
+                setDeviceData(mergedDeviceData);
+                return;
+              }
+            }
+          } catch (dashboardError) {
+            console.log('Dashboard metadata fetch failed, using devices data only:', dashboardError.message);
+          }
+          
+          // Fallback to devices data only if dashboard fetch fails
           setDeviceData(data);
           return; // Success, exit early
         } else {
@@ -1217,13 +1235,20 @@ const DeviceDetail = () => {
 
   // Format device data for display
   const getFormattedDeviceData = () => {
+    console.log('=== GET FORMATTED DEVICE DATA DEBUG ===');
+    console.log('deviceData:', deviceData);
+    console.log('deviceData.name:', deviceData?.name);
+    console.log('deviceData.location:', deviceData?.location);
+    console.log('deviceData.building:', deviceData?.building);
+    console.log('deviceId:', deviceId);
+    
     if (!deviceData) {
-      const deviceInfo = getDeviceInfo(deviceId);
+      console.log('No device data available, using fallback');
       return {
         id: deviceId || "QCU-001",
-        name: deviceInfo.name,
-        location: deviceInfo.location,
-        building: deviceInfo.building,
+        name: `Device ${deviceId}`,
+        location: "QCU Campus",
+        building: "Main Building",
         status: "loading",
         voltage: "0V",
         current: "0A",
@@ -1237,6 +1262,13 @@ const DeviceDetail = () => {
         sessions: 0
       };
     }
+
+    console.log('=== PROCESSING DEVICE DATA ===');
+    console.log('deviceData:', deviceData);
+    console.log('deviceData.name:', deviceData.name);
+    console.log('deviceData.location:', deviceData.location);
+    console.log('deviceData.building:', deviceData.building);
+    console.log('deviceId:', deviceId);
 
     const getTimeFilteredData = (timeFilter) => {
        // Calculate device-specific revenue from transactions
@@ -1258,14 +1290,13 @@ const DeviceDetail = () => {
     };
 
     const timeFilteredData = getTimeFilteredData(timeFilter);
-    const deviceInfoData = getDeviceInfo(deviceData.device_id || deviceId);
     
-    return {
+    const result = {
       id: deviceData.device_id || deviceId,
-      name: deviceInfoData.name,
-      location: deviceInfoData.location,
-      building: deviceInfoData.building,
-      status: deviceInfoData.status || "active",
+      name: deviceData.name || `Device ${deviceId}`,
+      location: deviceData.location || "QCU Campus",
+      building: deviceData.building || "Main Building",
+      status: deviceData.status || "active",
       voltage: `${deviceData.volt || 0}V`,
       current: `${deviceData.current || 0}A`,
       temperature: `${deviceData.temperature || 0}°C`,
@@ -1274,6 +1305,14 @@ const DeviceDetail = () => {
       errorRate: 0.8, // Mock error rate
       ...timeFilteredData
     };
+    
+    console.log('=== FINAL DEVICE DATA RESULT ===');
+    console.log('result:', result);
+    console.log('result.name:', result.name);
+    console.log('result.location:', result.location);
+    console.log('result.building:', result.building);
+    
+    return result;
   };
 
   const device = getFormattedDeviceData();
