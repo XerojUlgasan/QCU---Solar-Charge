@@ -16,6 +16,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useLogout } from '../contexts/LogoutContext';
+import AdminSettingsModal from '../components/AdminSettingsModal';
 import logo from '../logo.svg';
 import '../styles/AdminHeader.css';
 
@@ -25,6 +26,7 @@ const AdminHeader = ({ title, navigate }) => {
   const { openModal: openLogoutModal } = useLogout();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const navigateToRoute = useNavigate();
 
   useEffect(() => {
@@ -128,10 +130,7 @@ const AdminHeader = ({ title, navigate }) => {
           {/* Settings */}
           <button
             className="action-button"
-            onClick={() => {
-              // TODO: Add settings functionality
-              console.log('Settings clicked');
-            }}
+            onClick={() => setIsSettingsModalOpen(true)}
             title="Settings"
           >
             <Settings className="h-5 w-5" />
@@ -179,6 +178,12 @@ const AdminHeader = ({ title, navigate }) => {
           </div>
         </div>
       )}
+
+      {/* Settings Modal */}
+      <AdminSettingsModal 
+        isOpen={isSettingsModalOpen} 
+        onClose={() => setIsSettingsModalOpen(false)} 
+      />
     </header>
   );
 };

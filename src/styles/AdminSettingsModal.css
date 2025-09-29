@@ -1,0 +1,489 @@
+/* Admin Settings Modal Styles */
+.admin-settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.admin-settings-modal {
+    background-color: #1e2633;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #2d3748;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #2d3748;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+.close-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    background: none;
+    color: #9aa3b2;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.close-button:hover {
+    background-color: #374151;
+    color: #ffffff;
+}
+
+.modal-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.settings-sidebar {
+    width: 250px;
+    border-right: 1px solid #2d3748;
+    background-color: #0f141c;
+}
+
+.settings-nav {
+    padding: 1rem 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: none;
+    color: #9aa3b2;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.nav-item:hover {
+    background-color: #1e2633;
+    color: #ffffff;
+}
+
+.nav-item.active {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+.settings-main {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.settings-content {
+    max-width: 600px;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #374151;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #d1d5db;
+    margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+    background-color: #0f141c;
+    color: #ffffff;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-input::placeholder {
+    color: #6b7280;
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+}
+
+.password-input-group {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.password-toggle:hover {
+    color: #ffffff;
+    background-color: #374151;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #16a34a;
+}
+
+.btn-secondary {
+    background-color: #374151;
+    color: #ffffff;
+    border: 1px solid #4b5563;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.security-item,
+.notification-item,
+.system-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: #0f141c;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.security-item:last-child,
+.notification-item:last-child,
+.system-item:last-child {
+    margin-bottom: 0;
+}
+
+.security-info,
+.notification-info,
+.system-info {
+    flex: 1;
+}
+
+.security-title,
+.notification-title,
+.system-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 0.25rem 0;
+}
+
+.security-description,
+.notification-description,
+.system-description {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.5rem;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #374151;
+    transition: 0.2s;
+    border-radius: 1.5rem;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 1.125rem;
+    width: 1.125rem;
+    left: 0.1875rem;
+    bottom: 0.1875rem;
+    background-color: #ffffff;
+    transition: 0.2s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #22c55e;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(1.5rem);
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #2d3748;
+    background-color: #0f141c;
+}
+
+/* Light mode styles */
+.light .admin-settings-modal {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.light .modal-header {
+    border-bottom-color: #e5e7eb;
+}
+
+.light .modal-title {
+    color: #1f2937;
+}
+
+.light .close-button {
+    color: #6b7280;
+}
+
+.light .close-button:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light .settings-sidebar {
+    background-color: #f9fafb;
+    border-right-color: #e5e7eb;
+}
+
+.light .nav-item {
+    color: #6b7280;
+}
+
+.light .nav-item:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.light .nav-item.active {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+.light .section-title {
+    color: #1f2937;
+    border-bottom-color: #d1d5db;
+}
+
+.light .form-label {
+    color: #374151;
+}
+
+.light .form-input,
+.light .form-select {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.light .form-input:focus,
+.light .form-select:focus {
+    border-color: #22c55e;
+}
+
+.light .form-input::placeholder {
+    color: #9ca3af;
+}
+
+.light .form-help {
+    color: #6b7280;
+}
+
+.light .password-toggle {
+    color: #6b7280;
+}
+
+.light .password-toggle:hover {
+    color: #1f2937;
+    background-color: #f3f4f6;
+}
+
+.light .btn-secondary {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border-color: #d1d5db;
+}
+
+.light .btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+.light .security-item,
+.light .notification-item,
+.light .system-item {
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.light .security-title,
+.light .notification-title,
+.light .system-title {
+    color: #1f2937;
+}
+
+.light .security-description,
+.light .notification-description,
+.light .system-description {
+    color: #6b7280;
+}
+
+.light .toggle-slider {
+    background-color: #d1d5db;
+}
+
+.light .toggle-slider:before {
+    background-color: #ffffff;
+}
+
+.light .modal-footer {
+    border-top-color: #e5e7eb;
+    background-color: #f9fafb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .admin-settings-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .modal-content {
+        flex-direction: column;
+    }
+    
+    .settings-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #2d3748;
+    }
+    
+    .settings-nav {
+        display: flex;
+        overflow-x: auto;
+        padding: 0.5rem;
+    }
+    
+    .nav-item {
+        flex-shrink: 0;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        margin-right: 0.5rem;
+    }
+    
+    .settings-main {
+        padding: 1.5rem;
+    }
+    
+    .modal-header,
+    .modal-footer {
+        padding: 1rem 1.5rem;
+    }
+}
+
+.light .settings-sidebar {
+    border-bottom-color: #e5e7eb;
+}
