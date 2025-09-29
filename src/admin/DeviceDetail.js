@@ -1694,13 +1694,27 @@ const DeviceDetail = () => {
                      <span>Device Alerts</span>
                     </h3>
                   </div>
-                  <div className="realtime-card-content">
+                  <div className="realtime-card-content" style={{
+                    height: '200px', // Match the height of electrical parameters card
+                    overflowY: 'auto', // Make it scrollable
+                    padding: '1rem'
+                  }}>
                     {alerts.length > 0 ? (
-                  <div className="alerts-list">
+                  <div className="alerts-list" style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem'
+                  }}>
                     {alerts.map((alert) => (
                        <div key={alert.id} className="alert-item" style={{
                          borderLeft: `4px solid ${alert.threatInfo.color}`,
-                         backgroundColor: alert.threatInfo.bgColor
+                         backgroundColor: alert.threatInfo.bgColor,
+                         padding: '0.75rem',
+                         borderRadius: '0.5rem',
+                         display: 'flex',
+                         alignItems: 'center',
+                         gap: '0.75rem',
+                         minHeight: '60px' // Ensure consistent height
                        }}>
                            <div className="alert-icon" style={{
                              backgroundColor: alert.threatInfo.bgColor,
@@ -1712,15 +1726,20 @@ const DeviceDetail = () => {
                              alignItems: 'center',
                              justifyContent: 'center',
                              fontSize: '1rem',
-                             fontWeight: 'bold'
+                             fontWeight: 'bold',
+                             flexShrink: 0
                            }}>
                              {alert.threatInfo.icon}
                           </div>
-                        <div className="alert-content">
+                        <div className="alert-content" style={{
+                          flex: 1,
+                          minWidth: 0
+                        }}>
                            <div className="alert-message" style={{ 
                              color: '#ffffff', 
                              fontWeight: '500',
-                             marginBottom: '0.25rem'
+                             marginBottom: '0.25rem',
+                             wordWrap: 'break-word'
                            }}>
                              {alert.content}
                         </div>
@@ -1738,7 +1757,8 @@ const DeviceDetail = () => {
                              borderRadius: '0.375rem',
                              fontSize: '0.75rem',
                              fontWeight: '600',
-                             textTransform: 'uppercase'
+                             textTransform: 'uppercase',
+                             flexShrink: 0
                            }}>
                            {alert.threatInfo.label}
                           </span>
@@ -1749,9 +1769,14 @@ const DeviceDetail = () => {
                        <div className="no-alerts" style={{
                          textAlign: 'center',
                          padding: '2rem',
-                         color: '#9ca3af'
+                         color: '#9ca3af',
+                         height: '100%',
+                         display: 'flex',
+                         flexDirection: 'column',
+                         alignItems: 'center',
+                         justifyContent: 'center'
                        }}>
-                         <CheckCircle className="w-8 h-8 mx-auto mb-2" style={{ color: '#10b981' }} />
+                         <CheckCircle className="w-8 h-8 mb-2" style={{ color: '#10b981' }} />
                          <p>No active alerts for this device</p>
               </div>
             )}
