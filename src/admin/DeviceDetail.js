@@ -74,12 +74,10 @@ const DeviceDetail = () => {
       
       try {
         console.log('Trying devices endpoint...');
-        console.log('API URL:', `https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
-        response = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}`);
+        response = await authenticatedAdminFetch(`/admin/devices?device_id=${deviceId}`);
         
         console.log('Device response status:', response.status);
         console.log('Device response ok:', response.ok);
-        console.log('Device response headers:', response.headers);
       
       if (!response.ok) {
           throw new Error(`Devices endpoint failed with status: ${response.status}`);
@@ -97,43 +95,25 @@ const DeviceDetail = () => {
         
         data = await response.json();
         console.log('Device data with alerts:', data);
-        console.log('Raw alerts from API:', data.alerts);
-        console.log('Alerts type:', typeof data.alerts);
-        console.log('Alerts is array:', Array.isArray(data.alerts));
-        console.log('Alerts length:', data.alerts?.length);
-        console.log('Device name from API:', data.name);
-        console.log('Device location from API:', data.location);
-        console.log('Device building from API:', data.building);
-        console.log('Complete API response structure:', Object.keys(data));
         
         // Try to fetch device history data as well
         try {
           console.log('Fetching device history...');
-          const historyResponse = await authenticatedAdminFetch(`https://api-qcusolarcharge.up.railway.app/admin/devices?device_id=${deviceId}/getDeviceHistory`);
+          const historyResponse = await authenticatedAdminFetch(`/admin/devices?device_id=${deviceId}/getDeviceHistory`);
           if (historyResponse.ok) {
             const historyData = await historyResponse.json();
             console.log('Device history data:', historyData);
             
-            // Merge history data with device data, preserving all original data
+            // Merge history data with device data
             const mergedData = {
-              ...data, // Keep all original device data
-              // Only merge specific fields from history data
-              energy_history: historyData.energy_history || data.energy_history,
-              transactions: historyData.transactions || data.transactions,
-              // Preserve alerts from main response
-              alerts: data.alerts || []
+              ...data,
+              ...historyData,
+              // Keep original device_id from main response
+              device_id: data.device_id || deviceId
             };
             
             console.log('Merged device data:', mergedData);
             console.log('Energy history in merged data:', mergedData.energy_history);
-            console.log('Device name in merged data:', mergedData.name);
-            console.log('Device location in merged data:', mergedData.location);
-            console.log('Device building in merged data:', mergedData.building);
-            console.log('Device alerts in merged data:', mergedData.alerts);
-            console.log('Merged alerts type:', typeof mergedData.alerts);
-            console.log('Merged alerts is array:', Array.isArray(mergedData.alerts));
-            console.log('Merged alerts length:', mergedData.alerts?.length);
-            console.log('Merged data structure:', Object.keys(mergedData));
             setDeviceData(mergedData);
             return;
           }
@@ -144,14 +124,6 @@ const DeviceDetail = () => {
         // The API returns the device data directly with alerts
         if (data && data.device_id) {
           console.log('Found device data from devices endpoint:', data);
-          console.log('Fallback alerts:', data.alerts);
-          console.log('Fallback alerts type:', typeof data.alerts);
-          console.log('Fallback alerts is array:', Array.isArray(data.alerts));
-          console.log('Fallback alerts length:', data.alerts?.length);
-          console.log('Fallback device name:', data.name);
-          console.log('Fallback device location:', data.location);
-          console.log('Fallback device building:', data.building);
-          console.log('Fallback data structure:', Object.keys(data));
           setDeviceData(data);
           return; // Success, exit early
         } else {
@@ -160,18 +132,12 @@ const DeviceDetail = () => {
         
       } catch (devicesError) {
         console.log('Devices endpoint failed, trying dashboard endpoint...', devicesError.message);
-        console.log('Error details:', devicesError);
         
         // Fallback to dashboard endpoint
-        try {
-          response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
-          
-          if (!response.ok) {
-            throw new Error(`Both endpoints failed. Devices: ${devicesError.message}, Dashboard: ${response.status}`);
-          }
-        } catch (dashboardError) {
-          console.log('Dashboard endpoint also failed:', dashboardError.message);
-          throw new Error(`Both endpoints failed. Devices: ${devicesError.message}, Dashboard: ${dashboardError.message}`);
+        response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+        
+        if (!response.ok) {
+          throw new Error(`Both endpoints failed. Devices: ${devicesError.message}, Dashboard: ${response.status}`);
         }
         
         data = await response.json();
@@ -205,7 +171,7 @@ const DeviceDetail = () => {
           total_devices: data.total_devices,
             active_devices: data.active_devices,
             // Add empty alerts array as fallback
-              alerts: []
+            alert: []
         };
         
         setDeviceData(deviceData);
@@ -1428,19 +1394,12 @@ const DeviceDetail = () => {
 
   // Get alerts from API data for this specific device
   const getAlerts = () => {
-    console.log('=== GET ALERTS DEBUG ===');
-    console.log('deviceData:', deviceData);
-    console.log('deviceData.alerts:', deviceData?.alerts);
-    console.log('deviceId:', deviceId);
-    
     if (!deviceData?.alerts || !Array.isArray(deviceData.alerts)) {
-      console.log('No alerts found or alerts is not an array');
       return [];
     }
 
     // Filter alerts by device_id
     const deviceAlerts = deviceData.alerts.filter(alert => alert.device_id === deviceId);
-    console.log('Filtered device alerts:', deviceAlerts);
 
     return deviceAlerts.map((alert, index) => {
       const threatInfo = getThreatLevelInfo(alert.threat);
@@ -1455,8 +1414,6 @@ const DeviceDetail = () => {
   };
 
   const alerts = getAlerts();
-  console.log('Final alerts array:', alerts);
-  console.log('Alerts length:', alerts.length);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -1699,7 +1656,6 @@ const DeviceDetail = () => {
                     </h3>
                   </div>
                   <div className="realtime-card-content">
-                    {console.log('Rendering alerts, length:', alerts.length)}
                     {alerts.length > 0 ? (
                   <div className="alerts-list">
                     {alerts.map((alert) => (
@@ -1758,13 +1714,6 @@ const DeviceDetail = () => {
                        }}>
                          <CheckCircle className="w-8 h-8 mx-auto mb-2" style={{ color: '#10b981' }} />
                          <p>No active alerts for this device</p>
-                         <div style={{ fontSize: '12px', color: '#666', marginTop: '10px', textAlign: 'left' }}>
-                           <div>Debug Info:</div>
-                           <div>deviceData exists: {deviceData ? 'Yes' : 'No'}</div>
-                           <div>deviceData.alerts: {JSON.stringify(deviceData?.alerts)}</div>
-                           <div>deviceId: {deviceId}</div>
-                           <div>alerts array length: {alerts.length}</div>
-                         </div>
               </div>
             )}
                   </div>
