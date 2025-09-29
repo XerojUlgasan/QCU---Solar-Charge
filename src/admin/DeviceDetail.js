@@ -2800,14 +2800,33 @@ const DeviceDetail = () => {
                             labelStyle={{ color: '#ffffff', fontWeight: '500' }}
                             formatter={(value, name) => {
                               if (selectedMetric === 'all') {
+                                // Map display names to data keys and units
+                                const nameToDataKey = {
+                                  'Temperature': 'temperature',
+                                  'Voltage': 'voltage', 
+                                  'Energy': 'energy',
+                                  'Current': 'current'
+                                };
+                                
+                                const dataKey = nameToDataKey[name];
                                 const unitMap = {
                                   temperature: '°C',
                                   voltage: 'V',
-                                  energy: 'Wh',
+                                  energy: value >= 1000 ? 'kWh' : 'Wh',
                                   current: 'A'
                                 };
-                                return [`${value} ${unitMap[name] || ''}`, name];
+                                
+                                const displayValue = dataKey === 'energy' && value >= 1000 ? (value / 1000).toFixed(2) : value;
+                                return [`${displayValue} ${unitMap[dataKey] || ''}`, name];
                               }
+                              
+                              // Handle kWh formatting for individual metric
+                              if (selectedMetric === 'energy') {
+                                const displayValue = value >= 1000 ? (value / 1000).toFixed(2) : value;
+                                const unit = value >= 1000 ? 'kWh' : 'Wh';
+                                return [`${displayValue} ${unit}`, getMetricInfo(selectedMetric).label];
+                              }
+                              
                               return [`${value} ${getMetricInfo(selectedMetric).unit}`, getMetricInfo(selectedMetric).label];
                             }}
                           />
