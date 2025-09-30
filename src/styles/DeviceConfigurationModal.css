@@ -1118,3 +1118,123 @@
   border-color: #d1d5db;
   color: #6b7280;
 }
+
+/* Battery Warning Modal */
+.battery-warning-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2001;
+}
+
+.battery-warning-modal {
+  background-color: #1e293b;
+  border: 1px solid #f59e0b;
+  border-radius: 0.75rem;
+  padding: 0;
+  max-width: 28rem;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.battery-warning-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #374151;
+}
+
+.battery-warning-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.battery-warning-title {
+  color: #f9fafb;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.battery-warning-content {
+  padding: 1rem 1.5rem;
+}
+
+.battery-warning-text {
+  color: #f59e0b;
+  font-size: 0.875rem;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.battery-warning-question {
+  color: #f9fafb;
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.battery-warning-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  justify-content: flex-end;
+}
+
+.battery-warning-confirm-button {
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+  color: #ffffff;
+}
+
+.battery-warning-confirm-button:hover {
+  background-color: #d97706;
+  border-color: #d97706;
+}
+
+/* Light mode styles for battery warning */
+.light .battery-warning-modal {
+  background-color: #ffffff;
+  border-color: #f59e0b;
+}
+
+.light .battery-warning-header {
+  border-bottom-color: #e5e7eb;
+}
+
+.light .battery-warning-icon {
+  color: #d97706;
+}
+
+.light .battery-warning-title {
+  color: #1f2937;
+}
+
+.light .battery-warning-text {
+  color: #d97706;
+}
+
+.light .battery-warning-question {
+  color: #1f2937;
+}
+
+.light .battery-warning-confirm-button {
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+  color: #ffffff;
+}
+
+.light .battery-warning-confirm-button:hover {
+  background-color: #d97706;
+  border-color: #d97706;
+}

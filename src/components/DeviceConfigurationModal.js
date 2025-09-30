@@ -55,6 +55,8 @@ const DeviceConfigurationModal = ({
   const [lastFetchedDeviceId, setLastFetchedDeviceId] = useState(null);
   const [emailValidationError, setEmailValidationError] = useState('');
   const [fieldValidationErrors, setFieldValidationErrors] = useState({});
+  const [showBatteryWarning, setShowBatteryWarning] = useState(false);
+  const [pendingBatteryValue, setPendingBatteryValue] = useState('');
 
   // Validate field limits
   const validateFieldLimits = (field, value, formDataToValidate = formData) => {
@@ -83,9 +85,6 @@ const DeviceConfigurationModal = ({
         }
         break;
       case 'minBattery':
-        if (numValue < 50) {
-          return { isValid: false, error: 'Minimum battery cannot be less than 50%' };
-        }
         if (formDataToValidate.maxBattery && numValue >= parseFloat(formDataToValidate.maxBattery)) {
           return { isValid: false, error: 'Minimum battery must be less than maximum battery' };
         }
@@ -466,6 +465,13 @@ const DeviceConfigurationModal = ({
       return;
     }
     
+    // Check for battery warning before proceeding
+    if (formData.minBattery && parseFloat(formData.minBattery) < 50) {
+      setPendingBatteryValue(formData.minBattery);
+      setShowBatteryWarning(true);
+      return; // Don't proceed to save confirmation yet
+    }
+    
     // Validate emails before showing save confirmation
     const emailValidation = validateEmails(formData.emailsToNotify);
     if (!emailValidation.isValid) {
@@ -570,6 +576,31 @@ const DeviceConfigurationModal = ({
 
   const handleCloseCancel = () => {
     setShowCloseConfirmation(false);
+  };
+
+  const handleBatteryWarningConfirm = () => {
+    // Close the warning modal first
+    setShowBatteryWarning(false);
+    setPendingBatteryValue('');
+    
+    // Proceed to save confirmation
+    // Validate emails before showing save confirmation
+    const emailValidation = validateEmails(formData.emailsToNotify);
+    if (!emailValidation.isValid) {
+      setEmailValidationError(emailValidation.error);
+      showError(emailValidation.error);
+      return; // Don't show save confirmation modal
+    }
+    
+    // Clear any previous email validation errors
+    setEmailValidationError('');
+    setShowSaveConfirmation(true);
+  };
+
+  const handleBatteryWarningCancel = () => {
+    // Don't apply the change, just close the modal
+    setShowBatteryWarning(false);
+    setPendingBatteryValue('');
   };
 
   // Save device configuration to API
@@ -810,7 +841,7 @@ const DeviceConfigurationModal = ({
                 {fieldValidationErrors.minBattery ? (
                   <span className="config-error-text">{fieldValidationErrors.minBattery}</span>
                 ) : (
-                  <span className="config-help">Minimum battery percentage (min: 50%)</span>
+                  <span className="config-help">Minimum battery percentage (warning: values below 50% may damage battery)</span>
                 )}
               </div>
 
@@ -1085,6 +1116,42 @@ const DeviceConfigurationModal = ({
                   onClick={handleCloseConfirm}
                 >
                   Close Without Saving
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Battery Warning Modal */}
+        {showBatteryWarning && (
+          <div className="battery-warning-overlay">
+            <div className="battery-warning-modal">
+              <div className="battery-warning-header">
+                <AlertTriangle className="battery-warning-icon" />
+                <h3 className="battery-warning-title">Battery Warning</h3>
+              </div>
+              
+              <div className="battery-warning-content">
+                <p className="battery-warning-text">
+                  Setting a battery percentage lower than 50% can permanently damage the battery.
+                </p>
+                <p className="battery-warning-question">
+                  Do you want to continue with <strong>{pendingBatteryValue}%</strong> as the minimum battery level?
+                </p>
+              </div>
+              
+              <div className="battery-warning-footer">
+                <button 
+                  className="config-button cancel-button"
+                  onClick={handleBatteryWarningCancel}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="config-button battery-warning-confirm-button"
+                  onClick={handleBatteryWarningConfirm}
+                >
+                  Continue Anyway
                 </button>
               </div>
             </div>
