@@ -42,6 +42,7 @@ const DeviceDetail = () => {
   const [timeFilter, setTimeFilter] = useState('daily');
   const [selectedMetric, setSelectedMetric] = useState('all');
   const [sessionsFilter, setSessionsFilter] = useState('newest');
+  const [threatFilter, setThreatFilter] = useState('all');
   const [deviceData, setDeviceData] = useState(null);
   const [deviceInfo, setDeviceInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1438,16 +1439,88 @@ const DeviceDetail = () => {
     }
 
     // Filter alerts by device_id
-    const deviceAlerts = deviceData.alerts.filter(alert => alert.device_id === deviceId);
+    let deviceAlerts = deviceData.alerts.filter(alert => alert.device_id === deviceId);
+
+    // Apply threat level filter
+    if (threatFilter !== 'all') {
+      const threatLevelMap = {
+        'no-threat': 0,
+        'low': 1,
+        'medium': 2,
+        'high': 3,
+        'critical': 4
+      };
+      
+      if (threatLevelMap[threatFilter] !== undefined) {
+        deviceAlerts = deviceAlerts.filter(alert => alert.threat === threatLevelMap[threatFilter]);
+      }
+    }
+
+    // Sort alerts by date_time (most recent first)
+    deviceAlerts.sort((a, b) => {
+      let dateA, dateB;
+      
+      // Parse date for alert A
+      if (a.date_time) {
+        if (a.date_time.seconds) {
+          dateA = new Date(a.date_time.seconds * 1000);
+        } else {
+          dateA = new Date(a.date_time);
+        }
+      } else {
+        dateA = new Date(0); // Fallback to epoch if no date
+      }
+      
+      // Parse date for alert B
+      if (b.date_time) {
+        if (b.date_time.seconds) {
+          dateB = new Date(b.date_time.seconds * 1000);
+        } else {
+          dateB = new Date(b.date_time);
+        }
+      } else {
+        dateB = new Date(0); // Fallback to epoch if no date
+      }
+      
+      // Sort in descending order (most recent first)
+      return dateB - dateA;
+    });
 
     return deviceAlerts.map((alert, index) => {
       const threatInfo = getThreatLevelInfo(alert.threat);
+      
+      // Format the date_time to show actual date and time
+      let timeDisplay = "Recent";
+      if (alert.date_time) {
+        try {
+          let alertDate;
+          if (alert.date_time.seconds) {
+            alertDate = new Date(alert.date_time.seconds * 1000);
+          } else {
+            alertDate = new Date(alert.date_time);
+          }
+          
+          // Format as actual date and time
+          timeDisplay = alertDate.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          });
+        } catch (error) {
+          console.warn('Error parsing alert date_time:', error);
+          timeDisplay = "Recent";
+        }
+      }
+      
       return {
         id: `alert-${index}`,
         content: alert.content,
         threat: alert.threat,
         threatInfo: threatInfo,
-        time: "Recent" // You can add timestamp parsing if needed
+        time: timeDisplay
       };
     });
   };
@@ -1688,14 +1761,36 @@ const DeviceDetail = () => {
 
               {/* Active Alerts */}
                 <div className="realtime-card">
-                  <div className="realtime-card-header">
+                  <div className="realtime-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3 className="realtime-card-title">
                       <AlertTriangle className="w-5 h-5" style={{ color: '#ef4444' }} />
                      <span>Device Alerts</span>
                     </h3>
+                    <div className="alerts-filter">
+                      <select
+                        value={threatFilter}
+                        onChange={(e) => setThreatFilter(e.target.value)}
+                        style={{
+                          padding: '0.5rem',
+                          borderRadius: '0.375rem',
+                          border: '1px solid #374151',
+                          backgroundColor: '#1f2937',
+                          color: '#ffffff',
+                          fontSize: '0.875rem',
+                          minWidth: '120px'
+                        }}
+                      >
+                        <option value="all">All Threats</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                        <option value="no-threat">No Threat</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="realtime-card-content" style={{
-                    height: '200px', // Match the height of electrical parameters card
+                    height: '220px', // Height to show exactly 3 alerts without partial visibility
                     overflowY: 'auto', // Make it scrollable
                     padding: '1rem'
                   }}>
