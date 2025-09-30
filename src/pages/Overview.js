@@ -423,19 +423,23 @@ function Overview() {
 
             {/* All Stations Modal */}
             {showAllStations && (
-                <div className={`modal-overlay ${isDarkMode ? '' : 'light'}`} onClick={() => setShowAllStations(false)}>
-                    <div className={`modal-content ${isDarkMode ? '' : 'light'}`} onClick={(e) => e.stopPropagation()} style={{
+                <div className="stations-modal-bg" onClick={() => setShowAllStations(false)}>
+                    <div className="stations-modal-box" onClick={(e) => e.stopPropagation()} style={{
                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
                         border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
                     }}>
-                        <div className={`modal-header ${isDarkMode ? '' : 'light'}`} style={{
-                            borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
-                        }}>
-                            <h2 className={isDarkMode ? 'text-white' : 'text-gray-900'}>All Stations ({getFilteredDevices().length})</h2>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {/* Header */}
+                        <div className="stations-modal-header">
+                            <h2 className="stations-modal-title" style={{
+                                color: isDarkMode ? '#ffffff' : '#1f2937'
+                            }}>
+                                All Stations ({getFilteredDevices().length})
+                            </h2>
+                            <div className="stations-modal-controls">
                                 <select 
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="stations-filter-select"
                                     style={{
                                         padding: '6px 12px',
                                         borderRadius: '6px',
@@ -452,7 +456,7 @@ function Overview() {
                                     <option value="maintenance">Maintenance</option>
                                 </select>
                                 <button 
-                                    className={`modal-close ${isDarkMode ? '' : 'light'}`}
+                                    className="stations-modal-close"
                                     style={{
                                         color: isDarkMode ? '#9aa3b2' : '#6b7280'
                                     }}
@@ -465,7 +469,9 @@ function Overview() {
                                 </button>
                             </div>
                         </div>
-                        <div className={`modal-body ${isDarkMode ? '' : 'light'}`}>
+
+                        {/* Content */}
+                        <div className="stations-modal-body">
                             <div className="stations-grid-modal">
                                 {getFilteredDevices().map((device, index) => (
                                     <div key={index} className={`station-card ${isDarkMode ? '' : 'light'}`} style={{
