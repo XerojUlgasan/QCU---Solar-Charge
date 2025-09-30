@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import "../styles/Overview.css";
 
 function Overview() {
+    const { isDarkMode } = useTheme();
+    
     const [overviewData, setOverviewData] = useState({
         active: 0,
         total_power: 0,
@@ -189,13 +192,18 @@ function Overview() {
     };
 
     return (
-        <div id="overview-page">
+        <div id="overview-page" className={isDarkMode ? '' : 'light'}>
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className="badge-blue">System Overview</span>
-                    <h1>QCU EcoCharge Network</h1>
-                    <p className="subtitle">
+                    <span className={`badge-blue ${isDarkMode ? '' : 'light'}`} style={{
+                        backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe',
+                        color: isDarkMode ? '#ffffff' : '#1e40af'
+                    }}>
+                        System Overview
+                    </span>
+                    <h1 className={isDarkMode ? 'text-white' : 'text-gray-900'}>QCU EcoCharge Network</h1>
+                    <p className="subtitle" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                         Monitor the real-time status of our solar-powered charging stations across campus. 
                         Each station is equipped with advanced monitoring and energy management systems.
                     </p>
@@ -216,8 +224,11 @@ function Overview() {
                     </div>
                 ) : (
                 <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="stat-value" style={{color: '#22c55e'}}>
+                    <div className={`stat-card ${isDarkMode ? '' : 'light'}`} style={{
+                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                    }}>
+                        <div className="stat-value" style={{color: isDarkMode ? '#22c55e' : '#10b981'}}>
                             {overviewData.devices.filter(device => {
                                 const status = device.status?.toLowerCase();
                                 return status === 'active' || 
@@ -228,15 +239,21 @@ function Overview() {
                                        (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
                             }).length}
                         </div>
-                        <div className="stat-label">Active Stations</div>
+                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Active Stations</div>
                     </div>
-                    <div className="stat-card">
-                        <div className="stat-value" style={{color: '#f59e0b'}}>{formatPower(overviewData.total_power)}</div>
-                        <div className="stat-label">Total Power</div>
+                    <div className={`stat-card ${isDarkMode ? '' : 'light'}`} style={{
+                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                    }}>
+                        <div className="stat-value" style={{color: isDarkMode ? '#f59e0b' : '#f59e0b'}}>{formatPower(overviewData.total_power)}</div>
+                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Total Power</div>
                     </div>
-                    <div className="stat-card">
-                        <div className="stat-value" style={{color: '#8b5cf6'}}>{overviewData.transactions_today}</div>
-                        <div className="stat-label">Transactions Today</div>
+                    <div className={`stat-card ${isDarkMode ? '' : 'light'}`} style={{
+                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                    }}>
+                        <div className="stat-value" style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>{overviewData.transactions_today}</div>
+                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Transactions Today</div>
                     </div>
                 </div>
                 )}
@@ -244,10 +261,15 @@ function Overview() {
                 {/* Station Status */}
                 <div id="station-status">
                     <div className="section-header-container">
-                        <h2 className="section-header">Station Status</h2>
+                        <h2 className={`section-header ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Station Status</h2>
                         {!loading && !error && overviewData.devices.length > 0 && (
                             <button 
-                                className="view-all-button"
+                                className={`view-all-button ${isDarkMode ? '' : 'light'}`}
+                                style={{
+                                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                                    color: isDarkMode ? '#eaecef' : '#374151'
+                                }}
                                 onClick={() => setShowAllStations(true)}
                             >
                                 View All ({overviewData.devices.length})
@@ -269,13 +291,16 @@ function Overview() {
                     ) : (
                     <div className="stations-grid">
                         {overviewData.devices.slice(0, 3).map((device, index) => (
-                            <div key={index} className="station-card">
+                            <div key={index} className={`station-card ${isDarkMode ? '' : 'light'}`} style={{
+                                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                            }}>
                                 <div className="station-header">
                                     <div className="station-info">
                                         <h3>{device.name || 'Unknown Device'}
                                             <div className={`status-dot ${(device.status || 'offline').toLowerCase()}`}></div>
                                         </h3>
-                                        <div className="station-location">
+                                        <div className="station-location" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
@@ -283,34 +308,42 @@ function Overview() {
                                             <span>{device.location || 'Unknown Location'}</span>
                                         </div>
                                     </div>
-                                    <span className="station-id">{device.id || 'N/A'}</span>
+                                    <span className="station-id" style={{
+                                        backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+                                        color: isDarkMode ? '#9aa3b2' : '#374151'
+                                    }}>{device.id || 'N/A'}</span>
                                 </div>
                                 <div className="station-details">
                                     <div className="detail-row">
-                                        <span className="label">Status</span>
-                                        <span className="value">{getStatusText(device.status)}</span>
+                                        <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Status</span>
+                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{getStatusText(device.status)}</span>
                                     </div>
                                     <div className="detail-row">
-                                        <span className="label">Power</span>
-                                        <span className="value">{formatPower(device.power)}</span>
+                                        <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Power</span>
+                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{formatPower(device.power)}</span>
                                     </div>
                                     <div className="detail-row">
-                                        <span className="label">Temperature</span>
-                                        <span className="value">{device.temperature || 'N/A'}°C</span>
+                                        <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Temperature</span>
+                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{device.temperature || 'N/A'}°C</span>
                                     </div>
                                     <div className="usage-container">
                                         <div className="detail-row">
-                                            <span className="label">Battery Percentage</span>
-                                            <span className="value">{device.percentage || 0}%</span>
+                                            <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Battery Percentage</span>
+                                            <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{device.percentage || 0}%</span>
                                         </div>
-                                        <div className="progress-bar">
+                                        <div className="progress-bar" style={{
+                                            backgroundColor: isDarkMode ? '#1e2633' : '#e5e7eb'
+                                        }}>
                                             <div 
                                                 className="progress-fill" 
-                                                style={{width: `${device.percentage || 0}%`}}
+                                                style={{
+                                                    width: `${device.percentage || 0}%`,
+                                                    background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)'
+                                                }}
                                             ></div>
                                         </div>
                                     </div>
-                                    <div className="last-updated">
+                                    <div className="last-updated" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="12" cy="12" r="10"></circle>
                                             <path d="M12 6v6l4 2"></path>
@@ -326,55 +359,63 @@ function Overview() {
 
                 {/* System Features */}
                 <div>
-                    <h2 className="section-header center">System Features</h2>
+                    <h2 className={`section-header center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>System Features</h2>
                     <div className="features-grid">
                         {features.map((feature, index) => (
-                            <div key={index} className="feature-card">
+                            <div key={index} className={`feature-card ${isDarkMode ? '' : 'light'}`} style={{
+                                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                            }}>
                                 <div className="feature-header">
-                                    <div className="feature-icon">
+                                    <div className="feature-icon" style={{
+                                        background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)'
+                                    }}>
                                         {feature.icon}
                                     </div>
-                                    <h3 className="feature-title">{feature.title}</h3>
+                                    <h3 className={`feature-title ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{feature.title}</h3>
                                 </div>
-                                <p className="feature-description">{feature.description}</p>
+                                <p className="feature-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>{feature.description}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* Technical Specifications */}
-                <div className="tech-specs">
-                    <h2>Technical Specifications</h2>
+                <div className={`tech-specs ${isDarkMode ? '' : 'light'}`} style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                }}>
+                    <h2 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Technical Specifications</h2>
                     <div className="specs-grid">
                         <div className="spec-item">
-                            <h3>Solar Panel Capacity</h3>
-                            <p className="spec-value green">400W</p>
-                            <p className="spec-description">Per station</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Solar Panel Capacity</h3>
+                            <p className={`spec-value ${isDarkMode ? 'green' : 'light-green'}`} style={{color: isDarkMode ? '#22c55e' : '#10b981'}}>400W</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Per station</p>
                         </div>
                         <div className="spec-item">
-                            <h3>Battery Storage</h3>
-                            <p className="spec-value blue">2.5kWh</p>
-                            <p className="spec-description">Lithium-ion</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Battery Storage</h3>
+                            <p className={`spec-value ${isDarkMode ? 'blue' : 'light-blue'}`} style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>2.5kWh</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Lithium-ion</p>
                         </div>
                         <div className="spec-item">
-                            <h3>Charging Ports</h3>
-                            <p className="spec-value purple">6</p>
-                            <p className="spec-description">USB-A, USB-C, Wireless</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Charging Ports</h3>
+                            <p className={`spec-value ${isDarkMode ? 'purple' : 'light-purple'}`} style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>6</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>USB-A, USB-C, Wireless</p>
                         </div>
                         <div className="spec-item">
-                            <h3>Operating Hours</h3>
-                            <p className="spec-value yellow">24/7</p>
-                            <p className="spec-description">All year round</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Operating Hours</h3>
+                            <p className={`spec-value ${isDarkMode ? 'yellow' : 'light-yellow'}`} style={{color: isDarkMode ? '#f59e0b' : '#f59e0b'}}>24/7</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>All year round</p>
                         </div>
                         <div className="spec-item">
-                            <h3>Connectivity</h3>
-                            <p className="spec-value red">4G/WiFi</p>
-                            <p className="spec-description">IoT monitoring</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Connectivity</h3>
+                            <p className={`spec-value ${isDarkMode ? 'red' : 'light-red'}`} style={{color: isDarkMode ? '#ef4444' : '#ef4444'}}>4G/WiFi</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>IoT monitoring</p>
                         </div>
                         <div className="spec-item">
-                            <h3>Weather Rating</h3>
-                            <p className="spec-value indigo">IP65</p>
-                            <p className="spec-description">Weatherproof</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Weather Rating</h3>
+                            <p className={`spec-value ${isDarkMode ? 'indigo' : 'light-indigo'}`} style={{color: isDarkMode ? '#6366f1' : '#6366f1'}}>IP65</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Weatherproof</p>
                         </div>
                     </div>
                 </div>
@@ -382,10 +423,15 @@ function Overview() {
 
             {/* All Stations Modal */}
             {showAllStations && (
-                <div className="modal-overlay" onClick={() => setShowAllStations(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>All Stations ({getFilteredDevices().length})</h2>
+                <div className={`modal-overlay ${isDarkMode ? '' : 'light'}`} onClick={() => setShowAllStations(false)}>
+                    <div className={`modal-content ${isDarkMode ? '' : 'light'}`} onClick={(e) => e.stopPropagation()} style={{
+                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                    }}>
+                        <div className={`modal-header ${isDarkMode ? '' : 'light'}`} style={{
+                            borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
+                        }}>
+                            <h2 className={isDarkMode ? 'text-white' : 'text-gray-900'}>All Stations ({getFilteredDevices().length})</h2>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <select 
                                     value={statusFilter}
@@ -393,9 +439,9 @@ function Overview() {
                                     style={{
                                         padding: '6px 12px',
                                         borderRadius: '6px',
-                                        border: '1px solid #1e2633',
-                                        backgroundColor: '#0f141c',
-                                        color: '#eaecef',
+                                        border: isDarkMode ? '1px solid #1e2633' : '1px solid #d1d5db',
+                                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                        color: isDarkMode ? '#eaecef' : '#374151',
                                         fontSize: '14px',
                                         cursor: 'pointer'
                                     }}
@@ -406,7 +452,10 @@ function Overview() {
                                     <option value="maintenance">Maintenance</option>
                                 </select>
                                 <button 
-                                    className="modal-close"
+                                    className={`modal-close ${isDarkMode ? '' : 'light'}`}
+                                    style={{
+                                        color: isDarkMode ? '#9aa3b2' : '#6b7280'
+                                    }}
                                     onClick={() => setShowAllStations(false)}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -416,10 +465,13 @@ function Overview() {
                                 </button>
                             </div>
                         </div>
-                        <div className="modal-body">
+                        <div className={`modal-body ${isDarkMode ? '' : 'light'}`}>
                             <div className="stations-grid-modal">
                                 {getFilteredDevices().map((device, index) => (
-                                    <div key={index} className="station-card">
+                                    <div key={index} className={`station-card ${isDarkMode ? '' : 'light'}`} style={{
+                                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+                                    }}>
                                         <div className="station-header">
                                             <div className="station-info">
                                                 <h3>{device.name || 'Unknown Device'}

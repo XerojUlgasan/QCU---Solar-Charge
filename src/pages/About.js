@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 function About() {
+  const { isDarkMode } = useTheme();
+  
   const values = [
     {
       icon: (
@@ -120,7 +123,7 @@ function About() {
   ];
 
   return (
-    <div className="min-h-screen py-20 px-4 text-white" style={{backgroundColor: '#0b0e13'}}>
+    <div className={`min-h-screen py-20 px-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{backgroundColor: isDarkMode ? '#0b0e13' : '#fafafa'}}>
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -128,12 +131,14 @@ function About() {
             padding: '6px 10px',
             borderRadius: '8px',
             fontWeight: '600',
-            fontSize: '12px'
+            fontSize: '12px',
+            backgroundColor: isDarkMode ? '#0e5429' : '#d1fae5',
+            color: isDarkMode ? '#ffffff' : '#065f46'
           }}>
             About QCU EcoCharge
           </span>
-          <h1 className="font-bold mb-6" style={{fontSize: '40px'}}>Powering Tomorrow with Clean Energy</h1>
-          <p className="max-w-3xl mx-auto" style={{color: '#9aa3b2', fontSize: '18px'}}>
+          <h1 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '40px'}}>Powering Tomorrow with Clean Energy</h1>
+          <p className="max-w-3xl mx-auto" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
             QCU EcoCharge Station represents our commitment to sustainable technology and environmental 
             responsibility. We're transforming how students and faculty charge their devices on campus.
           </p>
@@ -142,28 +147,28 @@ function About() {
         {/* Mission Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
-            <h2 className="font-bold mb-6" style={{fontSize: '32px'}}>Our Mission</h2>
-            <p className="mb-6" style={{color: '#9aa3b2', fontSize: '18px'}}>
+            <h2 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Our Mission</h2>
+            <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
               To provide sustainable, accessible, and convenient charging solutions that reduce our 
               environmental impact while meeting the growing energy needs of our campus community.
             </p>
-            <p className="mb-6" style={{color: '#9aa3b2', fontSize: '18px'}}>
+            <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
               Through innovative solar technology and smart RFID systems, we're creating a network 
               of charging stations that not only serve our immediate needs but also contribute to 
               a more sustainable future.
             </p>
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <span>100% renewable solar energy</span>
+                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
+                <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>100% renewable solar energy</span>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <span>Smart RFID technology for easy access</span>
+                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
+                <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>Smart RFID technology for easy access</span>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <span>Real-time monitoring and maintenance</span>
+                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
+                <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>Real-time monitoring and maintenance</span>
               </div>
             </div>
           </div>
@@ -178,15 +183,23 @@ function About() {
 
         {/* Values Section */}
         <div className="mb-20">
-          <h2 className="font-bold text-center mb-12" style={{fontSize: '32px'}}>Our Core Values</h2>
+          <h2 className={`font-bold text-center mb-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Our Core Values</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((value, index) => (
-              <div key={index} className="text-white flex flex-col rounded-xl text-center hover:shadow-lg transition-shadow" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633', padding: '20px'}}>
-                <div className="mx-auto rounded-lg flex items-center justify-center text-white mb-4" style={{background: 'linear-gradient(90deg, #22c55e, #3b82f6)', width: '40px', height: '40px'}}>
+              <div key={index} className={`flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'}`} style={{
+                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db', 
+                padding: '20px'
+              }}>
+                <div className={`mx-auto rounded-lg flex items-center justify-center text-white mb-4 ${isDarkMode ? '' : 'shadow-md'}`} style={{
+                  background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)', 
+                  width: '40px', 
+                  height: '40px'
+                }}>
                   {value.icon}
                 </div>
-                <h4 className="font-semibold mb-2" style={{fontSize: '18px'}}>{value.title}</h4>
-                <p style={{color: '#9aa3b2', fontSize: '16px'}}>{value.description}</p>
+                <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '18px'}}>{value.title}</h4>
+                                <p style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>{value.description}</p>
               </div>
             ))}
           </div>
@@ -194,7 +207,7 @@ function About() {
 
         {/* Team Section */}
         <div className="mb-20">
-          <h2 className="font-bold text-center mb-12" style={{fontSize: '32px'}}>Meet Our Team</h2>
+          <h2 className={`font-bold text-center mb-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Meet Our Team</h2>
           <div className="team-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -203,14 +216,14 @@ function About() {
             margin: '0 auto'
           }}>
             {team.map((member, index) => (
-              <div key={index} className="text-white flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 hover:scale-105" style={{
-                backgroundColor: '#0f141c', 
-                border: '1px solid #1e2633', 
+              <div key={index} className={`flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 hover:scale-105 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'}`} style={{
+                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db', 
                 padding: '16px',
                 minHeight: '160px'
               }}>
                 <div className="mx-auto w-36 h-36 rounded-full overflow-hidden mb-4" style={{
-                  background: 'linear-gradient(90deg, #22c55e, #3b82f6)',
+                  background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -228,28 +241,31 @@ function About() {
                     {member.initials}
                   </div>
                 </div>
-                <h4 className="font-semibold mb-2" style={{fontSize: '19px'}}>{member.name}</h4>
-                <p className="font-medium text-green-500 mb-3" style={{fontSize: '17px'}}>{member.role}</p>
+                <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '19px'}}>{member.name}</h4>
+                <p className={`font-medium mb-3 ${isDarkMode ? 'text-green-500' : 'text-emerald-600'}`} style={{fontSize: '17px'}}>{member.role}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Impact Section */}
-        <div className="rounded-2xl p-8 text-center" style={{backgroundColor: '#0f141c', border: '1px solid #1e2633'}}>
-          <h2 className="font-bold mb-6" style={{fontSize: '32px'}}>Our Environmental Impact</h2>
+        <div className={`rounded-2xl p-8 text-center ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'} transition-all duration-300`} style={{
+          backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
+          border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>
+          <h2 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Our Environmental Impact</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="font-bold text-green-600 mb-2" style={{fontSize: '28px'}}>500kg</div>
-              <div style={{color: '#9aa3b2', fontSize: '16px'}}>CO₂ Emissions Saved</div>
+              <div className={`font-bold mb-2 ${isDarkMode ? 'text-green-600' : 'text-emerald-600'}`} style={{fontSize: '28px'}}>500kg</div>
+              <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>CO₂ Emissions Saved</div>
             </div>
             <div>
-              <div className="font-bold text-blue-600 mb-2" style={{fontSize: '28px'}}>2.5MWh</div>
-              <div style={{color: '#9aa3b2', fontSize: '16px'}}>Clean Energy Generated</div>
+              <div className={`font-bold mb-2 ${isDarkMode ? 'text-blue-600' : 'text-blue-500'}`} style={{fontSize: '28px'}}>2.5MWh</div>
+              <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>Clean Energy Generated</div>
             </div>
             <div>
-              <div className="font-bold text-purple-600 mb-2" style={{fontSize: '28px'}}>1,200+</div>
-              <div style={{color: '#9aa3b2', fontSize: '16px'}}>Students Served</div>
+              <div className={`font-bold mb-2 ${isDarkMode ? 'text-purple-600' : 'text-purple-500'}`} style={{fontSize: '28px'}}>1,200+</div>
+              <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>Students Served</div>
             </div>
           </div>
         </div>

@@ -89,10 +89,10 @@ function Navbar() {
                 isScrolled
                     ? isDarkMode 
                         ? 'bg-gray-900/80 border-gray-700' 
-                        : 'bg-white/80 border-gray-200'
+                        : 'bg-white/90 border-gray-200 shadow-lg'
                     : isDarkMode
                         ? 'bg-gray-900 border-gray-700'
-                        : 'bg-white border-gray-200'
+                        : 'bg-white border-gray-200 shadow-sm'
             }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
@@ -115,10 +115,12 @@ function Navbar() {
                                 to={item.route}
                                 className={`px-4 py-2 rounded-md text-base font-medium transition-all flex items-center space-x-1 ${
                                     isCurrentRoute(item.route)
-                                        ? 'bg-green-600 text-white hover:bg-green-700'
+                                        ? isDarkMode 
+                                            ? 'bg-green-600 text-white hover:bg-green-700'
+                                            : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
                                         : isDarkMode
                                             ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm'
                                 }`}
                             >
                                 {item.isAdmin && (
@@ -128,7 +130,11 @@ function Navbar() {
                                 )}
                                 <span>{item.label}</span>
                                 {item.isAdmin && (
-                                    <span className="ml-1 bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-md font-medium">
+                                    <span className={`ml-1 text-xs px-2 py-0.5 rounded-md font-medium ${
+                                        isDarkMode 
+                                            ? 'bg-orange-100 text-orange-800' 
+                                            : 'bg-amber-100 text-amber-800'
+                                    }`}>
                                         Admin
                                     </span>
                                 )}
@@ -144,7 +150,7 @@ function Navbar() {
                             className={`p-3 rounded-md transition-all ${
                                 isDarkMode 
                                     ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
-                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm'
                             }`}
                         >
                             {isDarkMode ? (
@@ -173,7 +179,7 @@ function Navbar() {
                                 className={`p-3 rounded-md transition-all ${
                                     isDarkMode 
                                         ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
-                                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm'
                                 }`}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -187,7 +193,7 @@ function Navbar() {
                                 <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50 ${
                                     isDarkMode 
                                         ? 'bg-gray-800 border border-gray-700' 
-                                        : 'bg-white border border-gray-200'
+                                        : 'bg-white border border-gray-200 shadow-xl'
                                 }`}>
                                     <div className="py-1">
                                         {!isAuthenticated ? (
@@ -196,7 +202,7 @@ function Navbar() {
                                                 className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
                                                     isDarkMode 
                                                         ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-                                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                                                 }`}
                                             >
                                                 Login
@@ -216,7 +222,7 @@ function Navbar() {
                                                     className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
                                                         isDarkMode 
                                                             ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-                                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                                                     }`}
                                                 >
                                                     Log out
@@ -231,7 +237,11 @@ function Navbar() {
                         {/* Mobile menu button */}
                         <button
                             onClick={toggleMobileMenu}
-                            className="md:hidden p-3 rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all"
+                            className={`md:hidden p-3 rounded-md transition-all ${
+                                isDarkMode 
+                                    ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
+                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm'
+                            }`}
                         >
                             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -250,8 +260,12 @@ function Navbar() {
                                 onClick={() => setMobileMenuOpen(false)}
                                 className={`justify-start flex items-center space-x-2 px-4 py-3 rounded-md text-base font-medium transition-all ${
                                     isCurrentRoute(item.route)
-                                        ? 'bg-green-600 text-white'
-                                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                        ? isDarkMode 
+                                            ? 'bg-green-600 text-white'
+                                            : 'bg-emerald-500 text-white shadow-md'
+                                        : isDarkMode
+                                            ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                 }`}
                             >
                                 {item.isAdmin && (
@@ -261,7 +275,11 @@ function Navbar() {
                                 )}
                                 <span>{item.label}</span>
                                 {item.isAdmin && (
-                                    <span className="ml-1 bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-md font-medium">
+                                    <span className={`ml-1 text-xs px-2 py-0.5 rounded-md font-medium ${
+                                        isDarkMode 
+                                            ? 'bg-orange-100 text-orange-800' 
+                                            : 'bg-amber-100 text-amber-800'
+                                    }`}>
                                         Admin
                                     </span>
                                 )}
