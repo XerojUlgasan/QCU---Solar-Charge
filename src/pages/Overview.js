@@ -389,32 +389,32 @@ function Overview() {
                     <div className="specs-grid">
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Solar Panel Capacity</h3>
-                            <p className={`spec-value ${isDarkMode ? 'green' : 'light-green'}`} style={{color: isDarkMode ? '#22c55e' : '#10b981'}}>400W</p>
+                            <p className={`spec-value ${isDarkMode ? 'green' : 'green'}`} style={{color: isDarkMode ? '#22c55e' : '#22c55e'}}>400W</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Per station</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Battery Storage</h3>
-                            <p className={`spec-value ${isDarkMode ? 'blue' : 'light-blue'}`} style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>2.5kWh</p>
+                            <p className={`spec-value ${isDarkMode ? 'blue' : 'blue'}`} style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>2.5kWh</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Lithium-ion</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Charging Ports</h3>
-                            <p className={`spec-value ${isDarkMode ? 'purple' : 'light-purple'}`} style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>6</p>
+                            <p className={`spec-value ${isDarkMode ? 'purple' : 'purple'}`} style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>6</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>USB-A, USB-C, Wireless</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Operating Hours</h3>
-                            <p className={`spec-value ${isDarkMode ? 'yellow' : 'light-yellow'}`} style={{color: isDarkMode ? '#f59e0b' : '#f59e0b'}}>24/7</p>
+                            <p className={`spec-value ${isDarkMode ? 'yellow' : 'yellow'}`} style={{color: isDarkMode ? '#f59e0b' : '#f59e0b'}}>24/7</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>All year round</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Connectivity</h3>
-                            <p className={`spec-value ${isDarkMode ? 'red' : 'light-red'}`} style={{color: isDarkMode ? '#ef4444' : '#ef4444'}}>4G/WiFi</p>
+                            <p className={`spec-value ${isDarkMode ? 'red' : 'red'}`} style={{color: isDarkMode ? '#ef4444' : '#ef4444'}}>4G/WiFi</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>IoT monitoring</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Weather Rating</h3>
-                            <p className={`spec-value ${isDarkMode ? 'indigo' : 'light-indigo'}`} style={{color: isDarkMode ? '#6366f1' : '#6366f1'}}>IP65</p>
+                            <p className={`spec-value ${isDarkMode ? 'indigo' : 'indigo'}`} style={{color: isDarkMode ? '#6366f1' : '#6366f1'}}>IP65</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Weatherproof</p>
                         </div>
                     </div>
@@ -423,23 +423,19 @@ function Overview() {
 
             {/* All Stations Modal */}
             {showAllStations && (
-                <div className="stations-modal-bg" onClick={() => setShowAllStations(false)}>
-                    <div className="stations-modal-box" onClick={(e) => e.stopPropagation()} style={{
+                <div className={`modal-overlay ${isDarkMode ? '' : 'light'}`} onClick={() => setShowAllStations(false)}>
+                    <div className={`modal-content ${isDarkMode ? '' : 'light'}`} onClick={(e) => e.stopPropagation()} style={{
                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
                         border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
                     }}>
-                        {/* Header */}
-                        <div className="stations-modal-header">
-                            <h2 className="stations-modal-title" style={{
-                                color: isDarkMode ? '#ffffff' : '#1f2937'
-                            }}>
-                                All Stations ({getFilteredDevices().length})
-                            </h2>
-                            <div className="stations-modal-controls">
+                        <div className={`modal-header ${isDarkMode ? '' : 'light'}`} style={{
+                            borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
+                        }}>
+                            <h2 className={isDarkMode ? 'text-white' : 'text-gray-900'}>All Stations ({getFilteredDevices().length})</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <select 
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
-                                    className="stations-filter-select"
                                     style={{
                                         padding: '6px 12px',
                                         borderRadius: '6px',
@@ -456,7 +452,7 @@ function Overview() {
                                     <option value="maintenance">Maintenance</option>
                                 </select>
                                 <button 
-                                    className="stations-modal-close"
+                                    className={`modal-close ${isDarkMode ? '' : 'light'}`}
                                     style={{
                                         color: isDarkMode ? '#9aa3b2' : '#6b7280'
                                     }}
@@ -469,9 +465,7 @@ function Overview() {
                                 </button>
                             </div>
                         </div>
-
-                        {/* Content */}
-                        <div className="stations-modal-body">
+                        <div className={`modal-body ${isDarkMode ? '' : 'light'}`}>
                             <div className="stations-grid-modal">
                                 {getFilteredDevices().map((device, index) => (
                                     <div key={index} className={`station-card ${isDarkMode ? '' : 'light'}`} style={{
@@ -538,3 +532,5 @@ function Overview() {
 }
 
 export default Overview;
+
+
