@@ -3,13 +3,8 @@ import {
   X, 
   Mail, 
   Key, 
-  Bell, 
   Shield, 
   User, 
-  Globe, 
-  Database,
-  Download,
-  Upload,
   Eye,
   EyeOff,
   Save,
@@ -25,9 +20,7 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
 
   const tabs = [
     { id: 'account', label: 'Account', icon: <User className="w-4 h-4" /> },
-    { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> },
-    { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
-    { id: 'system', label: 'System', icon: <Globe className="w-4 h-4" /> }
+    { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> }
   ];
 
   if (!isOpen) return null;
@@ -63,33 +56,8 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
           />
           <p className="form-help">Used for account recovery and important notifications</p>
         </div>
-        <div className="form-group">
-          <label className="form-label">Phone Number</label>
-          <input 
-            type="tel" 
-            className="form-input" 
-            placeholder="+63 912 345 6789"
-          />
-        </div>
       </div>
 
-      <div className="settings-section">
-        <h3 className="section-title">Account Preferences</h3>
-        <div className="form-group">
-          <label className="form-label">Language</label>
-          <select className="form-select">
-            <option value="en">English</option>
-            <option value="fil">Filipino</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Time Zone</label>
-          <select className="form-select">
-            <option value="Asia/Manila">Asia/Manila (UTC+8)</option>
-            <option value="UTC">UTC (UTC+0)</option>
-          </select>
-        </div>
-      </div>
     </div>
   );
 
@@ -158,16 +126,6 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         <h3 className="section-title">Two-Factor Authentication</h3>
         <div className="security-item">
           <div className="security-info">
-            <h4 className="security-title">SMS Authentication</h4>
-            <p className="security-description">Receive verification codes via SMS</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-        <div className="security-item">
-          <div className="security-info">
             <h4 className="security-title">Email Authentication</h4>
             <p className="security-description">Receive verification codes via email</p>
           </div>
@@ -197,168 +155,7 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     </div>
   );
 
-  const renderNotificationSettings = () => (
-    <div className="settings-content">
-      <div className="settings-section">
-        <h3 className="section-title">Email Notifications</h3>
-        <div className="notification-item">
-          <div className="notification-info">
-            <h4 className="notification-title">System Alerts</h4>
-            <p className="notification-description">Critical system notifications and updates</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" defaultChecked />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-        <div className="notification-item">
-          <div className="notification-info">
-            <h4 className="notification-title">Device Status Changes</h4>
-            <p className="notification-description">Notifications when device status changes</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" defaultChecked />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-        <div className="notification-item">
-          <div className="notification-info">
-            <h4 className="notification-title">Problem Reports</h4>
-            <p className="notification-description">New problem reports from users</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" defaultChecked />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-        <div className="notification-item">
-          <div className="notification-info">
-            <h4 className="notification-title">Contact Messages</h4>
-            <p className="notification-description">New contact form submissions</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
 
-      <div className="settings-section">
-        <h3 className="section-title">In-App Notifications</h3>
-        <div className="notification-item">
-          <div className="notification-info">
-            <h4 className="notification-title">Desktop Notifications</h4>
-            <p className="notification-description">Show browser notifications</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-        <div className="notification-item">
-          <div className="notification-info">
-            <h4 className="notification-title">Sound Alerts</h4>
-            <p className="notification-description">Play sound for important notifications</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSystemSettings = () => (
-    <div className="settings-content">
-      <div className="settings-section">
-        <h3 className="section-title">Data Management</h3>
-        <div className="system-item">
-          <div className="system-info">
-            <h4 className="system-title">Export Data</h4>
-            <p className="system-description">Download all system data as CSV/JSON</p>
-          </div>
-          <button className="btn-secondary">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-        </div>
-        <div className="system-item">
-          <div className="system-info">
-            <h4 className="system-title">Import Data</h4>
-            <p className="system-description">Upload data from CSV/JSON files</p>
-          </div>
-          <button className="btn-secondary">
-            <Upload className="w-4 h-4" />
-            Import
-          </button>
-        </div>
-        <div className="system-item">
-          <div className="system-info">
-            <h4 className="system-title">Database Backup</h4>
-            <p className="system-description">Create a complete system backup</p>
-          </div>
-          <button className="btn-secondary">
-            <Database className="w-4 h-4" />
-            Backup
-          </button>
-        </div>
-      </div>
-
-      <div className="settings-section">
-        <h3 className="section-title">System Preferences</h3>
-        <div className="form-group">
-          <label className="form-label">Default Dashboard View</label>
-          <select className="form-select">
-            <option value="overview">Overview</option>
-            <option value="devices" selected>Devices</option>
-            <option value="problems">Problems</option>
-            <option value="analytics">Analytics</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Items Per Page</label>
-          <select className="form-select">
-            <option value="10">10 items</option>
-            <option value="25" selected>25 items</option>
-            <option value="50">50 items</option>
-            <option value="100">100 items</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Auto-refresh Interval</label>
-          <select className="form-select">
-            <option value="30">30 seconds</option>
-            <option value="60" selected>1 minute</option>
-            <option value="300">5 minutes</option>
-            <option value="0">Disabled</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="settings-section">
-        <h3 className="section-title">Maintenance</h3>
-        <div className="system-item">
-          <div className="system-info">
-            <h4 className="system-title">Clear Cache</h4>
-            <p className="system-description">Clear application cache and temporary files</p>
-          </div>
-          <button className="btn-secondary">
-            Clear Cache
-          </button>
-        </div>
-        <div className="system-item">
-          <div className="system-info">
-            <h4 className="system-title">System Logs</h4>
-            <p className="system-description">View and download system logs</p>
-          </div>
-          <button className="btn-secondary">
-            View Logs
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
   const renderContent = () => {
     switch (activeTab) {
@@ -366,10 +163,6 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         return renderAccountSettings();
       case 'security':
         return renderSecuritySettings();
-      case 'notifications':
-        return renderNotificationSettings();
-      case 'system':
-        return renderSystemSettings();
       default:
         return renderAccountSettings();
     }
