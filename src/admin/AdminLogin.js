@@ -300,17 +300,18 @@ const AdminLogin = () => {
 
       {/* Forgot Password Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">
+        <div className="modal-bg" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="modal-header-new">
+              <h2 className="modal-title-new">
                 {forgotPasswordStep === 'email' && 'Reset Password'}
                 {forgotPasswordStep === 'otp' && 'Verify Your Email'}
                 {forgotPasswordStep === 'password' && 'Create New Password'}
                 {forgotPasswordStep === 'success' && 'Success!'}
               </h2>
               <button
-                className="modal-close"
+                className="modal-close-new"
                 onClick={() => {
                   setIsModalOpen(false);
                   resetForgotPasswordModal();
@@ -319,34 +320,34 @@ const AdminLogin = () => {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
-            <div className="modal-body">
+
+            {/* Content */}
+            <div className="modal-body-new">
               {forgotPasswordStep === 'email' && (
-                <div className="forgot-step">
-                  <div className="step-icon email-step-icon">
-                    <Mail className="icon" />
+                <div className="step-content">
+                  <div className="step-icon-new email-icon-new">
+                    <Mail className="h-8 w-8" />
                   </div>
-                  <p className="step-description">
+                  <p className="step-text">
                     Enter your email address and we'll send you a verification code to reset your password.
                   </p>
                   
-                  <div className="form-group">
-                    <label htmlFor="forgot-email" className="form-label">Email Address</label>
+                  <div className="input-group">
+                    <label className="input-label">Email Address</label>
                     <input
-                      id="forgot-email"
                       type="email"
                       placeholder="admin@ecocharge.com"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
                       required
-                      className="form-input"
+                      className="input-field"
                     />
                   </div>
 
-                  <div className="modal-buttons">
+                  <div className="button-group">
                     <button
                       type="button"
-                      className="modal-button secondary"
+                      className="btn-cancel"
                       onClick={() => setIsModalOpen(false)}
                       disabled={isResetting}
                     >
@@ -354,50 +355,42 @@ const AdminLogin = () => {
                     </button>
                     <button
                       type="button"
-                      className="modal-button primary"
+                      className="btn-primary"
                       onClick={handleSendOtp}
                       disabled={isResetting}
                     >
-                      {isResetting ? (
-                        <>
-                          <div className="loading-spinner"></div>
-                          <span>Sending...</span>
-                        </>
-                      ) : (
-                        'Send OTP'
-                      )}
+                      {isResetting ? 'Sending...' : 'Send OTP'}
                     </button>
                   </div>
                 </div>
               )}
 
               {forgotPasswordStep === 'otp' && (
-                <div className="forgot-step">
-                  <div className="step-icon">
-                    <Shield className="icon" />
+                <div className="step-content">
+                  <div className="step-icon-new otp-icon-new">
+                    <Shield className="h-8 w-8" />
                   </div>
-                  <p className="step-description">
+                  <p className="step-text">
                     We've sent a 6-digit verification code to {forgotEmail}. Please enter it below.
                   </p>
                   
-                  <div className="form-group">
-                    <label htmlFor="otp-code" className="form-label">Verification Code</label>
+                  <div className="input-group">
+                    <label className="input-label">Verification Code</label>
                     <input
-                      id="otp-code"
                       type="text"
                       placeholder="Enter 6-digit code"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       maxLength={6}
-                      className="form-input otp-input"
+                      className="input-field otp-input"
                       required
                     />
                   </div>
 
-                  <div className="modal-buttons">
+                  <div className="button-group">
                     <button
                       type="button"
-                      className="modal-button secondary"
+                      className="btn-cancel"
                       onClick={() => setForgotPasswordStep('email')}
                       disabled={isResetting}
                     >
@@ -406,22 +399,15 @@ const AdminLogin = () => {
                     </button>
                     <button
                       type="button"
-                      className="modal-button primary"
+                      className="btn-primary"
                       onClick={handleVerifyOtp}
                       disabled={isResetting}
                     >
-                      {isResetting ? (
-                        <>
-                          <div className="loading-spinner"></div>
-                          <span>Verifying...</span>
-                        </>
-                      ) : (
-                        'Verify Code'
-                      )}
+                      {isResetting ? 'Verifying...' : 'Verify Code'}
                     </button>
                   </div>
 
-                  <div className="resend-container">
+                  <div className="resend-section">
                     <button
                       type="button"
                       className="resend-link"
@@ -435,29 +421,28 @@ const AdminLogin = () => {
               )}
 
               {forgotPasswordStep === 'password' && (
-                <div className="forgot-step">
-                  <div className="step-icon password-step-icon">
-                    <Lock className="icon" />
+                <div className="step-content">
+                  <div className="step-icon-new password-icon-new">
+                    <Lock className="h-8 w-8" />
                   </div>
-                  <p className="step-description">
+                  <p className="step-text">
                     Create a new password for your admin account. Make sure it's strong and secure.
                   </p>
                   
-                  <div className="form-group">
-                    <label htmlFor="new-password" className="form-label">New Password</label>
-                    <div className="password-container">
+                  <div className="input-group">
+                    <label className="input-label">New Password</label>
+                    <div className="password-field">
                       <input
-                        id="new-password"
                         type={showNewPassword ? "text" : "password"}
                         placeholder="Enter new password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
-                        className="form-input"
+                        className="input-field"
                       />
                       <button
                         type="button"
-                        className="password-toggle"
+                        className="password-toggle-btn"
                         onClick={() => setShowNewPassword(!showNewPassword)}
                       >
                         {showNewPassword ? (
@@ -469,21 +454,20 @@ const AdminLogin = () => {
                     </div>
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="confirm-password" className="form-label">Confirm Password</label>
-                    <div className="password-container">
+                  <div className="input-group">
+                    <label className="input-label">Confirm Password</label>
+                    <div className="password-field">
                       <input
-                        id="confirm-password"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm new password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
-                        className="form-input"
+                        className="input-field"
                       />
                       <button
                         type="button"
-                        className="password-toggle"
+                        className="password-toggle-btn"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? (
@@ -495,7 +479,7 @@ const AdminLogin = () => {
                     </div>
                   </div>
 
-                  <div className="password-requirements">
+                  <div className="password-rules">
                     <p>Password requirements:</p>
                     <ul>
                       <li>At least 8 characters long</li>
@@ -504,10 +488,10 @@ const AdminLogin = () => {
                     </ul>
                   </div>
 
-                  <div className="modal-buttons">
+                  <div className="button-group">
                     <button
                       type="button"
-                      className="modal-button secondary"
+                      className="btn-cancel"
                       onClick={() => setForgotPasswordStep('otp')}
                       disabled={isResetting}
                     >
@@ -516,37 +500,30 @@ const AdminLogin = () => {
                     </button>
                     <button
                       type="button"
-                      className="modal-button primary"
+                      className="btn-primary"
                       onClick={handleResetPassword}
                       disabled={isResetting}
                     >
-                      {isResetting ? (
-                        <>
-                          <div className="loading-spinner"></div>
-                          <span>Resetting...</span>
-                        </>
-                      ) : (
-                        'Reset Password'
-                      )}
+                      {isResetting ? 'Resetting...' : 'Reset Password'}
                     </button>
                   </div>
                 </div>
               )}
 
               {forgotPasswordStep === 'success' && (
-                <div className="success-step">
-                  <div className="step-icon success-icon">
-                    <CheckCircle className="icon" />
+                <div className="step-content">
+                  <div className="step-icon-new success-icon-new">
+                    <CheckCircle className="h-8 w-8" />
                   </div>
                   
                   <h3 className="success-title">Password Reset Successful!</h3>
-                  <p className="step-description">
+                  <p className="step-text">
                     Your admin password has been successfully reset. You can now use your new password to sign in.
                   </p>
 
                   <button
                     type="button"
-                    className="modal-button primary full-width"
+                    className="btn-primary btn-full"
                     onClick={() => {
                       setIsModalOpen(false);
                       resetForgotPasswordModal();
