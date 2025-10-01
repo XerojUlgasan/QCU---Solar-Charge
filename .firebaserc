@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "qcu---ecocharge",
+    "QCU-EcoCharge": "qcu-ecocharge",
+    "ok": "qcu---ecocharge"
+  },
+  "targets": {},
+  "etags": {}
+}
