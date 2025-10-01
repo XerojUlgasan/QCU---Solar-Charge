@@ -168,12 +168,127 @@ export const changeAdminPassword = async (current_password, new_password) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const sendOtp = async (email) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/sentOtp';
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/sendOtp';
     const data = {
         email
     };
     
     console.log('=== API SEND OTP DEBUG ===');
+    console.log('URL:', url);
+    console.log('Data being sent:', data);
+    console.log('Data JSON string:', JSON.stringify(data));
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log('API Response received');
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        // Handle 404 error - endpoint doesn't exist
+        if (response.status === 404) {
+            console.warn('⚠️ API endpoint /admin/sendOtp not found (404)');
+            console.warn('Backend needs to implement this endpoint');
+            
+            // Only use demo mode for specific test emails
+            const testEmails = ['admin@ecocharge.com', 'test@admin.com', 'demo@admin.com'];
+            if (testEmails.includes(email.toLowerCase())) {
+                // Generate demo OTP only for test emails
+                const demoOtp = generateDemoOtp();
+                console.log('🎯 Generated demo OTP for test email:', demoOtp);
+                
+                // Return a mock response for development
+                const mockResponse = new Response(JSON.stringify({
+                    success: true,
+                    message: 'OTP endpoint not implemented yet - using demo mode for test email',
+                    otp: demoOtp,
+                    demo: true
+                }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                console.log('📤 Returning mock response with status 200');
+                return mockResponse;
+            } else {
+                // For non-test emails, return proper 404 error
+                console.log('❌ Email not found in system:', email);
+                return response;
+            }
+        }
+        
+        return response;
+    } catch (error) {
+        console.error('API Fetch Error:', error);
+        throw error;
+    }
+};
+
+// Generate demo OTP for development
+const generateDemoOtp = () => {
+    const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let otp = '';
+    for (let i = 0; i < 6; i++) {
+        otp += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return otp;
+};
+
+/**
+ * Verify OTP for admin password reset
+ * @param {string} otp - OTP code to verify
+ * @param {string} email - Admin email address
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const verifyOtp = async (otp, email) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/verifyOtp';
+    const data = {
+        otp,
+        email
+    };
+    
+    console.log('=== API VERIFY OTP DEBUG ===');
+    console.log('URL:', url);
+    console.log('Data being sent:', data);
+    console.log('Data JSON string:', JSON.stringify(data));
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log('API Response received');
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        return response;
+    } catch (error) {
+        console.error('API Fetch Error:', error);
+        throw error;
+    }
+};
+
+export const changePassword = async (otp, email, newPassword) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/changePassword';
+    const data = {
+        otp,
+        email,
+        new_password: newPassword
+    };
+    
+    console.log('=== API CHANGE PASSWORD DEBUG ===');
     console.log('URL:', url);
     console.log('Data being sent:', data);
     console.log('Data JSON string:', JSON.stringify(data));

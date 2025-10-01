@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap, Mail, Lock, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { sendOtp, verifyOtp, changePassword } from '../utils/api';
 import logo from '../logo.svg';
 import '../styles/AdminLogin.css';
 
@@ -10,6 +11,8 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const { adminLogin, loading } = useAdminAuth();
+
+  // State declarations
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -27,6 +30,40 @@ const AdminLogin = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sentOtp, setSentOtp] = useState(''); // Store the generated OTP for verification
+  const [resendTimer, setResendTimer] = useState(0); // Timer for resend functionality
+
+  // Handle browser extension errors
+  React.useEffect(() => {
+    const handleUnhandledRejection = (event) => {
+      // Check if it's a browser extension error
+      if (event.reason && event.reason.message && 
+          event.reason.message.includes('listener indicated an asynchronous response')) {
+        console.warn('Browser extension communication error detected:', event.reason.message);
+        // Prevent the error from showing in console
+        event.preventDefault();
+        return false;
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  // Handle resend timer
+  React.useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,6 +131,7 @@ const AdminLogin = () => {
     setNewPassword('');
     setConfirmPassword('');
     setSentOtp('');
+    setResendTimer(0);
     setIsResetting(false);
   };
 
@@ -113,20 +151,74 @@ const AdminLogin = () => {
     setIsResetting(true);
 
     try {
-      // Mock OTP generation and sending
-      setTimeout(() => {
-        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        setSentOtp(generatedOtp);
+      console.log('=== ADMIN LOGIN OTP SEND DEBUG ===');
+      console.log('Sending OTP to:', forgotEmail);
+      
+      const response = await sendOtp(forgotEmail);
+      
+      console.log('OTP Response status:', response.status);
+      console.log('OTP Response ok:', response.ok);
+      console.log('OTP Response type:', typeof response);
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('OTP Response data:', responseData);
         
-        // In a real app, this would send an email with the OTP
-        showSuccess(`OTP sent to ${forgotEmail}. Demo OTP: ${generatedOtp}`);
+        // Check if response indicates invalid email even with 200 status
+        if (responseData.success === false && responseData.message === 'Invalid email') {
+          console.log('Response indicates invalid email despite 200 status');
+          showError('Invalid email address or email not found in our system.');
+          setIsResetting(false);
+          return;
+        }
+        
+        // If the API returns an OTP, store it for verification
+        if (responseData.otp) {
+          setSentOtp(responseData.otp);
+          console.log('Stored OTP for verification:', responseData.otp);
+        }
+        
+        // Show different message for demo mode
+        if (responseData.demo) {
+          showSuccess(`Demo OTP generated: ${responseData.otp}. Backend endpoint not implemented yet.`);
+        } else {
+          showSuccess(`Email accepted! OTP sent successfully to ${forgotEmail}. Please check your email and spam folder.`);
+        }
+        
         setForgotPasswordStep('otp');
+        setResendTimer(60); // Start 60-second timer
         setIsResetting(false);
-      }, 2000);
+      } else {
+        const errorData = await response.text();
+        console.error('Send OTP failed:', response.status, errorData);
+        
+        if (response.status === 400) {
+          showError('Invalid email address or email not found in our system.');
+        } else if (response.status === 401) {
+          showError('Invalid email address or email not found in our system.');
+        } else if (response.status === 404) {
+          showError('Email address not found in our system.');
+        } else if (response.status === 500) {
+          showError('Server error. Please try again later.');
+        } else {
+          showError(`Failed to send OTP. Status: ${response.status}`);
+        }
+        setIsResetting(false);
+      }
     } catch (error) {
-      showError('Failed to send OTP. Please try again.');
+      console.error('Error sending OTP:', error);
+      showError('Network error. Please check your connection and try again.');
       setIsResetting(false);
     }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) {
+      showError(`Please wait ${resendTimer} seconds before requesting another OTP`);
+      return;
+    }
+
+    await handleSendOtp();
   };
 
   const handleVerifyOtp = async () => {
@@ -135,18 +227,61 @@ const AdminLogin = () => {
       return;
     }
 
-    if (otpCode !== sentOtp) {
-      showError('Invalid OTP code. Please try again.');
+    if (!forgotEmail) {
+      showError('Email not found. Please restart the process.');
       return;
     }
 
     setIsResetting(true);
 
-    setTimeout(() => {
+    try {
+      console.log('=== ADMIN LOGIN OTP VERIFY DEBUG ===');
+      console.log('Verifying OTP:', otpCode);
+      console.log('For email:', forgotEmail);
+      
+      const response = await verifyOtp(otpCode, forgotEmail);
+      
+      console.log('Verify Response status:', response.status);
+      console.log('Verify Response ok:', response.ok);
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Verify Response data:', responseData);
+        console.log('=== OTP VERIFY SUCCESS ===');
+        
       showSuccess('OTP verified successfully!');
       setForgotPasswordStep('password');
+        setIsResetting(false);
+      } else {
+        const errorData = await response.text();
+        console.error('Verify OTP failed:', response.status, errorData);
+        
+        if (response.status === 400) {
+          showError('Invalid OTP code. Please check your code and try again.');
+        } else if (response.status === 401) {
+          showError('Invalid OTP code. Please check your code and try again.');
+        } else if (response.status === 404) {
+          showError('OTP not found or expired. Please request a new one.');
+        } else if (response.status === 500) {
+          // Check if it's actually a wrong OTP by looking at response content
+          if (errorData.toLowerCase().includes('invalid') || 
+              errorData.toLowerCase().includes('wrong') || 
+              errorData.toLowerCase().includes('incorrect') ||
+              errorData.toLowerCase().includes('otp')) {
+            showError('Invalid OTP code. Please check your code and try again.');
+          } else {
+            showError('Server error. Please try again later.');
+          }
+        } else {
+          showError(`Failed to verify OTP. Status: ${response.status}`);
+        }
+        setIsResetting(false);
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      showError('Network error. Please check your connection and try again.');
       setIsResetting(false);
-    }, 1000);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -160,6 +295,14 @@ const AdminLogin = () => {
       return;
     }
 
+    // Check if password contains both letters and numbers
+    const hasLetter = /[a-zA-Z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+    if (!hasLetter || !hasNumber) {
+      showError('Password must contain both letters and numbers');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       showError('Passwords do not match');
       return;
@@ -168,14 +311,42 @@ const AdminLogin = () => {
     setIsResetting(true);
 
     try {
-      // Mock password reset
-      setTimeout(() => {
+      console.log('=== ADMIN LOGIN CHANGE PASSWORD DEBUG ===');
+      console.log('Changing password for email:', forgotEmail);
+      console.log('Using OTP:', otpCode);
+      console.log('New password:', newPassword);
+      
+      const response = await changePassword(otpCode, forgotEmail, newPassword);
+      
+      console.log('Change Password Response status:', response.status);
+      console.log('Change Password Response ok:', response.ok);
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Change Password Response data:', responseData);
+        console.log('=== CHANGE PASSWORD SUCCESS ===');
+        
         showSuccess('Password reset successfully!');
         setForgotPasswordStep('success');
         setIsResetting(false);
-      }, 2000);
+      } else {
+        const errorData = await response.text();
+        console.error('Change Password failed:', response.status, errorData);
+        
+        if (response.status === 400) {
+          showError('Invalid OTP or password requirements not met. Please try again.');
+        } else if (response.status === 404) {
+          showError('OTP expired or not found. Please request a new one.');
+        } else if (response.status === 500) {
+          showError('Server error. Please try again later.');
+        } else {
+          showError(`Failed to reset password. Status: ${response.status}`);
+        }
+        setIsResetting(false);
+      }
     } catch (error) {
-      showError('Failed to reset password. Please try again.');
+      console.error('Error changing password:', error);
+      showError('Network error. Please check your connection and try again.');
       setIsResetting(false);
     }
   };
@@ -211,11 +382,11 @@ const AdminLogin = () => {
             <div className="card-content">
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label htmlFor="username" className="form-label">Username</label>
+                  <label htmlFor="username" className="form-label">Username or Email</label>
                   <input
                     id="username"
                     type="text"
-                    placeholder="Enter your username"
+                    placeholder="Enter your username or email"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     required
@@ -300,8 +471,8 @@ const AdminLogin = () => {
 
       {/* Forgot Password Modal */}
       {isModalOpen && (
-        <div className="modal-bg" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-bg">
+          <div className="modal-box">
             {/* Header */}
             <div className="modal-header-new">
               <h2 className="modal-title-new">
@@ -347,14 +518,6 @@ const AdminLogin = () => {
                   <div className="button-group">
                     <button
                       type="button"
-                      className="btn-cancel"
-                      onClick={() => setIsModalOpen(false)}
-                      disabled={isResetting}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
                       className="btn-primary"
                       onClick={handleSendOtp}
                       disabled={isResetting}
@@ -371,32 +534,62 @@ const AdminLogin = () => {
                     <Shield className="h-8 w-8" />
                   </div>
                   <p className="step-text">
-                    We've sent a 6-digit verification code to {forgotEmail}. Please enter it below.
+                    We've sent a 6-character verification code to {forgotEmail}. Please enter it below.
                   </p>
                   
                   <div className="input-group">
                     <label className="input-label">Verification Code</label>
+                    <div className="otp-container">
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
                     <input
+                          key={index}
                       type="text"
-                      placeholder="Enter 6-digit code"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      maxLength={6}
-                      className="input-field otp-input"
+                          className="otp-input-box"
+                          value={otpCode[index] || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                            if (value.length <= 1) {
+                              const newOtp = otpCode.split('');
+                              newOtp[index] = value;
+                              setOtpCode(newOtp.join(''));
+                              
+                              // Auto-focus next box
+                              if (value && index < 5) {
+                                const nextBox = document.querySelector(`.otp-input-box:nth-child(${index + 2})`);
+                                if (nextBox) nextBox.focus();
+                              }
+                            }
+                          }}
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            const pastedData = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '');
+                            if (pastedData.length >= 6) {
+                              // Fill all boxes with pasted data
+                              const otpArray = pastedData.substring(0, 6).split('');
+                              setOtpCode(otpArray.join(''));
+                              
+                              // Focus the last box
+                              setTimeout(() => {
+                                const lastBox = document.querySelector(`.otp-input-box:nth-child(6)`);
+                                if (lastBox) lastBox.focus();
+                              }, 0);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            // Handle backspace
+                            if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
+                              const prevBox = document.querySelector(`.otp-input-box:nth-child(${index})`);
+                              if (prevBox) prevBox.focus();
+                            }
+                          }}
+                          maxLength={1}
                       required
                     />
+                      ))}
+                    </div>
                   </div>
 
                   <div className="button-group">
-                    <button
-                      type="button"
-                      className="btn-cancel"
-                      onClick={() => setForgotPasswordStep('email')}
-                      disabled={isResetting}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back
-                    </button>
                     <button
                       type="button"
                       className="btn-primary"
@@ -411,10 +604,13 @@ const AdminLogin = () => {
                     <button
                       type="button"
                       className="resend-link"
-                      onClick={handleSendOtp}
-                      disabled={isResetting}
+                      onClick={handleResendOtp}
+                      disabled={isResetting || resendTimer > 0}
                     >
-                      Didn't receive the code? Resend OTP
+                      {resendTimer > 0 
+                        ? `Resend OTP in ${resendTimer}s` 
+                        : "Didn't receive the code? Resend OTP"
+                      }
                     </button>
                   </div>
                 </div>
@@ -452,6 +648,7 @@ const AdminLogin = () => {
                         )}
                       </button>
                     </div>
+                    <p className="input-help">Password must be at least 8 characters and contain both letters and numbers</p>
                   </div>
 
                   <div className="input-group">
@@ -489,15 +686,6 @@ const AdminLogin = () => {
                   </div>
 
                   <div className="button-group">
-                    <button
-                      type="button"
-                      className="btn-cancel"
-                      onClick={() => setForgotPasswordStep('otp')}
-                      disabled={isResetting}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back
-                    </button>
                     <button
                       type="button"
                       className="btn-primary"
@@ -539,6 +727,115 @@ const AdminLogin = () => {
       )}
     </div>
   );
+};
+
+// Test functions for debugging - can be called from browser console
+window.testOtpApi = async (email) => {
+  console.log('=== MANUAL SEND OTP TEST ===');
+  console.log('Testing with email:', email);
+  
+  try {
+    const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/sendOtp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+    
+    console.log('Test Response Status:', response.status);
+    console.log('Test Response OK:', response.ok);
+    console.log('Test Response Headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Test Response Data:', data);
+      console.log('✅ SEND OTP TEST SUCCESS');
+      return { success: true, data };
+    } else {
+      const errorText = await response.text();
+      console.log('Test Error Response:', errorText);
+      console.log('❌ SEND OTP TEST FAILED');
+      return { success: false, status: response.status, error: errorText };
+    }
+  } catch (error) {
+    console.error('Test Network Error:', error);
+    console.log('❌ SEND OTP TEST NETWORK ERROR');
+    return { success: false, error: error.message };
+  }
+};
+
+window.testVerifyOtpApi = async (otp, email) => {
+  console.log('=== MANUAL VERIFY OTP TEST ===');
+  console.log('Testing OTP:', otp);
+  console.log('Testing email:', email);
+  
+  try {
+    const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/verifyOtp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ otp, email })
+    });
+    
+    console.log('Test Response Status:', response.status);
+    console.log('Test Response OK:', response.ok);
+    console.log('Test Response Headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Test Response Data:', data);
+      console.log('✅ VERIFY OTP TEST SUCCESS');
+      return { success: true, data };
+    } else {
+      const errorText = await response.text();
+      console.log('Test Error Response:', errorText);
+      console.log('❌ VERIFY OTP TEST FAILED');
+      return { success: false, status: response.status, error: errorText };
+    }
+  } catch (error) {
+    console.error('Test Network Error:', error);
+    console.log('❌ VERIFY OTP TEST NETWORK ERROR');
+    return { success: false, error: error.message };
+  }
+};
+
+window.testChangePasswordApi = async (otp, email, newPassword) => {
+  console.log('=== MANUAL CHANGE PASSWORD TEST ===');
+  console.log('Testing OTP:', otp);
+  console.log('Testing email:', email);
+  console.log('Testing new password:', newPassword);
+  
+  try {
+    const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/changePassword', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ otp, email, new_password: newPassword })
+    });
+    
+    console.log('Test Response Status:', response.status);
+    console.log('Test Response OK:', response.ok);
+    console.log('Test Response Headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Test Response Data:', data);
+      console.log('✅ CHANGE PASSWORD TEST SUCCESS');
+      return { success: true, data };
+    } else {
+      const errorText = await response.text();
+      console.log('Test Error Response:', errorText);
+      console.log('❌ CHANGE PASSWORD TEST FAILED');
+      return { success: false, status: response.status, error: errorText };
+    }
+  } catch (error) {
+    console.error('Test Network Error:', error);
+    console.log('❌ CHANGE PASSWORD TEST NETWORK ERROR');
+    return { success: false, error: error.message };
+  }
 };
 
 export default AdminLogin;

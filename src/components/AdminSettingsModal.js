@@ -20,6 +20,26 @@ import '../styles/AdminSettingsModal.css';
 const AdminSettingsModal = ({ isOpen, onClose }) => {
   const { showSuccess } = useNotification();
   const { admin } = useAdminAuth();
+
+  // Handle browser extension errors
+  React.useEffect(() => {
+    const handleUnhandledRejection = (event) => {
+      // Check if it's a browser extension error
+      if (event.reason && event.reason.message && 
+          event.reason.message.includes('listener indicated an asynchronous response')) {
+        console.warn('Browser extension communication error detected:', event.reason.message);
+        // Prevent the error from showing in console
+        event.preventDefault();
+        return false;
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
   const [activeTab, setActiveTab] = useState('account');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -433,7 +453,7 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         const responseData = await response.json();
         console.log('OTP Response data:', responseData);
         console.log('=== OTP SEND SUCCESS ===');
-        setForgotPasswordSuccess('OTP sent successfully! Please check your email for the verification code.');
+        setForgotPasswordSuccess('OTP sent successfully! Please check your email for the 6-character verification code.');
         setForgotPasswordEmail('');
       } else {
         const errorData = await response.text();
