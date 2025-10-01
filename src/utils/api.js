@@ -17,6 +17,7 @@ export const authenticatedFetch = async (url, options = {}) => {
     // Add JWT token if user is authenticated
     if (user) {
         try {
+            
             const token = await user.getIdToken();
             headers['Authorization'] = `Bearer ${token}`;
             console.log('JWT token added to request');
@@ -96,5 +97,67 @@ export const postContact = async (from, subject, message, photo_url) => {
         message,
         photo_url
     };
+    return authenticatedPost(url, data);
+};
+
+/**
+ * Get admin information
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const getAdminInformation = async () => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/getAdminInformation';
+    return authenticatedGet(url);
+};
+
+/**
+ * Set admin information
+ * @param {string} full_name - Admin's full name
+ * @param {string} primary_email - Admin's primary email
+ * @param {string} backup_email - Admin's backup email
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const setAdminInformation = async (full_name, primary_email, backup_email) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/setAdminInformation';
+    const data = {
+        full_name,
+        primary_email,
+        backup_email
+    };
+    console.log('setAdminInformation API call:', { url, data });
+    console.log('Backup email value:', backup_email);
+    console.log('Backup email type:', typeof backup_email);
+    console.log('Backup email length:', backup_email ? backup_email.length : 'null/undefined');
+    return authenticatedPost(url, data);
+};
+
+/**
+ * Change admin username
+ * @param {string} new_username - New username
+ * @param {string} current_password - Current password for verification
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const changeAdminUsername = async (new_username, current_password) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/changeAdminUsername';
+    const data = {
+        new_username,
+        current_password
+    };
+    console.log('changeAdminUsername API call:', { url, data });
+    return authenticatedPost(url, data);
+};
+
+/**
+ * Change admin password
+ * @param {string} current_password - Current password for verification
+ * @param {string} new_password - New password
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const changeAdminPassword = async (current_password, new_password) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/changeAdminPassword';
+    const data = {
+        current_password,
+        new_password
+    };
+    console.log('changeAdminPassword API call:', { url, data });
     return authenticatedPost(url, data);
 };
