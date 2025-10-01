@@ -197,7 +197,7 @@ const AdminDashboard = () => {
           devices: data.devices || [],
           active_devices: data.active_devices || activeDevices,
           total_devices: data.total_devices || (data.devices ? data.devices.length : 0),
-          power_output: data.power_output || aggregatePower
+          power_output: aggregatePower
         };
         
         setOverviewData(mappedData);
