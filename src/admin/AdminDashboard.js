@@ -615,15 +615,43 @@ const AdminDashboard = () => {
     return "Unknown time";
   };
 
-  // Use transactions from API data, limit to 6 most recent
-  const recentTransactions = overviewData.transactions.slice(0, 6).map((transaction, index) => ({
-    id: transaction.id || `TXN-${index + 1}`,
-    user: transaction.user || transaction.email || "Unknown User",
-    station: transaction.station || transaction.device_id || "Unknown Station",
-    amount: transaction.amount || "₱0.00",
-    type: transaction.type || "payment",
-    time: formatTransactionTime(transaction.time || transaction.timestamp || transaction.date_time)
-  }));
+  // Use transactions from API data, sort by most recent first, then limit to 6 most recent
+  const recentTransactions = overviewData.transactions
+    .sort((a, b) => {
+      // Sort by timestamp (most recent first)
+      const timeA = a.time || a.timestamp || a.date_time;
+      const timeB = b.time || b.timestamp || b.date_time;
+      
+      // Handle different timestamp formats
+      let dateA, dateB;
+      
+      if (timeA?.seconds) {
+        dateA = new Date(timeA.seconds * 1000);
+      } else if (timeA) {
+        dateA = new Date(timeA);
+      } else {
+        dateA = new Date(0); // Fallback to epoch
+      }
+      
+      if (timeB?.seconds) {
+        dateB = new Date(timeB.seconds * 1000);
+      } else if (timeB) {
+        dateB = new Date(timeB);
+      } else {
+        dateB = new Date(0); // Fallback to epoch
+      }
+      
+      return dateB - dateA; // Most recent first
+    })
+    .slice(0, 6)
+    .map((transaction, index) => ({
+      id: transaction.id || `TXN-${index + 1}`,
+      user: transaction.user || transaction.email || "Unknown User",
+      station: transaction.station || transaction.device_id || "Unknown Station",
+      amount: transaction.amount || "₱0.00",
+      type: transaction.type || "payment",
+      time: formatTransactionTime(transaction.time || transaction.timestamp || transaction.date_time)
+    }));
 
   const getStatusColor = (status) => {
     // Normalize status to lowercase for comparison
@@ -654,23 +682,68 @@ const AdminDashboard = () => {
       station: transaction.station || transaction.device_id || "Unknown Station",
       amount: transaction.amount || "₱0.00",
       type: transaction.type || "payment",
-      time: formatTransactionTime(transaction.time || transaction.timestamp || transaction.date_time)
+      time: formatTransactionTime(transaction.time || transaction.timestamp || transaction.date_time),
+      // Keep original timestamp for proper sorting
+      originalTime: transaction.time || transaction.timestamp || transaction.date_time
     }));
     
     let filtered = [...allTransactions];
     
     switch (transactionsFilter) {
       case 'newest':
-        // Sort by time (newest first) - assuming time is in a sortable format
+        // Sort by actual date_time (newest first)
         filtered.sort((a, b) => {
-          // Simple string comparison for time - you might need to adjust this
-          return b.time.localeCompare(a.time);
+          const timeA = a.originalTime;
+          const timeB = b.originalTime;
+          
+          // Handle different timestamp formats
+          let dateA, dateB;
+          
+          if (timeA?.seconds) {
+            dateA = new Date(timeA.seconds * 1000);
+          } else if (timeA) {
+            dateA = new Date(timeA);
+          } else {
+            dateA = new Date(0); // Fallback to epoch
+          }
+          
+          if (timeB?.seconds) {
+            dateB = new Date(timeB.seconds * 1000);
+          } else if (timeB) {
+            dateB = new Date(timeB);
+          } else {
+            dateB = new Date(0); // Fallback to epoch
+          }
+          
+          return dateB - dateA; // Most recent first
         });
         break;
       case 'oldest':
-        // Sort by time (oldest first)
+        // Sort by actual date_time (oldest first)
         filtered.sort((a, b) => {
-          return a.time.localeCompare(b.time);
+          const timeA = a.originalTime;
+          const timeB = b.originalTime;
+          
+          // Handle different timestamp formats
+          let dateA, dateB;
+          
+          if (timeA?.seconds) {
+            dateA = new Date(timeA.seconds * 1000);
+          } else if (timeA) {
+            dateA = new Date(timeA);
+          } else {
+            dateA = new Date(0); // Fallback to epoch
+          }
+          
+          if (timeB?.seconds) {
+            dateB = new Date(timeB.seconds * 1000);
+          } else if (timeB) {
+            dateB = new Date(timeB);
+          } else {
+            dateB = new Date(0); // Fallback to epoch
+          }
+          
+          return dateA - dateB; // Oldest first
         });
         break;
       case 'highest':
