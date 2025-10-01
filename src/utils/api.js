@@ -161,3 +161,40 @@ export const changeAdminPassword = async (current_password, new_password) => {
     console.log('changeAdminPassword API call:', { url, data });
     return authenticatedPost(url, data);
 };
+
+/**
+ * Send OTP for admin password reset
+ * @param {string} email - Admin email address
+ * @returns {Promise<Response>} - Fetch response
+ */
+export const sendOtp = async (email) => {
+    const url = 'https://api-qcusolarcharge.up.railway.app/admin/sentOtp';
+    const data = {
+        email
+    };
+    
+    console.log('=== API SEND OTP DEBUG ===');
+    console.log('URL:', url);
+    console.log('Data being sent:', data);
+    console.log('Data JSON string:', JSON.stringify(data));
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log('API Response received');
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        return response;
+    } catch (error) {
+        console.error('API Fetch Error:', error);
+        throw error;
+    }
+};

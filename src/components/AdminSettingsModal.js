@@ -12,7 +12,7 @@ import {
   Loader2,
   UserCheck
 } from 'lucide-react';
-import { getAdminInformation, setAdminInformation, changeAdminUsername, changeAdminPassword } from '../utils/api';
+import { getAdminInformation, setAdminInformation, changeAdminUsername, changeAdminPassword, sendOtp } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/AdminSettingsModal.css';
@@ -43,6 +43,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   
+  // Forgot password state
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [forgotPasswordError, setForgotPasswordError] = useState('');
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
+  
   // Confirmation modals
   const [showUsernameConfirmation, setShowUsernameConfirmation] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
@@ -69,6 +75,14 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     { id: 'security', label: 'Security', icon: <Shield className="w-5 h-5" /> }
   ];
 
+  // Reset forgot password state when switching to security tab
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    if (tabId === 'security') {
+      resetForgotPasswordState();
+    }
+  };
+
   // Load admin information when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -77,6 +91,9 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
       if (admin?.username) {
         setCurrentUsername(admin.username);
       }
+    } else {
+      // Reset forgot password state when modal closes
+      resetForgotPasswordState();
     }
   }, [isOpen, admin]);
 
@@ -377,6 +394,113 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     setShowPasswordConfirmation(false);
   };
 
+  // Forgot password functions
+  const handleForgotPasswordEmailChange = (value) => {
+    setForgotPasswordEmail(value);
+    setForgotPasswordError('');
+    setForgotPasswordSuccess('');
+  };
+
+  const handleSendOtp = async () => {
+    if (!forgotPasswordEmail.trim()) {
+      setForgotPasswordError('Please enter your email address');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(forgotPasswordEmail)) {
+      setForgotPasswordError('Please enter a valid email address');
+      return;
+    }
+
+    setIsSendingOtp(true);
+    setForgotPasswordError('');
+    setForgotPasswordSuccess('');
+    
+    try {
+      console.log('=== OTP SEND DEBUG START ===');
+      console.log('Sending OTP to:', forgotPasswordEmail);
+      console.log('Email validation:', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail));
+      
+      const response = await sendOtp(forgotPasswordEmail);
+      
+      console.log('OTP Response status:', response.status);
+      console.log('OTP Response ok:', response.ok);
+      console.log('OTP Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('OTP Response data:', responseData);
+        console.log('=== OTP SEND SUCCESS ===');
+        setForgotPasswordSuccess('OTP sent successfully! Please check your email for the verification code.');
+        setForgotPasswordEmail('');
+      } else {
+        const errorData = await response.text();
+        console.error('=== OTP SEND FAILED ===');
+        console.error('Status:', response.status);
+        console.error('Status Text:', response.statusText);
+        console.error('Error Data:', errorData);
+        
+        if (response.status === 400) {
+          setForgotPasswordError('Invalid email address or email not found in our system.');
+        } else if (response.status === 500) {
+          setForgotPasswordError('Server error. Please try again later.');
+        } else {
+          setForgotPasswordError(`Failed to send OTP. Status: ${response.status} - ${response.statusText}`);
+        }
+      }
+    } catch (error) {
+      console.error('=== OTP SEND NETWORK ERROR ===');
+      console.error('Error type:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
+      setForgotPasswordError(`Network error: ${error.message}`);
+    } finally {
+      setIsSendingOtp(false);
+      console.log('=== OTP SEND DEBUG END ===');
+    }
+  };
+
+  // Reset forgot password state function
+  const resetForgotPasswordState = () => {
+    setForgotPasswordEmail('');
+    setIsSendingOtp(false);
+    setForgotPasswordError('');
+    setForgotPasswordSuccess('');
+  };
+
+  // Test function for debugging - can be called from browser console
+  window.testOtpApi = async (email) => {
+    console.log('=== MANUAL API TEST ===');
+    console.log('Testing with email:', email);
+    
+    try {
+      const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/sentOtp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+      });
+      
+      console.log('Test Response Status:', response.status);
+      console.log('Test Response OK:', response.ok);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Test Response Data:', data);
+        console.log('✅ API TEST SUCCESS');
+      } else {
+        const errorText = await response.text();
+        console.log('Test Error Response:', errorText);
+        console.log('❌ API TEST FAILED');
+      }
+    } catch (error) {
+      console.error('Test Network Error:', error);
+      console.log('❌ API TEST NETWORK ERROR');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -589,6 +713,45 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         </button>
       </div>
 
+      <div className="settings-section">
+        <h3 className="section-title">Forgot Password</h3>
+        <div className="form-group">
+          <label className="form-label">Email Address</label>
+          <input 
+            type="email" 
+            className="form-input" 
+            placeholder="Enter your registered email address"
+            value={forgotPasswordEmail}
+            onChange={(e) => handleForgotPasswordEmailChange(e.target.value)}
+            disabled={isSendingOtp}
+          />
+          <p className="form-help">Enter the email address associated with your admin account to receive a password reset code.</p>
+        </div>
+        {forgotPasswordError && (
+          <div className="error-message">
+            <AlertCircle className="w-4 h-4" />
+            {forgotPasswordError}
+          </div>
+        )}
+        {forgotPasswordSuccess && (
+          <div className="success-message">
+            <UserCheck className="w-4 h-4" />
+            {forgotPasswordSuccess}
+          </div>
+        )}
+        <button 
+          className="btn-primary" 
+          onClick={handleSendOtp}
+          disabled={isSendingOtp || !forgotPasswordEmail.trim()}
+        >
+          {isSendingOtp ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Mail className="w-4 h-4" />
+          )}
+          Send Reset Code
+        </button>
+      </div>
 
       <div className="settings-section">
         <h3 className="section-title">Session Management</h3>
@@ -639,7 +802,7 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
                 <button
                   key={tab.id}
                   className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                 >
                   {tab.icon}
                   <span>{tab.label}</span>
