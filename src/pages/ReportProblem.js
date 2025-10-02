@@ -375,9 +375,15 @@ function ReportProblem() {
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className="badge-red" style={{
+                    <span className="badge-red inline-block mb-4 w-fit" style={{
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '12px',
                         backgroundColor: isDarkMode ? '#ef4444' : '#ef4444',
-                        color: isDarkMode ? '#ffffff' : '#ffffff'
+                        color: isDarkMode ? '#ffffff' : '#ffffff',
+                        border: isDarkMode ? 'none' : '1px solid #dc2626',
+                        boxShadow: isDarkMode ? 'none' : '0 0 20px rgba(239, 68, 68, 0.2)'
                     }}>Report an Issue</span>
                     <h1 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Report a Problem</h1>
                     <p className="subtitle" style={{

@@ -120,23 +120,28 @@ function Contact() {
 		}}>
 			<div className="container">
 				<div className="header">
-					<span className="badge-blue" style={{
+					<span className="badge-blue inline-block mb-4 w-fit" style={{
+						padding: '6px 10px',
+						borderRadius: '8px',
+						fontWeight: '600',
+						fontSize: '12px',
 						backgroundColor: isDarkMode ? '#0d8abc' : '#0d8abc',
-						color: isDarkMode ? '#ffffff' : '#ffffff'
+						color: isDarkMode ? '#ffffff' : '#ffffff',
+						border: isDarkMode ? 'none' : '1px solid #0d8abc'
 					}}>Get In Touch</span>
 					<h1 className="font-bold mb-6" style={{
-						fontSize: '40px',
-						color: isDarkMode ? '#ffffff' : '#1f2937'
+							fontSize: '40px',
+							color: isDarkMode ? '#ffffff' : '#1f2937'
 					}}>Contact Us</h1>
 					<p className="subtitle" style={{
-						color: isDarkMode ? '#9aa3b2' : '#374151'
+							color: isDarkMode ? '#9aa3b2' : '#374151'
 					}}>Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.</p>
         </div>
 
 				<div className="grid">
 					<div className="card left" style={{
 						backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
-						border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
 						boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
 					}}>
 						<h3 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Send us a Message</h3>
@@ -144,7 +149,7 @@ function Contact() {
 						{!isAuthenticated && (
 							<div className="login-box" style={{
 								backgroundColor: isDarkMode ? '#0c121a' : '#f3f4f6',
-								border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db'
+									border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db'
 							}}>
 								<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Please log in to send us a message</p>
 								<button className="google-btn" onClick={handleGoogleLoginClick} style={{
@@ -166,7 +171,7 @@ function Contact() {
 							<>
 								<div className="user-box" style={{
 									backgroundColor: isDarkMode ? '#06110a' : '#f0fdf4',
-									border: isDarkMode ? '1px solid #16391f' : '1px solid #bbf7d0'
+										border: isDarkMode ? '1px solid #16391f' : '1px solid #bbf7d0'
 								}}>
 									<img 
 										src={getUserAvatar(user)} 

@@ -550,8 +550,8 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
             type="text" 
             className="form-input" 
             placeholder="Enter your full name"
-            value={adminInfo.full_name}
-            onChange={(e) => handleInputChange('full_name', e.target.value)}
+                value={adminInfo.full_name}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
             style={{
               backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
               border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
@@ -565,8 +565,8 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
             type="email" 
             className="form-input" 
             placeholder="admin@qcu.edu.ph"
-            value={adminInfo.primary_email}
-            onChange={(e) => handleInputChange('primary_email', e.target.value)}
+                value={adminInfo.primary_email}
+                onChange={(e) => handleInputChange('primary_email', e.target.value)}
             style={{
               backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
               border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
@@ -580,8 +580,8 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
             type="email" 
             className="form-input" 
             placeholder="backup@qcu.edu.ph"
-            value={adminInfo.backup_email}
-            onChange={(e) => handleInputChange('backup_email', e.target.value)}
+                value={adminInfo.backup_email}
+                onChange={(e) => handleInputChange('backup_email', e.target.value)}
             style={{
               backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
               border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',

@@ -196,14 +196,19 @@ function Overview() {
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className={`badge-blue ${isDarkMode ? '' : 'light'}`} style={{
-                        backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe',
-                        color: isDarkMode ? '#ffffff' : '#1e40af',
-                        border: isDarkMode ? 'none' : '1px solid #93c5fd'
+                    <span className="badge-blue inline-block mb-4 w-fit" style={{
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '12px',
+                        backgroundColor: isDarkMode ? '#1e40af' : '#3b82f6',
+                        color: isDarkMode ? '#ffffff' : '#ffffff',
+                        border: isDarkMode ? 'none' : '1px solid #2563eb',
+                        boxShadow: isDarkMode ? 'none' : '0 0 20px rgba(59, 130, 246, 0.2)'
                     }}>
                         System Overview
                     </span>
-                    <h1 className={isDarkMode ? 'text-white' : 'text-gray-900'}>QCU EcoCharge Network</h1>
+                    <h1 className={isDarkMode ? 'text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'}>QCU EcoCharge Network</h1>
                     <p className="subtitle" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                         Monitor the real-time status of our solar-powered charging stations across campus. 
                         Each station is equipped with advanced monitoring and energy management systems.
@@ -375,7 +380,8 @@ function Overview() {
                             }}>
                                 <div className="feature-header">
                                     <div className="feature-icon" style={{
-                                        background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)'
+                                        background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #3b82f6, #6366f1)',
+                                        boxShadow: isDarkMode ? 'none' : '0 0 15px rgba(59, 130, 246, 0.3)'
                                     }}>
                                         {feature.icon}
                                     </div>

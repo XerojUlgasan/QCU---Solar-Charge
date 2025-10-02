@@ -132,13 +132,14 @@ function About() {
             borderRadius: '8px',
             fontWeight: '600',
             fontSize: '12px',
-            backgroundColor: isDarkMode ? '#0e5429' : '#dcfce7',
-            color: isDarkMode ? '#ffffff' : '#166534',
-            border: isDarkMode ? 'none' : '1px solid #bbf7d0'
+            backgroundColor: isDarkMode ? '#0e5429' : '#10b981',
+            color: isDarkMode ? '#ffffff' : '#ffffff',
+            border: isDarkMode ? 'none' : '1px solid #059669',
+            boxShadow: isDarkMode ? 'none' : '0 0 20px rgba(16, 185, 129, 0.2)'
           }}>
             About QCU EcoCharge
           </span>
-          <h1 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '40px'}}>Powering Tomorrow with Clean Energy</h1>
+          <h1 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent'}`} style={{fontSize: '40px'}}>Powering Tomorrow with Clean Energy</h1>
           <p className="max-w-3xl mx-auto" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
             QCU EcoCharge Station represents our commitment to sustainable technology and environmental 
             responsibility. We're transforming how students and faculty charge their devices on campus.
@@ -160,15 +161,15 @@ function About() {
             </p>
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
-                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 8px rgba(16, 185, 129, 0.6)'}}></div>
                 <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>100% renewable solar energy</span>
               </div>
               <div className="flex items-start space-x-3">
-                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 8px rgba(16, 185, 129, 0.6)'}}></div>
                 <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>Smart RFID technology for easy access</span>
               </div>
               <div className="flex items-start space-x-3">
-                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 8px rgba(16, 185, 129, 0.6)'}}></div>
                 <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>Real-time monitoring and maintenance</span>
               </div>
             </div>
@@ -194,9 +195,10 @@ function About() {
                 boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}>
                 <div className={`mx-auto rounded-lg flex items-center justify-center text-white mb-4 ${isDarkMode ? '' : 'shadow-md'}`} style={{
-                  background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)', 
+                  background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #059669, #0891b2)', 
                   width: '40px', 
-                  height: '40px'
+                  height: '40px',
+                  boxShadow: isDarkMode ? 'none' : '0 0 15px rgba(5, 150, 105, 0.3)'
                 }}>
                   {value.icon}
                 </div>

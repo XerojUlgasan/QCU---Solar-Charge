@@ -771,9 +771,14 @@ function RateUs() {
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className="badge-yellow" style={{
+                    <span className="badge-yellow inline-block mb-4 w-fit" style={{
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '12px',
                         backgroundColor: isDarkMode ? '#f59e0b' : '#f59e0b',
-                        color: isDarkMode ? '#ffffff' : '#ffffff'
+                        color: isDarkMode ? '#ffffff' : '#ffffff',
+                        border: isDarkMode ? 'none' : '1px solid #f59e0b'
                     }}>Your Feedback Matters</span>
                     <h1 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Rate Your Experience</h1>
                     <p className="subtitle" style={{
