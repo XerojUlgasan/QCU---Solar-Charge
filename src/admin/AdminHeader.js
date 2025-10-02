@@ -79,7 +79,11 @@ const AdminHeader = ({ title, navigate }) => {
   ];
 
   return (
-    <header id="admin-header" className={isScrolled ? 'scrolled' : ''}>
+    <header id="admin-header" className={`${isScrolled ? 'scrolled' : ''} ${isDarkMode ? '' : 'light'}`} style={{
+      backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+      borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+      boxShadow: isDarkMode ? 'none' : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+    }}>
       <div className="header-container">
         {/* Logo & Title */}
         <div className="logo-section">
@@ -90,13 +94,16 @@ const AdminHeader = ({ title, navigate }) => {
               className="logo-icon"
               onClick={handleLogoClick}
             />
-            <span className="logo-text" onClick={handleLogoClick}>QCU EcoCharge</span>
-            <div className="admin-badge">
+            <span className="logo-text" onClick={handleLogoClick} style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>QCU EcoCharge</span>
+            <div className="admin-badge" style={{
+              backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.1)' : 'rgba(251, 146, 60, 0.1)',
+              color: isDarkMode ? '#fb923c' : '#d97706'
+            }}>
               Admin
             </div>
           </div>
-          <div className="divider"></div>
-          <h1 className="page-title">{title}</h1>
+          <div className="divider" style={{backgroundColor: isDarkMode ? '#9aa3b2' : '#d1d5db'}}></div>
+          <h1 className="page-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{title}</h1>
         </div>
 
         {/* Desktop Navigation */}
@@ -106,6 +113,20 @@ const AdminHeader = ({ title, navigate }) => {
               key={item.route}
               className="nav-button"
               onClick={() => navigate(item.route)}
+              style={{
+                color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                backgroundColor: 'transparent',
+                border: 'none',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+              }}
             >
               {item.icon}
               <span>{item.label}</span>
@@ -119,6 +140,20 @@ const AdminHeader = ({ title, navigate }) => {
           <button
             className="action-button"
             onClick={toggleTheme}
+            style={{
+              color: isDarkMode ? '#9aa3b2' : '#1f2937',
+              backgroundColor: 'transparent',
+              border: 'none',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
           >
             {isDarkMode ? (
               <Sun className="h-5 w-5" />
@@ -132,12 +167,43 @@ const AdminHeader = ({ title, navigate }) => {
             className="action-button"
             onClick={() => setIsSettingsModalOpen(true)}
             title="Settings"
+            style={{
+              color: isDarkMode ? '#9aa3b2' : '#1f2937',
+              backgroundColor: 'transparent',
+              border: 'none',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
           >
             <Settings className="h-5 w-5" />
           </button>
 
           {/* Logout */}
-          <button className="action-button" onClick={handleLogout}>
+          <button 
+            className="action-button" 
+            onClick={handleLogout}
+            style={{
+              color: isDarkMode ? '#9aa3b2' : '#1f2937',
+              backgroundColor: 'transparent',
+              border: 'none',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
+          >
             <LogOut className="h-5 w-5" />
           </button>
 
@@ -145,6 +211,20 @@ const AdminHeader = ({ title, navigate }) => {
           <button
             className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            style={{
+              color: isDarkMode ? '#9aa3b2' : '#1f2937',
+              backgroundColor: 'transparent',
+              border: 'none',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
           >
             {isMobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -157,10 +237,14 @@ const AdminHeader = ({ title, navigate }) => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="mobile-menu">
+        <div className="mobile-menu" style={{
+          backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+          borderTop: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+          boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+        }}>
           <div className="mobile-menu-content">
             <div className="mobile-title-section">
-              <h1 className="mobile-page-title">{title}</h1>
+              <h1 className="mobile-page-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{title}</h1>
             </div>
             {menuItems.map((item) => (
               <button
@@ -169,6 +253,20 @@ const AdminHeader = ({ title, navigate }) => {
                 onClick={() => {
                   navigate(item.route);
                   setIsMobileMenuOpen(false);
+                }}
+                style={{
+                  color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                  e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
                 }}
               >
                 {item.icon}

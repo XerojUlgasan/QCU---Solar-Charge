@@ -15,11 +15,13 @@ import {
 import { getAdminInformation, setAdminInformation, changeAdminUsername, changeAdminPassword, sendOtp } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminSettingsModal.css';
 
 const AdminSettingsModal = ({ isOpen, onClose }) => {
   const { showSuccess } = useNotification();
   const { admin } = useAdminAuth();
+  const { isDarkMode } = useTheme();
 
   // Handle browser extension errors
   React.useEffect(() => {
@@ -527,48 +529,76 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
   const renderAccountSettings = () => (
     <div className="settings-content">
       {isLoading ? (
-        <div className="loading-container">
+        <div className="loading-container" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
           <Loader2 className="w-6 h-6 animate-spin" />
           <p>Loading admin information...</p>
         </div>
       ) : (
         <>
-      <div className="settings-section">
-        <h3 className="section-title">Profile Information</h3>
+      <div className="settings-section" style={{
+        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : '#f9fafb',
+        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+        boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+      }}>
+        <h3 className="section-title" style={{
+          color: isDarkMode ? '#ffffff' : '#1f2937',
+          borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>Profile Information</h3>
         <div className="form-group">
-          <label className="form-label">Full Name</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Full Name</label>
           <input 
             type="text" 
             className="form-input" 
             placeholder="Enter your full name"
-                value={adminInfo.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
+            value={adminInfo.full_name}
+            onChange={(e) => handleInputChange('full_name', e.target.value)}
+            style={{
+              backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              color: isDarkMode ? '#ffffff' : '#1f2937'
+            }}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Primary Email</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Primary Email</label>
           <input 
             type="email" 
             className="form-input" 
             placeholder="admin@qcu.edu.ph"
-                value={adminInfo.primary_email}
-                onChange={(e) => handleInputChange('primary_email', e.target.value)}
+            value={adminInfo.primary_email}
+            onChange={(e) => handleInputChange('primary_email', e.target.value)}
+            style={{
+              backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              color: isDarkMode ? '#ffffff' : '#1f2937'
+            }}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Backup Email</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Backup Email</label>
           <input 
             type="email" 
             className="form-input" 
             placeholder="backup@qcu.edu.ph"
-                value={adminInfo.backup_email}
-                onChange={(e) => handleInputChange('backup_email', e.target.value)}
+            value={adminInfo.backup_email}
+            onChange={(e) => handleInputChange('backup_email', e.target.value)}
+            style={{
+              backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              color: isDarkMode ? '#ffffff' : '#1f2937'
+            }}
           />
-          <p className="form-help">Used for account recovery and important notifications</p>
+          <p className="form-help" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Used for account recovery and important notifications</p>
         </div>
-            <div className="form-actions">
+            <div className="form-actions" style={{
+              borderTop: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+            }}>
               {error && (
-                <div className="error-message">
+                <div className="error-message" style={{
+                  backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                  color: isDarkMode ? '#fca5a5' : '#dc2626'
+                }}>
                   <AlertCircle className="w-4 h-4" />
                   {error}
                 </div>
@@ -577,6 +607,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
                 className="btn-primary" 
                 onClick={handleSave}
                 disabled={!hasChanges() || isLoading || isSaving}
+                style={{
+                  backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: '500'
+                }}
               >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -594,10 +630,17 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
 
   const renderSecuritySettings = () => (
     <div className="settings-content">
-      <div className="settings-section">
-        <h3 className="section-title">Username Management</h3>
+      <div className="settings-section" style={{
+        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : '#f9fafb',
+        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+        boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+      }}>
+        <h3 className="section-title" style={{
+          color: isDarkMode ? '#ffffff' : '#1f2937',
+          borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>Username Management</h3>
         <div className="form-group">
-          <label className="form-label">New Username</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>New Username</label>
           <input 
             type="text" 
             className="form-input" 
@@ -605,10 +648,15 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
             value={usernameChangeData.new_username}
             onChange={(e) => handleUsernameChange('new_username', e.target.value)}
             disabled={isChangingUsername}
+            style={{
+              backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              color: isDarkMode ? '#ffffff' : '#1f2937'
+            }}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Current Password</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Current Password</label>
           <div className="password-input-group">
             <input 
               type={showUsernamePassword ? "text" : "password"} 
@@ -617,19 +665,31 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
               value={usernameChangeData.current_password}
               onChange={(e) => handleUsernameChange('current_password', e.target.value)}
               disabled={isChangingUsername}
+              style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                color: isDarkMode ? '#ffffff' : '#1f2937'
+              }}
             />
             <button 
               type="button"
               className="password-toggle"
               onClick={() => setShowUsernamePassword(!showUsernamePassword)}
               disabled={isChangingUsername}
+              style={{
+                color: isDarkMode ? '#6b7280' : '#1f2937'
+              }}
             >
               {showUsernamePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
         {usernameError && (
-          <div className="error-message">
+          <div className="error-message" style={{
+            backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+            color: isDarkMode ? '#fca5a5' : '#dc2626'
+          }}>
             <AlertCircle className="w-4 h-4" />
             {usernameError}
           </div>
@@ -638,6 +698,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
           className="btn-primary" 
           onClick={handleChangeUsername}
           disabled={isChangingUsername || !usernameChangeData.new_username.trim() || !usernameChangeData.current_password.trim()}
+          style={{
+            backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+            color: '#ffffff',
+            border: 'none',
+            fontWeight: '500'
+          }}
         >
           {isChangingUsername ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -648,10 +714,17 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         </button>
       </div>
 
-      <div className="settings-section">
-        <h3 className="section-title">Password & Authentication</h3>
+      <div className="settings-section" style={{
+        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : '#f9fafb',
+        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+        boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+      }}>
+        <h3 className="section-title" style={{
+          color: isDarkMode ? '#ffffff' : '#1f2937',
+          borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>Password & Authentication</h3>
         <div className="form-group">
-          <label className="form-label">Current Password</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Current Password</label>
           <div className="password-input-group">
             <input 
               type={showCurrentPassword ? "text" : "password"} 
@@ -660,19 +733,27 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
               value={passwordChangeData.current_password}
               onChange={(e) => handlePasswordChange('current_password', e.target.value)}
               disabled={isChangingPassword}
+              style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                color: isDarkMode ? '#ffffff' : '#1f2937'
+              }}
             />
             <button 
               type="button"
               className="password-toggle"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
               disabled={isChangingPassword}
+              style={{
+                color: isDarkMode ? '#6b7280' : '#1f2937'
+              }}
             >
               {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
         <div className="form-group">
-          <label className="form-label">New Password</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>New Password</label>
           <div className="password-input-group">
             <input 
               type={showNewPassword ? "text" : "password"} 
@@ -681,19 +762,27 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
               value={passwordChangeData.new_password}
               onChange={(e) => handlePasswordChange('new_password', e.target.value)}
               disabled={isChangingPassword}
+              style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                color: isDarkMode ? '#ffffff' : '#1f2937'
+              }}
             />
             <button 
               type="button"
               className="password-toggle"
               onClick={() => setShowNewPassword(!showNewPassword)}
               disabled={isChangingPassword}
+              style={{
+                color: isDarkMode ? '#6b7280' : '#1f2937'
+              }}
             >
               {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
         <div className="form-group">
-          <label className="form-label">Confirm New Password</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Confirm New Password</label>
           <div className="password-input-group">
             <input 
               type={showConfirmPassword ? "text" : "password"} 
@@ -702,19 +791,31 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
               value={passwordChangeData.confirm_password}
               onChange={(e) => handlePasswordChange('confirm_password', e.target.value)}
               disabled={isChangingPassword}
+              style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                color: isDarkMode ? '#ffffff' : '#1f2937'
+              }}
             />
             <button 
               type="button"
               className="password-toggle"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               disabled={isChangingPassword}
+              style={{
+                color: isDarkMode ? '#6b7280' : '#1f2937'
+              }}
             >
               {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
         {passwordError && (
-          <div className="error-message">
+          <div className="error-message" style={{
+            backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+            color: isDarkMode ? '#fca5a5' : '#dc2626'
+          }}>
             <AlertCircle className="w-4 h-4" />
             {passwordError}
           </div>
@@ -723,6 +824,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
           className="btn-primary" 
           onClick={handleChangePassword}
           disabled={isChangingPassword || !passwordChangeData.current_password.trim() || !passwordChangeData.new_password.trim() || !passwordChangeData.confirm_password.trim()}
+          style={{
+            backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+            color: '#ffffff',
+            border: 'none',
+            fontWeight: '500'
+          }}
         >
           {isChangingPassword ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -733,10 +840,17 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         </button>
       </div>
 
-      <div className="settings-section">
-        <h3 className="section-title">Forgot Password</h3>
+      <div className="settings-section" style={{
+        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : '#f9fafb',
+        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+        boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+      }}>
+        <h3 className="section-title" style={{
+          color: isDarkMode ? '#ffffff' : '#1f2937',
+          borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>Forgot Password</h3>
         <div className="form-group">
-          <label className="form-label">Email Address</label>
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Email Address</label>
           <input 
             type="email" 
             className="form-input" 
@@ -744,17 +858,30 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
             value={forgotPasswordEmail}
             onChange={(e) => handleForgotPasswordEmailChange(e.target.value)}
             disabled={isSendingOtp}
+            style={{
+              backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              color: isDarkMode ? '#ffffff' : '#1f2937'
+            }}
           />
-          <p className="form-help">Enter the email address associated with your admin account to receive a password reset code.</p>
+          <p className="form-help" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Enter the email address associated with your admin account to receive a password reset code.</p>
         </div>
         {forgotPasswordError && (
-          <div className="error-message">
+          <div className="error-message" style={{
+            backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+            color: isDarkMode ? '#fca5a5' : '#dc2626'
+          }}>
             <AlertCircle className="w-4 h-4" />
             {forgotPasswordError}
           </div>
         )}
         {forgotPasswordSuccess && (
-          <div className="success-message">
+          <div className="success-message" style={{
+            backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+            border: isDarkMode ? '1px solid rgba(34, 197, 94, 0.3)' : '2px solid rgba(34, 197, 94, 0.3)',
+            color: isDarkMode ? '#86efac' : '#16a34a'
+          }}>
             <UserCheck className="w-4 h-4" />
             {forgotPasswordSuccess}
           </div>
@@ -763,6 +890,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
           className="btn-primary" 
           onClick={handleSendOtp}
           disabled={isSendingOtp || !forgotPasswordEmail.trim()}
+          style={{
+            backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+            color: '#ffffff',
+            border: 'none',
+            fontWeight: '500'
+          }}
         >
           {isSendingOtp ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -773,18 +906,34 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         </button>
       </div>
 
-      <div className="settings-section">
-        <h3 className="section-title">Session Management</h3>
+      <div className="settings-section" style={{
+        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : '#f9fafb',
+        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+        boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+      }}>
+        <h3 className="section-title" style={{
+          color: isDarkMode ? '#ffffff' : '#1f2937',
+          borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>Session Management</h3>
         <div className="form-group">
-          <label className="form-label">Session Timeout</label>
-          <select className="form-select">
+          <label className="form-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Session Timeout</label>
+          <select className="form-select" style={{
+            backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            color: isDarkMode ? '#ffffff' : '#1f2937'
+          }}>
             <option value="15">15 minutes</option>
             <option value="30" selected>30 minutes</option>
             <option value="60">1 hour</option>
             <option value="120">2 hours</option>
           </select>
         </div>
-        <button className="btn-secondary">
+        <button className="btn-secondary" style={{
+          backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+          color: isDarkMode ? '#9aa3b2' : '#1f2937',
+          border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+          fontWeight: '500'
+        }}>
           <AlertCircle className="w-4 h-4" />
           Sign Out All Devices
         </button>
@@ -806,23 +955,69 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="admin-settings-modal-overlay" onClick={onClose}>
-      <div className="admin-settings-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">Admin Settings</h2>
-          <button className="close-button" onClick={onClose}>
+    <div className={`admin-settings-modal-overlay ${isDarkMode ? '' : 'light'}`} onClick={onClose} style={{
+      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.5)'
+    }}>
+      <div className={`admin-settings-modal ${isDarkMode ? '' : 'light'}`} onClick={(e) => e.stopPropagation()} style={{
+        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+        boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)'
+      }}>
+        <div className="modal-header" style={{
+          backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+          borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>
+          <h2 className="modal-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Admin Settings</h2>
+          <button className="close-button" onClick={onClose} style={{
+            color: isDarkMode ? '#9aa3b2' : '#1f2937',
+            backgroundColor: 'transparent',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+            e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'transparent';
+            e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+          }}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="modal-content">
-          <div className="settings-sidebar">
+          <div className="settings-sidebar" style={{
+            backgroundColor: isDarkMode ? '#0b0e13' : '#f9fafb',
+            borderRight: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+          }}>
             <nav className="settings-nav">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
                   onClick={() => handleTabChange(tab.id)}
+                  style={{
+                    color: activeTab === tab.id 
+                      ? (isDarkMode ? '#22c55e' : '#16a34a')
+                      : (isDarkMode ? '#9aa3b2' : '#1f2937'),
+                    backgroundColor: activeTab === tab.id 
+                      ? (isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.1)')
+                      : 'transparent',
+                    fontWeight: activeTab === tab.id ? '600' : '500',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab.id) {
+                      e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                      e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab.id) {
+                      e.target.style.backgroundColor = 'transparent';
+                      e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+                    }
+                  }}
                 >
                   {tab.icon}
                   <span>{tab.label}</span>
@@ -831,43 +1026,83 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
             </nav>
           </div>
 
-          <div className="settings-main">
+          <div className="settings-main" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff'
+          }}>
             {renderContent()}
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer" style={{
+          backgroundColor: isDarkMode ? '#0b0e13' : '#f9fafb',
+          borderTop: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+        }}>
           <div className="footer-spacer"></div>
         </div>
 
         {/* Save Confirmation Modal */}
         {showSaveConfirmation && (
-          <div className="confirmation-overlay">
-            <div className="confirmation-modal">
-              <div className="confirmation-header">
-                <h3>Save Changes</h3>
+          <div className="confirmation-overlay" style={{
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.5)'
+          }}>
+            <div className="confirmation-modal" style={{
+              backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)'
+            }}>
+              <div className="confirmation-header" style={{
+                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+              }}>
+                <h3 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Save Changes</h3>
                 <button 
                   className="close-button" 
                   onClick={cancelSave}
                   disabled={isSaving}
+                  style={{
+                    color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                    backgroundColor: 'transparent',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                    e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="confirmation-content">
-                <p>Are you sure you want to save these changes to your admin information?</p>
+                <p style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Are you sure you want to save these changes to your admin information?</p>
                 {error && (
-                  <div className="error-message">
+                  <div className="error-message" style={{
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                    color: isDarkMode ? '#fca5a5' : '#dc2626'
+                  }}>
                     <AlertCircle className="w-4 h-4" />
                     {error}
                   </div>
                 )}
               </div>
-              <div className="confirmation-footer">
+              <div className="confirmation-footer" style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#f9fafb',
+                borderTop: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+              }}>
                 <button 
                   className="btn-secondary" 
                   onClick={cancelSave}
                   disabled={isSaving}
+                  style={{
+                    backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+                    color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                    border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                    fontWeight: '500'
+                  }}
                 >
             Cancel
           </button>
@@ -875,6 +1110,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
                   className="btn-primary" 
                   onClick={confirmSave}
                   disabled={isSaving}
+                  style={{
+                    backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: '500'
+                  }}
                 >
                   {isSaving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -890,33 +1131,68 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
 
         {/* Username Change Confirmation Modal */}
         {showUsernameConfirmation && (
-          <div className="confirmation-overlay">
-            <div className="confirmation-modal">
-              <div className="confirmation-header">
-                <h3>Change Username</h3>
+          <div className="confirmation-overlay" style={{
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.5)'
+          }}>
+            <div className="confirmation-modal" style={{
+              backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)'
+            }}>
+              <div className="confirmation-header" style={{
+                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+              }}>
+                <h3 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Change Username</h3>
                 <button 
                   className="close-button" 
                   onClick={cancelUsernameChange}
                   disabled={isChangingUsername}
+                  style={{
+                    color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                    backgroundColor: 'transparent',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                    e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="confirmation-content">
-                <p>Are you sure you want to change your username to "{usernameChangeData.new_username}"?</p>
-                <p className="confirmation-note">This will validate your current password.</p>
+                <p style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Are you sure you want to change your username to "{usernameChangeData.new_username}"?</p>
+                <p className="confirmation-note" style={{color: isDarkMode ? '#6b7280' : '#1f2937'}}>This will validate your current password.</p>
                 {usernameError && (
-                  <div className="error-message">
+                  <div className="error-message" style={{
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                    color: isDarkMode ? '#fca5a5' : '#dc2626'
+                  }}>
                     <AlertCircle className="w-4 h-4" />
                     {usernameError}
                   </div>
                 )}
               </div>
-              <div className="confirmation-footer">
+              <div className="confirmation-footer" style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#f9fafb',
+                borderTop: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+              }}>
                 <button 
                   className="btn-secondary" 
                   onClick={cancelUsernameChange}
                   disabled={isChangingUsername}
+                  style={{
+                    backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+                    color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                    border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                    fontWeight: '500'
+                  }}
                 >
                   Cancel
                 </button>
@@ -924,6 +1200,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
                   className="btn-primary" 
                   onClick={confirmUsernameChange}
                   disabled={isChangingUsername}
+                  style={{
+                    backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: '500'
+                  }}
                 >
                   {isChangingUsername ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -939,33 +1221,68 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
 
         {/* Password Change Confirmation Modal */}
         {showPasswordConfirmation && (
-          <div className="confirmation-overlay">
-            <div className="confirmation-modal">
-              <div className="confirmation-header">
-                <h3>Change Password</h3>
+          <div className="confirmation-overlay" style={{
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.5)'
+          }}>
+            <div className="confirmation-modal" style={{
+              backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)'
+            }}>
+              <div className="confirmation-header" style={{
+                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+              }}>
+                <h3 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Change Password</h3>
                 <button 
                   className="close-button" 
                   onClick={cancelPasswordChange}
                   disabled={isChangingPassword}
+                  style={{
+                    color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                    backgroundColor: 'transparent',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                    e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="confirmation-content">
-                <p>Are you sure you want to change your password?</p>
-                <p className="confirmation-note">This will validate your current password.</p>
+                <p style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Are you sure you want to change your password?</p>
+                <p className="confirmation-note" style={{color: isDarkMode ? '#6b7280' : '#1f2937'}}>This will validate your current password.</p>
                 {passwordError && (
-                  <div className="error-message">
+                  <div className="error-message" style={{
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                    color: isDarkMode ? '#fca5a5' : '#dc2626'
+                  }}>
                     <AlertCircle className="w-4 h-4" />
                     {passwordError}
                   </div>
                 )}
               </div>
-              <div className="confirmation-footer">
+              <div className="confirmation-footer" style={{
+                backgroundColor: isDarkMode ? '#0b0e13' : '#f9fafb',
+                borderTop: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+              }}>
                 <button 
                   className="btn-secondary" 
                   onClick={cancelPasswordChange}
                   disabled={isChangingPassword}
+                  style={{
+                    backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+                    color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                    border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                    fontWeight: '500'
+                  }}
                 >
                   Cancel
                 </button>
@@ -973,6 +1290,12 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
                   className="btn-primary" 
                   onClick={confirmPasswordChange}
                   disabled={isChangingPassword}
+                  style={{
+                    backgroundColor: isDarkMode ? '#22c55e' : '#22c55e',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: '500'
+                  }}
                 >
                   {isChangingPassword ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
