@@ -20,11 +20,13 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { authenticatedAdminFetch } = useAdminAuth();
+  const { isDarkMode } = useTheme();
   
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
@@ -1548,7 +1550,10 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div id="admin-dashboard">
+    <div id="admin-dashboard" className={isDarkMode ? '' : 'light'} style={{
+      backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+      color: isDarkMode ? '#ffffff' : '#1f2937'
+    }}>
       <AdminHeader 
         title="Dashboard Overview" 
         navigate={handleNavigation}
@@ -1576,15 +1581,20 @@ const AdminDashboard = () => {
             {/* Filter Controls */}
             <div className="filter-controls">
               <div className="dashboard-header">
-                <h2 className="dashboard-title">Dashboard Overview</h2>
+                <h2 className="dashboard-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Dashboard Overview</h2>
               </div>
               <div className="filters-right">
               <div className="filter-group">
-                <Filter className="w-4 h-4 filter-icon" />
+                <Filter className="w-4 h-4 filter-icon" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}} />
                 <select 
                   value={timeFilter} 
                   onChange={(e) => setTimeFilter(e.target.value)}
                   className="filter-select"
+                  style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                    color: isDarkMode ? '#ffffff' : '#1f2937'
+                  }}
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -1607,6 +1617,11 @@ const AdminDashboard = () => {
                   }}
                   className="refresh-button"
                   disabled={loading}
+                  style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                    color: isDarkMode ? '#ffffff' : '#1f2937'
+                  }}
                 >
                   <RefreshCw className={`refresh-icon ${loading ? 'spinning' : ''}`} />
                   Refresh
@@ -1617,13 +1632,17 @@ const AdminDashboard = () => {
         {/* Overview Stats */}
         <div className="stats-grid">
           {overviewStats.map((stat, index) => (
-            <div key={index} className="stat-card">
+            <div key={index} className="stat-card" style={{
+              backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            }}>
               <div className="stat-header">
-                <div className="stat-title">{stat.title}</div>
+                <div className="stat-title" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>{stat.title}</div>
                 <div className="stat-icon">{stat.icon}</div>
               </div>
               <div className="stat-content">
-                <div className="stat-value">{stat.value}</div>
+                <div className="stat-value" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{stat.value}</div>
                 {stat.change && (
                  <div className="stat-change">
                    {getChangeIcon(stat.changeType)}
@@ -1639,15 +1658,25 @@ const AdminDashboard = () => {
 
         <div className="main-grid">
           {/* Device Status */}
-          <div className="main-card">
+          <div className="main-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="card-header">
               <div>
-                <div className="card-title">Device Status</div>
-                <div className="card-description">Real-time monitoring of all charging stations</div>
+                <div className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Device Status</div>
+                <div className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Real-time monitoring of all charging stations</div>
               </div>
               <button 
                 className="view-all-button"
                 onClick={() => handleNavigation('admin-devices')}
+                style={{
+                  backgroundColor: isDarkMode ? 'transparent' : '#ffffff',
+                  border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                  color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                  fontWeight: '500'
+                }}
               >
                 View All
               </button>
@@ -1659,21 +1688,26 @@ const AdminDashboard = () => {
                   key={device.id} 
                   className="device-item"
                   onClick={() => handleNavigation('admin-device-detail', device.id)}
+                  style={{
+                    backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                    border: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb',
+                    boxShadow: isDarkMode ? 'none' : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+                  }}
                 >
                   <div className="device-info">
                     <div className={`status-indicator ${getStatusColor(device.status)}`}></div>
                     <div>
-                      <div className="device-name">{device.name}</div>
-                      <div className="device-location">
+                      <div className="device-name" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{device.name}</div>
+                      <div className="device-location" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                         <MapPin className="w-3 h-3" />
                         <span>{device.location}</span>
                       </div>
                     </div>
                   </div>
                   <div className="device-stats">
-                    <div className="device-power">{device.power}</div>
-                    <div className="device-voltage">{device.voltage}</div>
-                          <div className="device-usage">{device.usage}%</div>
+                    <div className="device-power" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{device.power}</div>
+                    <div className="device-voltage" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>{device.voltage}</div>
+                          <div className="device-usage" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{device.usage}%</div>
                   </div>
                 </div>
                     ))
@@ -1686,25 +1720,29 @@ const AdminDashboard = () => {
           </div>
 
           {/* Energy Production */}
-          <div className="main-card">
+          <div className="main-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="card-header">
-              <div className="card-title">
+              <div className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
                 <Battery className="w-5 h-5" />
                 <span>Energy Production</span>
               </div>
-              <div className="card-description">Daily energy generation across all stations</div>
+              <div className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Daily energy generation across all stations</div>
             </div>
             <div className="card-content">
               <div className="energy-stats">
                 <div className="energy-progress">
-                  <div className="progress-label">
+                  <div className="progress-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
                     <span>Current Power Output</span>
                     <span className="progress-value">{overviewData.power_output || overviewData.power}W</span>
                   </div>
-                  <div className="progress-bar">
+                  <div className="progress-bar" style={{backgroundColor: isDarkMode ? '#1e2633' : '#e5e7eb'}}>
                     <div className="progress-fill" style={{width: `${Math.min((overviewData.percentage || 0), 100)}%`}}></div>
                   </div>
-                  <div className="progress-text">
+                  <div className="progress-text" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                     {overviewData.percentage || 0}% battery level
                   </div>
                 </div>
@@ -1712,31 +1750,34 @@ const AdminDashboard = () => {
                 <div className="energy-metrics">
                   <div className="metric-card metric-green">
                     <div className="metric-value">{overviewData.volt}V</div>
-                    <div className="metric-label">Voltage</div>
+                    <div className="metric-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Voltage</div>
                   </div>
                   <div className="metric-card metric-blue">
                     <div className="metric-value">{overviewData.current}A</div>
-                    <div className="metric-label">Current</div>
+                    <div className="metric-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Current</div>
                   </div>
                 </div>
                 
-                <div className="energy-generation">
+                <div className="energy-generation" style={{
+                  backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                  border: isDarkMode ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(59, 130, 246, 0.15)'
+                }}>
                   <div className="generation-header">
-                    <span className="generation-title">Energy Generated Today</span>
+                    <span className="generation-title" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Energy Generated Today</span>
                     <span className="generation-value">{formatEnergy(overviewData.energy.daily)}</span>
                   </div>
                   <div className="generation-details">
                     <div className="generation-item">
-                      <span>This Week:</span>
-                      <span>{formatEnergy(overviewData.energy.weekly)}</span>
+                      <span style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>This Week:</span>
+                      <span style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{formatEnergy(overviewData.energy.weekly)}</span>
                     </div>
                     <div className="generation-item">
-                      <span>This Month:</span>
-                      <span>{formatEnergy(overviewData.energy.monthly)}</span>
+                      <span style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>This Month:</span>
+                      <span style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{formatEnergy(overviewData.energy.monthly)}</span>
                     </div>
                     <div className="generation-item">
-                      <span>Total:</span>
-                      <span>{formatEnergy(overviewData.energy.total)}</span>
+                      <span style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Total:</span>
+                      <span style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{formatEnergy(overviewData.energy.total)}</span>
                     </div>
                   </div>
                 </div>
@@ -1745,13 +1786,23 @@ const AdminDashboard = () => {
           </div>
 
           {/* Recent Transactions */}
-          <div className="main-card">
+          <div className="main-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="card-header">
-              <div className="card-title">Recent Transactions</div>
-              <div className="card-description">Latest charging sessions and payments</div>
+              <div className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Recent Transactions</div>
+              <div className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Latest charging sessions and payments</div>
               <button 
                 className="view-all-button"
                 onClick={() => setIsTransactionsPopupOpen(true)}
+                style={{
+                  backgroundColor: isDarkMode ? 'transparent' : '#ffffff',
+                  border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                  color: isDarkMode ? '#9aa3b2' : '#1f2937',
+                  fontWeight: '500'
+                }}
               >
                 View All
               </button>
@@ -1768,14 +1819,14 @@ const AdminDashboard = () => {
                       )}
                     </div>
                     <div>
-                      <div className="transaction-user">{transaction.user}</div>
-                      <div className="transaction-details">
+                      <div className="transaction-user" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{transaction.user}</div>
+                      <div className="transaction-details" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                         Station {transaction.station} • {transaction.time}
                       </div>
                     </div>
                   </div>
                   <div className="transaction-amount">
-                    <div className="amount-value">{transaction.amount}</div>
+                    <div className="amount-value" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{transaction.amount}</div>
                     <div className={`amount-badge ${transaction.type === 'rfid' ? 'badge-rfid' : 'badge-payment'}`}>
                       {transaction.type === 'rfid' ? 'RFID' : 'Payment'}
                     </div>
@@ -1789,10 +1840,14 @@ const AdminDashboard = () => {
         {/* Energy & Revenue Charts Section */}
         <div className="charts-grid">
           {/* Chart 1: Technical Metrics */}
-          <div className="analytics-card">
+          <div className="analytics-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.2)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="analytics-header">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>
+                <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600', color: isDarkMode ? '#ffffff' : '#1f2937' }}>
                   <Activity className="w-6 h-6" style={{ color: '#3b82f6' }} />
                   <span>Technical Metrics</span>
                 </h3>
@@ -1802,9 +1857,9 @@ const AdminDashboard = () => {
                   style={{ 
                     padding: '0.5rem', 
                     borderRadius: '0.375rem', 
-                    border: '1px solid #374151',
-                    backgroundColor: '#1f2937',
-                    color: '#ffffff',
+                    border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    color: isDarkMode ? '#ffffff' : '#1f2937',
                     fontSize: '0.875rem'
                   }}
                 >
@@ -1815,7 +1870,7 @@ const AdminDashboard = () => {
                   <option value="current">Current</option>
                 </select>
               </div>
-              <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '0.125rem' }}>
+              <p style={{ fontSize: '1rem', color: isDarkMode ? '#9ca3af' : '#1f2937', marginTop: '0.125rem' }}>
                 {getMetricInfo(selectedMetric).description}
               </p>
             </div>
@@ -1835,41 +1890,41 @@ const AdminDashboard = () => {
                   >
                     <CartesianGrid 
                       strokeDasharray="3 3" 
-                      stroke="#374151" 
+                      stroke={isDarkMode ? '#374151' : '#e5e7eb'} 
                       opacity={0.3}
                     />
                     <XAxis 
                       dataKey="period" 
-                      stroke="#9ca3af"
+                      stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: '#9ca3af' }}
+                      tick={{ fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
                     />
                     <YAxis 
-                      stroke="#9ca3af"
+                      stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: '#9ca3af' }}
+                      tick={{ fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
                       domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
                       tickFormatter={(value) => Math.round(value)}
                       label={{ 
                         value: selectedMetric === 'all' ? 'Technical Metrics' : `${getMetricInfo(selectedMetric).label} (${getMetricInfo(selectedMetric).unit})`, 
                         angle: -90, 
                         position: 'insideLeft',
-                        style: { textAnchor: 'middle', fill: '#9ca3af' }
+                        style: { textAnchor: 'middle', fill: isDarkMode ? '#9ca3af' : '#6b7280' }
                       }}
                     />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: '#1f2937',
-                        border: '1px solid #374151',
+                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                         borderRadius: '12px',
-                        color: '#ffffff',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
+                        color: isDarkMode ? '#ffffff' : '#1f2937',
+                        boxShadow: isDarkMode ? '0 10px 25px rgba(0, 0, 0, 0.3)' : '0 10px 25px rgba(0, 0, 0, 0.1)'
                       }}
-                      labelStyle={{ color: '#ffffff', fontWeight: '500' }}
+                      labelStyle={{ color: isDarkMode ? '#ffffff' : '#1f2937', fontWeight: '500' }}
                       formatter={(value, name) => {
                         if (selectedMetric === 'all') {
                           // Map display names to data keys and units
@@ -1905,7 +1960,7 @@ const AdminDashboard = () => {
                     <Legend 
                       wrapperStyle={{ 
                         paddingTop: '20px',
-                        color: '#ffffff'
+                        color: isDarkMode ? '#ffffff' : '#1f2937'
                       }}
                     />
                     {selectedMetric === 'all' ? (
@@ -2014,13 +2069,17 @@ const AdminDashboard = () => {
           </div>
           
           {/* Chart 2: Revenue & Usage Trends */}
-          <div className="analytics-card">
+          <div className="analytics-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.2)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="analytics-header">
-              <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>
+              <h3 className="analytics-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: '600', color: isDarkMode ? '#ffffff' : '#1f2937' }}>
                 <DollarSign className="w-6 h-6" style={{ color: '#10b981' }} />
                 <span>Revenue & Usage Trends</span>
               </h3>
-              <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '0.125rem' }}>
+              <p style={{ fontSize: '1rem', color: isDarkMode ? '#9ca3af' : '#1f2937', marginTop: '0.125rem' }}>
                 Payment revenue and usage patterns over {timeFilter} period
               </p>
             </div>
@@ -2040,59 +2099,59 @@ const AdminDashboard = () => {
                   >
                     <CartesianGrid 
                       strokeDasharray="3 3" 
-                      stroke="#374151" 
+                      stroke={isDarkMode ? '#374151' : '#e5e7eb'} 
                       opacity={0.3}
                     />
                     <XAxis 
                       dataKey="period" 
-                      stroke="#9ca3af"
+                      stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: '#9ca3af' }}
+                      tick={{ fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
                     />
                     <YAxis 
                       yAxisId="left"
-                      stroke="#9ca3af"
+                      stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: '#9ca3af' }}
+                      tick={{ fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
                       domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
                       tickFormatter={(value) => Math.round(value)}
                       label={{ 
                         value: 'Revenue (₱)', 
                         angle: -90, 
                         position: 'insideLeft',
-                        style: { textAnchor: 'middle', fill: '#9ca3af' }
+                        style: { textAnchor: 'middle', fill: isDarkMode ? '#9ca3af' : '#6b7280' }
                       }}
                     />
                     <YAxis 
                       yAxisId="right"
                       orientation="right"
-                      stroke="#9ca3af"
+                      stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: '#9ca3af' }}
+                      tick={{ fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
                       domain={[0, (dataMax) => Math.ceil(dataMax * 1.1 / 10) * 10]}
                       tickFormatter={(value) => Math.round(value)}
                       label={{ 
                         value: 'Sessions', 
                         angle: 90, 
                         position: 'insideRight',
-                        style: { textAnchor: 'middle', fill: '#9ca3af' }
+                        style: { textAnchor: 'middle', fill: isDarkMode ? '#9ca3af' : '#6b7280' }
                       }}
                     />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: '#1f2937',
-                        border: '1px solid #374151',
+                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                         borderRadius: '12px',
-                        color: '#ffffff',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
+                        color: isDarkMode ? '#ffffff' : '#1f2937',
+                        boxShadow: isDarkMode ? '0 10px 25px rgba(0, 0, 0, 0.3)' : '0 10px 25px rgba(0, 0, 0, 0.1)'
                       }}
-                      labelStyle={{ color: '#ffffff', fontWeight: '500' }}
+                      labelStyle={{ color: isDarkMode ? '#ffffff' : '#1f2937', fontWeight: '500' }}
                       labelFormatter={(label, payload) => {
                         if (payload && payload[0] && payload[0].payload && payload[0].payload.fullDate) {
                           return payload[0].payload.fullDate;
@@ -2111,7 +2170,7 @@ const AdminDashboard = () => {
                     <Legend 
                       wrapperStyle={{ 
                         paddingTop: '20px',
-                        color: '#ffffff'
+                        color: isDarkMode ? '#ffffff' : '#1f2937'
                       }}
                     />
                     <Line 
@@ -2167,24 +2226,48 @@ const AdminDashboard = () => {
       {/* Transactions Popup */}
       {isTransactionsPopupOpen && (
         <div className="transactions-popup-overlay">
-          <div className="transactions-popup">
+          <div className="transactions-popup" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+            border: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb',
+            boxShadow: isDarkMode ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
             <div className="popup-header">
-              <h2>All Transactions</h2>
+              <h2 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>All Transactions</h2>
               <button 
                 className="popup-close"
                 onClick={() => setIsTransactionsPopupOpen(false)}
+                style={{
+                  color: isDarkMode ? '#94a3b8' : '#1f2937',
+                  backgroundColor: 'transparent',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = isDarkMode ? '#ffffff' : '#374151';
+                  e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = isDarkMode ? '#94a3b8' : '#1f2937';
+                  e.target.style.backgroundColor = 'transparent';
+                }}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="popup-filters">
+            <div className="popup-filters" style={{
+              borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
+            }}>
               <div className="filter-group">
-                <label>Sort by:</label>
+                <label style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}}>Sort by:</label>
                 <select 
                   value={transactionsFilter} 
                   onChange={(e) => setTransactionsFilter(e.target.value)}
                   className="filter-select"
+                  style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                    color: isDarkMode ? '#ffffff' : '#1f2937'
+                  }}
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
@@ -2205,14 +2288,14 @@ const AdminDashboard = () => {
                       )}
                     </div>
                     <div>
-                      <div className="transaction-user">{transaction.user}</div>
-                      <div className="transaction-details">
+                      <div className="transaction-user" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{transaction.user}</div>
+                      <div className="transaction-details" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                         Station {transaction.station} • {transaction.time}
                       </div>
                     </div>
                   </div>
                   <div className="transaction-amount">
-                    <div className="amount-value">{transaction.amount}</div>
+                    <div className="amount-value" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{transaction.amount}</div>
                     <div className={`amount-badge ${transaction.type === 'rfid' ? 'badge-rfid' : 'badge-payment'}`}>
                       {transaction.type === 'rfid' ? 'RFID' : 'Payment'}
                     </div>
