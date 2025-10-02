@@ -196,6 +196,7 @@ function RateUs() {
                 })));
                 
                 // Try multiple matching strategies in order of preference
+                let deviceInfo = null;
                 
                 // Strategy 1: Exact device_id match (most reliable)
                 if (review.device_id) {
