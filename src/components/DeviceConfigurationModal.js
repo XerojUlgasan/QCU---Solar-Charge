@@ -989,20 +989,22 @@ const DeviceConfigurationModal = ({
         </div>
 
         {/* Footer */}
-        <div className="device-config-footer">
-          <button 
-            className="config-button cancel-button"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button 
-            className="config-button save-button"
-            onClick={handleSave}
-          >
-            Save Configuration
-          </button>
-        </div>
+        {!isLoading && (
+          <div className="device-config-footer">
+            <button 
+              className="config-button cancel-button"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button 
+              className="config-button save-button"
+              onClick={handleSave}
+            >
+              Save Configuration
+            </button>
+          </div>
+        )}
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirmation && (
