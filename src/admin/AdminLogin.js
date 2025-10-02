@@ -389,9 +389,15 @@ const AdminLogin = () => {
               fontWeight: '700',
               marginTop: '-3rem'
             }}>QCU EcoCharge</h1>
-            <div className="badge" style={{
+            <div className="badge inline-block mb-4 w-fit" style={{
+              padding: '4px 8px',
+              borderRadius: '6px',
+              fontWeight: '600',
+              fontSize: '10px',
               backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.1)' : 'rgba(251, 146, 60, 0.1)',
-              color: isDarkMode ? '#fb923c' : '#fb923c'
+              color: isDarkMode ? '#fb923c' : '#fb923c',
+              border: isDarkMode ? 'none' : '1px solid #f59e0b',
+              boxShadow: isDarkMode ? 'none' : '0 0 20px rgba(251, 146, 60, 0.2)'
             }}>
               <Shield className="badge-icon" />
               Admin Portal
@@ -403,7 +409,7 @@ const AdminLogin = () => {
             backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
             border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
             boxShadow: isDarkMode ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            marginTop: '-1rem'
+            marginTop: '-2rem'
           }}>
             <div className="card-header">
               <h2 className="card-title" style={{

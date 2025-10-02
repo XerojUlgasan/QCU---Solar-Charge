@@ -97,7 +97,9 @@ const AdminHeader = ({ title, navigate }) => {
             <span className="logo-text" onClick={handleLogoClick} style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>QCU EcoCharge</span>
             <div className="admin-badge" style={{
               backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.1)' : 'rgba(251, 146, 60, 0.1)',
-              color: isDarkMode ? '#fb923c' : '#d97706'
+              color: isDarkMode ? '#fb923c' : '#d97706',
+              border: isDarkMode ? 'none' : '1px solid #f59e0b',
+              boxShadow: isDarkMode ? 'none' : '0 0 20px rgba(251, 146, 60, 0.2)'
             }}>
               Admin
             </div>
