@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { authenticatedGet } from '../utils/api';
 import logo from '../logo.svg';
 import "../styles/RateUs.css";
@@ -10,6 +11,7 @@ function RateUs() {
     const { showSuccess, showError } = useNotification();
     const { openModal } = useGoogleLogin();
     const { user, idToken, isAuthenticated } = useAuth();
+    const { isDarkMode } = useTheme();
     const [selectedRating, setSelectedRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [feedback, setFeedback] = useState('');
@@ -762,13 +764,21 @@ function RateUs() {
     };
 
     return (
-        <div id="rate-us-page">
+        <div id="rate-us-page" className={isDarkMode ? '' : 'light'} style={{
+            backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+            color: isDarkMode ? '#eaecef' : '#1f2937'
+        }}>
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className="badge-yellow">Your Feedback Matters</span>
-                    <h1>Rate Your Experience</h1>
-                    <p className="subtitle">
+                    <span className="badge-yellow" style={{
+                        backgroundColor: isDarkMode ? '#f59e0b' : '#f59e0b',
+                        color: isDarkMode ? '#ffffff' : '#ffffff'
+                    }}>Your Feedback Matters</span>
+                    <h1 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Rate Your Experience</h1>
+                    <p className="subtitle" style={{
+                        color: isDarkMode ? '#9aa3b2' : '#374151'
+                    }}>
                         Help us improve our EcoCharge stations by sharing your experience. 
                         Your feedback helps us provide better service to the entire QCU community.
                     </p>
@@ -798,72 +808,89 @@ function RateUs() {
                     {/* Rating Section */}
                     <div className="rating-section">
                         {/* Community Impact Stats */}
-                        <div className="stats-card">
+                        <div className="stats-card" style={{
+                            backgroundColor: isDarkMode ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1))' : 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1))',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="stats-header">
-                                <h3 className="stats-title">Community Impact</h3>
-                                <p className="stats-description">
+                                <h3 className="stats-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Community Impact</h3>
+                                <p className="stats-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                     Real-time statistics from our QCU EcoCharge community
                                 </p>
                             </div>
                             <div className="stats-content">
                                 <div className="stats-grid">
                                     <div className="stat-item">
-                                        <div className="stat-value green">{communityStats.satisfactionRate}%</div>
-                                        <div className="stat-label">Satisfaction Rate</div>
+                                        <div className="stat-value green" style={{color: isDarkMode ? '#22c55e' : '#22c55e'}}>{communityStats.satisfactionRate}%</div>
+                                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Satisfaction Rate</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value blue">{communityStats.averageResponseTime}</div>
-                                        <div className="stat-label">Avg Response Time</div>
+                                        <div className="stat-value blue" style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>{communityStats.averageResponseTime}</div>
+                                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Avg Response Time</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value purple">{communityStats.improvementsCount}</div>
-                                        <div className="stat-label">Feedback Provided</div>
+                                        <div className="stat-value purple" style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>{communityStats.improvementsCount}</div>
+                                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Feedback Provided</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value yellow">{communityStats.totalUsers}</div>
-                                        <div className="stat-label">Active Users</div>
+                                        <div className="stat-value yellow" style={{color: isDarkMode ? '#f59e0b' : '#f59e0b'}}>{communityStats.totalUsers}</div>
+                                        <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Active Users</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Overall Rating */}
-                        <div className="card">
+                        <div className="card" style={{
+                            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header text-center">
-                                <div className="average-rating">{averageRating}</div>
+                                <div className="average-rating" style={{color: isDarkMode ? '#22c55e' : '#22c55e'}}>{averageRating}</div>
                                 <div className="stars-display">
                                     {renderStars(parseFloat(averageRating))}
                                 </div>
-                                <div className="rating-description">
+                                <div className="rating-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                     Based on {totalReviews} reviews
                                 </div>
                             </div>
                         </div>
 
                         {/* Rating Distribution */}
-                        <div className="card">
+                        <div className="card" style={{
+                            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header">
-                                <h3 className="card-title">Rating Breakdown</h3>
+                                <h3 className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Rating Breakdown</h3>
                             </div>
                             <div className="card-content">
                                 <div className="rating-breakdown">
                                     {ratingDistribution.map((item) => (
                                         <div key={item.stars} className="rating-row">
                                             <div className="rating-label">
-                                                <span className="star-count">{item.stars}</span>
+                                                <span className="star-count" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{item.stars}</span>
                                                 <svg className="star-small" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
                                                 </svg>
                                             </div>
                                             <div className="progress-container">
-                                                <div className="progress-bar">
+                                                <div className="progress-bar" style={{
+                                                    backgroundColor: isDarkMode ? '#1e2633' : '#e5e7eb'
+                                                }}>
                                                     <div 
                                                         className="progress-fill" 
-                                                        style={{width: `${item.percentage}%`}}
+                                                        style={{
+                                                            width: `${item.percentage}%`,
+                                                            background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #22c55e, #3b82f6)'
+                                                        }}
                                                     ></div>
                                                 </div>
                                             </div>
-                                            <span className="rating-count">{item.count}</span>
+                                            <span className="rating-count" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{item.count}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -871,10 +898,14 @@ function RateUs() {
                         </div>
 
                         {/* Submit Rating */}
-                        <div className="card">
+                        <div className="card" style={{
+                            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header">
-                                <h3 className="card-title">Rate Our Service</h3>
-                                <p className="card-description">
+                                <h3 className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Rate Our Service</h3>
+                                <p className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                     How would you rate your overall experience with QCU EcoCharge?
                                 </p>
                             </div>
@@ -1008,7 +1039,7 @@ function RateUs() {
                                             </p>
                                             
                                             <div className="feedback-section">
-                                                <label className="feedback-label">
+                                                <label className="feedback-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                                     Location
                                                 </label>
                                                 <select
@@ -1019,6 +1050,11 @@ function RateUs() {
                                                         if (e.target.value) {
                                                             setLocationError('');
                                                         }
+                                                    }}
+                                                    style={{
+                                                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                                        border: isDarkMode ? '2px solid #1e2633' : '1px solid #d1d5db',
+                                                        color: isDarkMode ? '#ffffff' : '#374151'
                                                     }}
                                                 >
                                                     <option value="">Select location</option>
@@ -1037,7 +1073,7 @@ function RateUs() {
                                             </div>
                                             
                                             <div className="feedback-section">
-                                                <label className="feedback-label">
+                                                <label className="feedback-label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                                     Share your experience (optional)
                                                 </label>
                                                 <textarea
@@ -1046,6 +1082,11 @@ function RateUs() {
                                                     value={feedback}
                                                     onChange={(e) => setFeedback(e.target.value)}
                                                     rows="4"
+                                                    style={{
+                                                        backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                                        border: isDarkMode ? '2px solid #1e2633' : '1px solid #d1d5db',
+                                                        color: isDarkMode ? '#ffffff' : '#374151'
+                                                    }}
                                                 />
                                             </div>
                                             
@@ -1081,10 +1122,15 @@ function RateUs() {
                     {/* Recent Reviews */}
                     <div className="reviews-section">
                         <div className="reviews-header">
-                        <h2 className="section-title">Recent Reviews</h2>
+                        <h2 className="section-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Recent Reviews</h2>
                             <button 
                                 className="view-all-reviews-btn"
                                 onClick={() => setShowAllReviewsModal(true)}
+                                style={{
+                                    backgroundColor: isDarkMode ? 'transparent' : 'transparent',
+                                    border: isDarkMode ? '1px solid #1e2633' : '1px solid #d1d5db',
+                                    color: isDarkMode ? '#9aa3b2' : '#374151'
+                                }}
                             >
                                 View All
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1094,7 +1140,11 @@ function RateUs() {
                         </div>
                         <div className="reviews-list">
                             {recentReviews.map((review, index) => (
-                                <div key={index} className="review-card">
+                                <div key={index} className="review-card" style={{
+                                    backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                                    boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                }}>
                                     <div className="review-header">
                                         <div className="review-user">
                                             <div className="review-user-info">
@@ -1109,21 +1159,21 @@ function RateUs() {
                                                     }}
                                                 />
                                                 <div className="review-user-details">
-                                            <h4 className="review-name">{review.user}</h4>
+                                            <h4 className="review-name" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{review.user}</h4>
                                             <div className="review-meta">
                                                 <div className="review-stars">
                                                     {renderStars(review.rating)}
                                                 </div>
-                                                <span className="review-separator">•</span>
-                                                <span className="review-date">{review.date}</span>
+                                                <span className="review-separator" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>•</span>
+                                                <span className="review-date" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>{review.date}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="review-content">
-                                        <p className="review-comment">"{review.comment}"</p>
-                                        <div className="review-location">
+                                        <p className="review-comment" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>"{review.comment}"</p>
+                                        <div className="review-location" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
@@ -1142,8 +1192,15 @@ function RateUs() {
             {/* All Reviews Modal */}
             {showAllReviewsModal && (
                 <div className="reviews-modal-overlay" onClick={() => setShowAllReviewsModal(false)}>
-                    <div className="reviews-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
+                    <div className="reviews-modal" onClick={(e) => e.stopPropagation()} style={{
+                        backgroundColor: isDarkMode ? '#1a1f2e' : '#ffffff',
+                        border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                        boxShadow: isDarkMode ? '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)' : '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                    }}>
+                        <div className="modal-header" style={{
+                            borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                            backgroundColor: isDarkMode ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01))' : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.01))'
+                        }}>
                             <div className="modal-app-info">
                                 <div className="modal-app-icon">
                                     <img 
@@ -1153,13 +1210,17 @@ function RateUs() {
                                     />
                                 </div>
                                 <div className="modal-app-details">
-                                    <h3 className="modal-app-name">QCU EcoCharge</h3>
-                                    <p className="modal-app-subtitle">Ratings and reviews</p>
+                                    <h3 className="modal-app-name" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>QCU EcoCharge</h3>
+                                    <p className="modal-app-subtitle" style={{color: isDarkMode ? '#a1a9b8' : '#6b7280'}}>Ratings and reviews</p>
                                 </div>
                             </div>
                             <button 
                                 className="modal-close-btn"
                                 onClick={() => setShowAllReviewsModal(false)}
+                                style={{
+                                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                                    color: isDarkMode ? '#a1a9b8' : '#6b7280'
+                                }}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M18 6L6 18"/>

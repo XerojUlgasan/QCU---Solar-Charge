@@ -114,67 +114,45 @@ function Contact() {
 		}
 	}
   return (
-		<div id="contact-page" className={isDarkMode ? '' : 'light'}>
+		<div id="contact-page" className={isDarkMode ? '' : 'light'} style={{
+			backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+			color: isDarkMode ? '#eaecef' : '#1f2937'
+		}}>
 			<div className="container">
 				<div className="header">
-					<span 
-						className="badge-blue" 
-						style={{
-							background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #22c55e, #3b82f6)',
-							color: '#ffffff'
-						}}
-					>
-						Get In Touch
-					</span>
-					<h1 
-						className="font-bold mb-6" 
-						style={{
-							fontSize: '40px',
-							color: isDarkMode ? '#ffffff' : '#1f2937'
-						}}
-					>
-						Contact Us
-					</h1>
-					<p 
-						className="subtitle"
-						style={{
-							color: isDarkMode ? '#9aa3b2' : '#374151'
-						}}
-					>
-						Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.
-					</p>
+					<span className="badge-blue" style={{
+						backgroundColor: isDarkMode ? '#0d8abc' : '#0d8abc',
+						color: isDarkMode ? '#ffffff' : '#ffffff'
+					}}>Get In Touch</span>
+					<h1 className="font-bold mb-6" style={{
+						fontSize: '40px',
+						color: isDarkMode ? '#ffffff' : '#1f2937'
+					}}>Contact Us</h1>
+					<p className="subtitle" style={{
+						color: isDarkMode ? '#9aa3b2' : '#374151'
+					}}>Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.</p>
         </div>
 
 				<div className="grid">
-					<div 
-						className="card left"
-						style={{
-							background: isDarkMode ? '#0f141c' : '#f9fafb',
-							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-						}}
-					>
-						<h3 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Send us a Message</h3>
-						<p 
-							className="desc"
-							style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-						>
-							Fill out the form below and we'll get back to you as soon as possible.
-						</p>
+					<div className="card left" style={{
+						backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+						border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+						boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+					}}>
+						<h3 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Send us a Message</h3>
+						<p className="desc" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Fill out the form below and we'll get back to you as soon as possible.</p>
 						{!isAuthenticated && (
-							<div 
-								className="login-box"
-								style={{
-									background: isDarkMode ? '#0c121a' : '#f3f4f6',
-									border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db'
-								}}
-							>
-								<p 
-									className="muted"
-									style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-								>
-									Please log in to send us a message
-								</p>
-								<button className="google-btn" onClick={handleGoogleLoginClick}>
+							<div className="login-box" style={{
+								backgroundColor: isDarkMode ? '#0c121a' : '#f3f4f6',
+								border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db'
+							}}>
+								<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Please log in to send us a message</p>
+								<button className="google-btn" onClick={handleGoogleLoginClick} style={{
+									background: 'linear-gradient(90deg, #22c55e, #3b82f6)',
+									color: '#ffffff',
+									border: 'none',
+									boxShadow: isDarkMode ? '0 2px 4px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+								}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
 										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
 										<circle cx="12" cy="7" r="4"></circle>
@@ -186,13 +164,10 @@ function Contact() {
 
 						{isAuthenticated && user && (
 							<>
-								<div 
-									className="user-box"
-									style={{
-										background: isDarkMode ? '#06110a' : '#f0fdf4',
-										border: isDarkMode ? '1px solid #16391f' : '1px solid #bbf7d0'
-									}}
-								>
+								<div className="user-box" style={{
+									backgroundColor: isDarkMode ? '#06110a' : '#f0fdf4',
+									border: isDarkMode ? '1px solid #16391f' : '1px solid #bbf7d0'
+								}}>
 									<img 
 										src={getUserAvatar(user)} 
 										alt={user.displayName}
@@ -205,29 +180,14 @@ function Contact() {
 										}}
 									/>
                       <div>
-										<p 
-											className="user-name"
-											style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}
-										>
-											{user.displayName}
-										</p>
-										<p 
-											className="muted"
-											style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-										>
-											{user.email}
-										</p>
+										<p className="user-name" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{user.displayName}</p>
+										<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>{user.email}</p>
                       </div>
                     </div>
                     
 								<form onSubmit={handleSubmit} className="contact-form">
 									<div className="form-field">
-										<label 
-											htmlFor="subject"
-											style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}
-										>
-											Subject
-										</label>
+										<label htmlFor="subject" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Subject</label>
 										<input 
 											id="subject" 
 											type="text" 
@@ -236,19 +196,14 @@ function Contact() {
 											onChange={(e)=>setFormData({...formData, subject:e.target.value})} 
 											required 
 											style={{
-												background: isDarkMode ? '#0b1119' : '#ffffff',
+												backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
 												border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
 												color: isDarkMode ? '#eaecef' : '#374151'
 											}}
 										/>
                       </div>
 									<div className="form-field">
-										<label 
-											htmlFor="message"
-											style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}
-										>
-											Message
-										</label>
+										<label htmlFor="message" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Message</label>
 										<textarea 
 											id="message" 
 											rows="6" 
@@ -257,7 +212,7 @@ function Contact() {
 											onChange={(e)=>setFormData({...formData, message:e.target.value})} 
 											required 
 											style={{
-												background: isDarkMode ? '#0b1119' : '#ffffff',
+												backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
 												border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
 												color: isDarkMode ? '#eaecef' : '#374151'
 											}}
@@ -268,9 +223,10 @@ function Contact() {
 										type="submit" 
 										disabled={isSubmitting}
 										style={{
-											background: isDarkMode ? '#0f1a28' : '#3b82f6',
+											backgroundColor: isDarkMode ? '#0f1a28' : '#3b82f6',
 											color: isDarkMode ? '#eaecef' : '#ffffff',
-											border: isDarkMode ? '1px solid #2a3446' : '1px solid #3b82f6'
+											border: isDarkMode ? '1px solid #2a3446' : '1px solid #3b82f6',
+											boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
 										}}
 									>
 										{isSubmitting ? 'Sending...' : 'Send Message'}
@@ -281,165 +237,95 @@ function Contact() {
           </div>
 
 					<div className="right-col">
-						<div 
-							className="card"
-							style={{
-								background: isDarkMode ? '#0f141c' : '#f9fafb',
-								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-							}}
-						>
+						<div className="card" style={{
+							backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+							boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+						}}>
 							<div className="info">
-								<div className="info-icon">
+								<div className="info-icon" style={{
+									background: 'linear-gradient(90deg, #22c55e, #3b82f6)'
+								}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
 										<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
 										<circle cx="12" cy="10" r="3"></circle>
 									</svg>
 								</div>
 								<div>
-									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Campus Location</h4>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Quezon City University
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										673 Quirino Highway
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										San Bartolome, Novaliches
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Quezon City, Philippines
-									</p>
+									<h4 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Campus Location</h4>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Quezon City University</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>673 Quirino Highway</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>San Bartolome, Novaliches</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Quezon City, Philippines</p>
 								</div>
                     </div>
                   </div>
 
-						<div 
-							className="card"
-							style={{
-								background: isDarkMode ? '#0f141c' : '#f9fafb',
-								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-							}}
-						>
+						<div className="card" style={{
+							backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+							boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+						}}>
 							<div className="info">
-								<div className="info-icon">
+								<div className="info-icon" style={{
+									background: 'linear-gradient(90deg, #22c55e, #3b82f6)'
+								}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
 										<path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
 									</svg>
 								</div>
 								<div>
-									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Phone Support</h4>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										+63 (2) 8806-3549
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Mon-Fri: 8:00 AM - 5:00 PM
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Emergency: 24/7
-									</p>
+									<h4 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Phone Support</h4>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>+63 (2) 8806-3549</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Mon-Fri: 8:00 AM - 5:00 PM</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Emergency: 24/7</p>
 								</div>
 							</div>
 						</div>
 
-						<div 
-							className="card"
-							style={{
-								background: isDarkMode ? '#0f141c' : '#f9fafb',
-								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-							}}
-						>
+						<div className="card" style={{
+							backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+							boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+						}}>
 							<div className="info">
-								<div className="info-icon">
+								<div className="info-icon" style={{
+									background: 'linear-gradient(90deg, #22c55e, #3b82f6)'
+								}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
 										<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
 										<polyline points="22,6 12,13 2,6"></polyline>
 									</svg>
 								</div>
 								<div>
-									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Email Support</h4>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										ecocharge@qcu.edu.ph
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										support@qcu.edu.ph
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Response time: 2-4 hours
-									</p>
+									<h4 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Email Support</h4>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>ecocharge@qcu.edu.ph</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>support@qcu.edu.ph</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Response time: 2-4 hours</p>
 								</div>
 							</div>
 						</div>
 
-						<div 
-							className="card"
-							style={{
-								background: isDarkMode ? '#0f141c' : '#f9fafb',
-								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-							}}
-						>
+						<div className="card" style={{
+							backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+							boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+						}}>
 							<div className="info">
-								<div className="info-icon">
+								<div className="info-icon" style={{
+									background: 'linear-gradient(90deg, #22c55e, #3b82f6)'
+								}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
 										<circle cx="12" cy="12" r="10"></circle>
 										<polyline points="12,6 12,12 16,14"></polyline>
 									</svg>
 								</div>
 								<div>
-									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Operating Hours</h4>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Charging Stations: 24/7
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Technical Support:
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Mon-Fri: 8:00 AM - 5:00 PM
-									</p>
-									<p 
-										className="muted"
-										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
-									>
-										Sat: 9:00 AM - 3:00 PM
-									</p>
+									<h4 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Operating Hours</h4>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Charging Stations: 24/7</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Technical Support:</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Mon-Fri: 8:00 AM - 5:00 PM</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Sat: 9:00 AM - 3:00 PM</p>
 								</div>
 							</div>
 						</div>
