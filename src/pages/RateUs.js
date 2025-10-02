@@ -179,14 +179,88 @@ function RateUs() {
         
         return reviews
             .map(review => {
-                // Find matching device info from station locations
-                const deviceInfo = stationLocations.find(device => 
-                    device.device_id === review.device_id || 
-                    device.location === review.location ||
-                    device.building === review.building
-                );
+                // Find matching device info from station locations with detailed logging
+                console.log('🔍 Review data:', {
+                    reviewId: review.id || review.rate_id || review._id,
+                    device_id: review.device_id,
+                    location: review.location,
+                    building: review.building,
+                    station: review.station
+                });
                 
-                return {
+                console.log('📊 Available station locations:', stationLocations.map(d => ({
+                    device_id: d.device_id,
+                    location: d.location,
+                    building: d.building,
+                    name: d.name
+                })));
+                
+                // Try multiple matching strategies in order of preference
+                
+                // Strategy 1: Exact device_id match (most reliable)
+                if (review.device_id) {
+                    deviceInfo = stationLocations.find(device => device.device_id === review.device_id);
+                    if (deviceInfo) {
+                        console.log(`✅ Matched by device_id: ${review.device_id}`);
+                    }
+                }
+                
+                // Strategy 2: Exact location + building match
+                if (!deviceInfo && review.location && review.building) {
+                    deviceInfo = stationLocations.find(device => 
+                        device.location === review.location && device.building === review.building
+                    );
+                    if (deviceInfo) {
+                        console.log(`✅ Matched by location+building: ${review.location} + ${review.building}`);
+                    }
+                }
+                
+                // Strategy 3: Partial building match (for cases where building name changed)
+                if (!deviceInfo && review.building) {
+                    deviceInfo = stationLocations.find(device => {
+                        // Check if building names are similar (handles cases like "Academic Building" vs "Academic Building 1")
+                        const reviewBuilding = review.building.toLowerCase().trim();
+                        const deviceBuilding = device.building.toLowerCase().trim();
+                        
+                        // Exact match
+                        if (reviewBuilding === deviceBuilding) return true;
+                        
+                        // Partial match (one contains the other)
+                        if (reviewBuilding.includes(deviceBuilding) || deviceBuilding.includes(reviewBuilding)) {
+                            console.log(`🔍 Partial building match: "${reviewBuilding}" vs "${deviceBuilding}"`);
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                    if (deviceInfo) {
+                        console.log(`✅ Matched by partial building: ${review.building}`);
+                    }
+                }
+                
+                // Strategy 4: Exact location match
+                if (!deviceInfo && review.location) {
+                    deviceInfo = stationLocations.find(device => device.location === review.location);
+                    if (deviceInfo) {
+                        console.log(`✅ Matched by location: ${review.location}`);
+                    }
+                }
+                
+                // Strategy 5: Exact building match
+                if (!deviceInfo && review.building) {
+                    deviceInfo = stationLocations.find(device => device.building === review.building);
+                    if (deviceInfo) {
+                        console.log(`✅ Matched by building: ${review.building}`);
+                    }
+                }
+                
+                if (!deviceInfo) {
+                    console.log('❌ No device match found for review');
+                }
+                
+                console.log('✅ Final device match:', deviceInfo);
+                
+                const formattedReview = {
                     id: review.id || review.rate_id || review._id, // Preserve ID for updates
                     email: review.email, // Preserve email for user matching
                     user: review.name || 'Anonymous',
@@ -200,6 +274,18 @@ function RateUs() {
                     photo_url: review.photo_url, // Preserve photo URL for user matching
                     rawDateTime: review.dateTime // Keep original dateTime for sorting
                 };
+                
+                console.log('📝 Final formatted review:', {
+                    id: formattedReview.id,
+                    originalBuilding: review.building,
+                    originalLocation: review.location,
+                    deviceInfoBuilding: deviceInfo?.building,
+                    deviceInfoLocation: deviceInfo?.location,
+                    finalBuilding: formattedReview.building,
+                    finalLocation: formattedReview.location
+                });
+                
+                return formattedReview;
             })
             .sort((a, b) => {
                 // Sort by dateTime in descending order (latest first)
