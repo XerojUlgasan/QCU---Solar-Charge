@@ -421,63 +421,243 @@ function Overview() {
                 </div>
             </div>
 
-            {/* All Stations Modal */}
+            {/* All Stations Modal - Fixed Close Button */}
             {showAllStations && (
-                <div className={`modal-overlay ${isDarkMode ? '' : 'light'}`} onClick={() => setShowAllStations(false)}>
-                    <div className={`modal-content ${isDarkMode ? '' : 'light'}`} onClick={(e) => e.stopPropagation()} style={{
+                <div 
+                    className="stations-modal-backdrop" 
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: 'blur(8px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '20px',
+                        animation: 'fadeInModal 0.3s ease-out'
+                    }}
+                    onClick={() => setShowAllStations(false)}
+                >
+                    <div 
+                        className="stations-modal-container" 
+                        style={{
+                            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            borderRadius: '16px',
+                            maxWidth: '1200px',
+                            width: '95vw',
+                            maxHeight: '90vh',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            animation: 'slideInModal 0.3s ease-out'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header - Compact Single Row */}
+                        <div 
+                            className="stations-modal-top-header" 
+                            style={{
+                                padding: '12px 20px',
+                                borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb',
                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
-                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-                    }}>
-                        <div className={`modal-header ${isDarkMode ? '' : 'light'}`} style={{
-                            borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
-                        }}>
-                            <h2 className={isDarkMode ? 'text-white' : 'text-gray-900'}>All Stations ({getFilteredDevices().length})</h2>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: '12px',
+                                minHeight: '50px'
+                            }}
+                        >
+                            {/* Left Section - Title */}
+                            <div style={{ flex: '1', minWidth: '150px' }}>
+                                <h2 style={{
+                                    margin: 0,
+                                    fontSize: '18px',
+                                    fontWeight: '600',
+                                    color: isDarkMode ? '#eaecef' : '#1f2937',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                }}>
+                                    All Stations
+                                    <span style={{
+                                        fontSize: '12px',
+                                        color: isDarkMode ? '#9aa3b2' : '#6b7280',
+                                        fontWeight: '500',
+                                        backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+                                        padding: '2px 6px',
+                                        borderRadius: '8px'
+                                    }}>
+                                        ({getFilteredDevices().length})
+                                    </span>
+                                </h2>
+                            </div>
+
+                            {/* Right Section - Controls */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                flexWrap: 'wrap'
+                            }}>
+                                {/* Filter Dropdown */}
                                 <select 
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                     style={{
-                                        padding: '6px 12px',
+                                        padding: '6px 10px',
                                         borderRadius: '6px',
                                         border: isDarkMode ? '1px solid #1e2633' : '1px solid #d1d5db',
                                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
                                         color: isDarkMode ? '#eaecef' : '#374151',
-                                        fontSize: '14px',
-                                        cursor: 'pointer'
+                                        fontSize: '13px',
+                                        cursor: 'pointer',
+                                        outline: 'none',
+                                        transition: 'all 0.2s ease',
+                                        minWidth: '100px'
+                                    }}
+                                    onFocus={(e) => {
+                                        e.target.style.borderColor = '#3b82f6';
+                                        e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.borderColor = isDarkMode ? '#1e2633' : '#d1d5db';
+                                        e.target.style.boxShadow = 'none';
                                     }}
                                 >
-                                    <option value="all">All Status</option>
+                                    <option value="all">All</option>
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                     <option value="maintenance">Maintenance</option>
                                 </select>
+
+                                {/* Close Button - Fixed */}
                                 <button 
-                                    className={`modal-close ${isDarkMode ? '' : 'light'}`}
+                                    className="modal-close-button"
                                     style={{
-                                        color: isDarkMode ? '#9aa3b2' : '#6b7280'
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '6px 10px',
+                                        backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
+                                        border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                                        borderRadius: '6px',
+                                        color: isDarkMode ? '#9aa3b2' : '#6b7280',
+                                        cursor: 'pointer',
+                                        fontSize: '13px',
+                                        fontWeight: '500',
+                                        transition: 'all 0.2s ease',
+                                        outline: 'none',
+                                        userSelect: 'none',
+                                        WebkitUserSelect: 'none',
+                                        MozUserSelect: 'none',
+                                        msUserSelect: 'none'
                                     }}
                                     onClick={() => setShowAllStations(false)}
+                                    onMouseEnter={(e) => {
+                                        const button = e.currentTarget;
+                                        button.style.backgroundColor = isDarkMode ? '#374151' : '#e5e7eb';
+                                        button.style.color = isDarkMode ? '#eaecef' : '#1f2937';
+                                        button.style.borderColor = isDarkMode ? '#4b5563' : '#9ca3af';
+                                        button.style.transform = 'translateY(-1px)';
+                                        button.style.boxShadow = isDarkMode 
+                                            ? '0 2px 8px rgba(0, 0, 0, 0.2)' 
+                                            : '0 2px 8px rgba(0, 0, 0, 0.1)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        const button = e.currentTarget;
+                                        button.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                                        button.style.color = isDarkMode ? '#9aa3b2' : '#6b7280';
+                                        button.style.borderColor = isDarkMode ? '#374151' : '#d1d5db';
+                                        button.style.transform = 'translateY(0)';
+                                        button.style.boxShadow = 'none';
+                                    }}
+                                    onMouseDown={(e) => {
+                                        const button = e.currentTarget;
+                                        button.style.transform = 'translateY(0) scale(0.98)';
+                                    }}
+                                    onMouseUp={(e) => {
+                                        const button = e.currentTarget;
+                                        button.style.transform = 'translateY(-1px) scale(1)';
+                                    }}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <line x1="18" y1="6" x2="6" y2="18"></line>
                                         <line x1="6" y1="6" x2="18" y2="18"></line>
                                     </svg>
+                                    <span>Close</span>
                                 </button>
                             </div>
                         </div>
-                        <div className={`modal-body ${isDarkMode ? '' : 'light'}`}>
-                            <div className="stations-grid-modal">
+
+                        {/* Modal Content */}
+                        <div 
+                            className="stations-modal-content" 
+                            style={{
+                                padding: '16px 20px 20px 20px',
+                                overflowY: 'auto',
+                                flex: 1,
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: isDarkMode ? '#374151 #1e2633' : '#d1d5db #f3f4f6'
+                            }}
+                        >
+                            <div 
+                                className="stations-grid-modal-new" 
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '16px',
+                                    maxWidth: '100%'
+                                }}
+                            >
                                 {getFilteredDevices().map((device, index) => (
-                                    <div key={index} className={`station-card ${isDarkMode ? '' : 'light'}`} style={{
+                                    <div 
+                                        key={index} 
+                                        className={`station-card-new ${isDarkMode ? '' : 'light'}`} 
+                                        style={{
                                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
-                                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
-                                    }}>
+                                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                                            borderRadius: '12px',
+                                            padding: '16px',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.transform = 'translateY(-2px)';
+                                            e.target.style.boxShadow = isDarkMode 
+                                                ? '0 8px 25px rgba(0, 0, 0, 0.3)' 
+                                                : '0 8px 25px rgba(0, 0, 0, 0.1)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    >
                                         <div className="station-header">
                                             <div className="station-info">
-                                                <h3>{device.name || 'Unknown Device'}
+                                                <h3 style={{
+                                                    fontSize: '16px',
+                                                    fontWeight: '600',
+                                                    margin: '0 0 4px 0',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    color: isDarkMode ? '#eaecef' : '#1f2937'
+                                                }}>
+                                                    {device.name || 'Unknown Device'}
                                                     <div className={`status-dot ${(device.status || 'offline').toLowerCase()}`}></div>
                                                 </h3>
-                                                <div className="station-location">
+                                                <div className="station-location" style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                    color: isDarkMode ? '#9aa3b2' : '#374151',
+                                                    fontSize: '13px'
+                                                }}>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                         <circle cx="12" cy="10" r="3"></circle>
@@ -485,34 +665,88 @@ function Overview() {
                                                     <span>{device.location || 'Unknown Location'}</span>
                                                 </div>
                                             </div>
-                                            <span className="station-id">{device.id || 'N/A'}</span>
+                                            <span className="station-id" style={{
+                                                padding: '3px 6px',
+                                                borderRadius: '4px',
+                                                background: isDarkMode ? '#1e2633' : '#f3f4f6',
+                                                color: isDarkMode ? '#9aa3b2' : '#374151',
+                                                fontSize: '11px'
+                                            }}>
+                                                {device.id || 'N/A'}
+                                            </span>
                                         </div>
                                         <div className="station-details">
-                                            <div className="detail-row">
-                                                <span className="label">Status</span>
-                                                <span className="value">{getStatusText(device.status)}</span>
+                                            <div className="detail-row" style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                fontSize: '13px',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Status</span>
+                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{getStatusText(device.status)}</span>
                                             </div>
-                                            <div className="detail-row">
-                                                <span className="label">Power</span>
-                                                <span className="value">{formatPower(device.power)}</span>
+                                            <div className="detail-row" style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                fontSize: '13px',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Power</span>
+                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{formatPower(device.power)}</span>
                                             </div>
-                                            <div className="detail-row">
-                                                <span className="label">Temperature</span>
-                                                <span className="value">{device.temperature || 'N/A'}°C</span>
+                                            <div className="detail-row" style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                fontSize: '13px',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Temperature</span>
+                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{device.temperature || 'N/A'}°C</span>
                                             </div>
-                                            <div className="usage-container">
-                                                <div className="detail-row">
-                                                    <span className="label">Battery Percentage</span>
-                                                    <span className="value">{device.percentage || 0}%</span>
+                                            <div className="usage-container" style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '8px',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <div className="detail-row" style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    fontSize: '13px'
+                                                }}>
+                                                    <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Battery Percentage</span>
+                                                    <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{device.percentage || 0}%</span>
                                                 </div>
-                                                <div className="progress-bar">
+                                                <div className="progress-bar" style={{
+                                                    width: '100%',
+                                                    height: '8px',
+                                                    background: isDarkMode ? '#1e2633' : '#e5e7eb',
+                                                    borderRadius: '4px',
+                                                    overflow: 'hidden'
+                                                }}>
                                                     <div 
                                                         className="progress-fill" 
-                                                        style={{width: `${device.percentage || 0}%`}}
+                                                        style={{
+                                                            width: `${device.percentage || 0}%`,
+                                                            height: '100%',
+                                                            background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)',
+                                                            borderRadius: '4px',
+                                                            transition: 'width 0.3s ease'
+                                                        }}
                                                     ></div>
                                                 </div>
                                             </div>
-                                            <div className="last-updated">
+                                            <div className="last-updated" style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                color: isDarkMode ? '#9aa3b2' : '#374151',
+                                                fontSize: '12px'
+                                            }}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <circle cx="12" cy="12" r="10"></circle>
                                                     <path d="M12 6v6l4 2"></path>
@@ -532,5 +766,3 @@ function Overview() {
 }
 
 export default Overview;
-
-

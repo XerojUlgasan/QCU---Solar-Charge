@@ -52,7 +52,7 @@ function About() {
   const team = [
     {
       name: "Xeroj N. Ulgasan",
-      role: "Project Manager",
+      role: "Project Manager/Programmer",
       description: "Leading sustainable technology initiatives at QCU",
       initials: "XU",
       image: "/images/team/maria-santos.png"
@@ -65,59 +65,59 @@ function About() {
       image: "/images/team/ErnestoAgustin.png"
     },
     {
-      name: "Sarah Kim",
-      role: "UX Designer",
+      name: "John Kenneth Ramos",
+      role: "System Analyst/Quality Assurance",
       description: "Designing user-friendly interfaces for charging stations",
-      initials: "SK",
+      initials: "KR",
       image: "/images/team/sarah-kim.png"
     },
     {
-      name: "Alex Rodriguez",
-      role: "Campus Coordinator",
+      name: "Ace Jester Almase",
+      role: "Technical Writer",
       description: "Managing station deployment and user support",
-      initials: "AR",
+      initials: "AA",
       image: "/images/team/alex-rodriguez.png"
     },
     {
-      name: "Emily Watson",
-      role: "Software Developer",
+      name: "Karl Dominique Sarcia",
+      role: "Researcher",
       description: "Building the backend systems and mobile applications",
-      initials: "EW",
+      initials: "KS",
       image: "/images/team/emily-watson.png"
     },
     {
-      name: "Michael Torres",
-      role: "Hardware Engineer",
+      name: "Nurshayeeda Asaad",
+      role: "Technical Writer",
       description: "Designing and implementing charging station hardware",
-      initials: "MT",
+      initials: "NA",
       image: "/images/team/michael-torres.png"
     },
     {
-      name: "Lisa Park",
-      role: "Data Analyst",
+      name: "John Rod Chester Orogo",
+      role: "Technical Writer",
       description: "Analyzing usage patterns and optimizing system performance",
-      initials: "LP",
+      initials: "JO",
       image: "/images/team/lisa-park.png"
     },
     {
-      name: "David Johnson",
-      role: "Maintenance Specialist",
+      name: "Carl Jeus S. Cacho",
+      role: "UI/UX Designer",
       description: "Ensuring optimal performance and reliability of stations",
-      initials: "DJ",
+      initials: "CC",
       image: "/images/team/david-johnson.png"
     },
     {
-      name: "Rachel Green",
-      role: "Marketing Coordinator",
+      name: "Antonio Delas Eras",
+      role: "UI/UX Designer",
       description: "Promoting sustainable charging solutions across campus",
-      initials: "RG",
+      initials: "AE",
       image: "/images/team/rachel-green.png"
     },
     {
-      name: "James Wilson",
-      role: "Research Assistant",
+      name: "Karl Vergara",
+      role: "Researcher",
       description: "Supporting research and development of new features",
-      initials: "JW",
+      initials: "KV",
       image: "/images/team/james-wilson.png"
     }
   ];
