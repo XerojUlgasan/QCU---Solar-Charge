@@ -54,7 +54,7 @@ function Homepage() {
     ];
 
     return (
-        <div className={`min-h-screen ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={isDarkMode ? {backgroundColor: '#0b0e13'} : {backgroundColor: '#fafafa'}}>
+        <div className={`min-h-screen ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={isDarkMode ? {backgroundColor: '#0b0e13'} : {backgroundColor: '#ffffff'}}>
             {/* Hero Section */}
             <section className="relative py-20 px-4">
                 <div className="max-w-7xl mx-auto">
@@ -65,27 +65,28 @@ function Homepage() {
                                 borderRadius: '8px',
                                 fontWeight: '600',
                                 fontSize: '12px',
-                                backgroundColor: isDarkMode ? '#0e5429' : '#d1fae5',
-                                color: isDarkMode ? '#ffffff' : '#065f46'
+                                backgroundColor: isDarkMode ? '#0e5429' : '#dcfce7',
+                                color: isDarkMode ? '#ffffff' : '#166534',
+                                border: isDarkMode ? 'none' : '1px solid #bbf7d0'
                             }}>
                                 Sustainable Technology
                             </span>
                             <h1 className={`font-bold mb-6 ${isDarkMode ? 'bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent' : 'text-gray-900'}`} style={{fontSize: '40px'}}>
                                 QCU EcoCharge Station
                             </h1>
-                            <p className="mb-8" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
+                            <p className="mb-8" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
                                 Charge your devices with clean, renewable solar energy. Our innovative charging stations 
                                 provide convenient, eco-friendly power solutions across campus.
                             </p>
                             <div className="flex flex-wrap gap-4">
-                                <Link to="/overview#station-status" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 ${isDarkMode ? 'text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700' : 'text-white bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 shadow-lg hover:shadow-xl'}`}>
+                                <Link to="/overview#station-status" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 ${isDarkMode ? 'text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700' : 'text-white bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 shadow-lg hover:shadow-xl border border-emerald-400'}`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-2">
                                         <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                         <circle cx="12" cy="10" r="3"></circle>
                                     </svg>
                                     Find Stations
                                 </Link>
-                                <Link to="/about" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-transparent h-10 rounded-md px-6 ${isDarkMode ? 'text-white hover:bg-gray-800 border-gray-600' : 'text-gray-700 hover:bg-gray-100 border-gray-300 hover:border-gray-400'}`}>
+                                <Link to="/about" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-transparent h-10 rounded-md px-6 ${isDarkMode ? 'text-white hover:bg-gray-800 border-gray-600' : 'text-gray-700 hover:bg-gray-50 border-gray-300 hover:border-gray-400 shadow-sm hover:shadow-md'}`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-2">
                                         <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
                                     </svg>
@@ -99,12 +100,12 @@ function Homepage() {
                                 alt="Solar charging station"
                                 className="rounded-2xl shadow-2xl w-full"
                             />
-                            <div className={`absolute -bottom-6 -left-6 p-6 rounded-xl shadow-lg ${isDarkMode ? 'bg-white text-gray-900' : 'bg-white text-gray-900 shadow-xl border border-gray-200'}`}>
+                            <div className={`absolute -bottom-6 -left-6 p-6 rounded-xl shadow-lg ${isDarkMode ? 'bg-white text-gray-900' : 'bg-white text-gray-900 shadow-xl border-2 border-gray-200'}`}>
                                 <div className="flex items-center space-x-3">
                                     <div className={`w-3 h-3 rounded-full animate-pulse ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`}></div>
-                                    <span className="font-semibold">Live Charging</span>
+                                    <span className="font-semibold" style={{color: isDarkMode ? '#1f2937' : '#1f2937'}}>Live Charging</span>
                                 </div>
-                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-500'}`}>Station ID: QCU-001</p>
+                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Station ID: QCU-001</p>
                             </div>
                         </div>
                     </div>
@@ -112,13 +113,13 @@ function Homepage() {
             </section>
 
             {/* Stats Section */}
-            <section className="py-12" style={{backgroundColor: isDarkMode ? '#0f141c' : '#f5f5f5'}}>
+            <section className="py-12" style={{backgroundColor: isDarkMode ? '#0f141c' : '#f8fafc'}}>
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         {stats.map((stat, index) => (
                             <div key={index} className="text-center">
                                 <div className={`font-bold mb-2 ${isDarkMode ? 'text-green-500' : 'text-emerald-600'}`} style={{fontSize: '28px'}}>{stat.value}</div>
-                                <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>{stat.label}</div>
+                                <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>{stat.label}</div>
                             </div>
                         ))}
                     </div>
@@ -130,7 +131,7 @@ function Homepage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Why Choose QCU EcoCharge?</h2>
-                        <p className="max-w-2xl mx-auto" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
+                        <p className="max-w-2xl mx-auto" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
                             Our solar-powered charging stations combine sustainability with convenience, 
                             offering a reliable and eco-friendly way to keep your devices powered.
                         </p>
@@ -141,7 +142,8 @@ function Homepage() {
                             <div key={index} className={`flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'}`} style={{
                                 backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
                                 border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db', 
-                                padding: '20px'
+                                padding: '20px',
+                                boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                             }}>
                                 <div className={`mx-auto rounded-lg flex items-center justify-center text-white mb-4 ${isDarkMode ? '' : 'shadow-md'}`} style={{
                                     background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)', 
@@ -151,7 +153,7 @@ function Homepage() {
                                     {feature.icon}
                                 </div>
                                 <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '18px'}}>{feature.title}</h4>
-                                <p style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>{feature.description}</p>
+                                <p style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>{feature.description}</p>
                             </div>
                         ))}
                     </div>
@@ -166,10 +168,10 @@ function Homepage() {
                         Join thousands of users who have made the switch to eco-friendly charging.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
-                        <Link to="/rfid" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 ${isDarkMode ? 'bg-white text-green-600 hover:bg-gray-100' : 'bg-white text-emerald-600 hover:bg-gray-50 shadow-lg hover:shadow-xl'}`}>
+                        <Link to="/rfid" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 ${isDarkMode ? 'bg-white text-green-600 hover:bg-gray-100' : 'bg-white text-emerald-600 hover:bg-gray-50 shadow-lg hover:shadow-xl border border-emerald-200'}`}>
                             Get Your RFID Card
                         </Link>
-                        <Link to="/overview#station-status" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border text-white border-white hover:bg-white h-10 rounded-md px-6 ${isDarkMode ? 'hover:text-green-600' : 'hover:text-emerald-600'}`}>
+                        <Link to="/overview#station-status" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border text-white border-white hover:bg-white h-10 rounded-md px-6 ${isDarkMode ? 'hover:text-green-600' : 'hover:text-emerald-600 shadow-sm hover:shadow-md'}`}>
                             View Locations
                         </Link>
                     </div>

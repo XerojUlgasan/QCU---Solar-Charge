@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { authenticatedGet, authenticatedPost } from '../utils/api';
 import "../styles/ReportProblem.css";
 
@@ -9,6 +10,7 @@ function ReportProblem() {
     const { showSuccess, showError } = useNotification();
     const { openModal } = useGoogleLogin();
     const { user, isAuthenticated, idToken } = useAuth();
+    const { isDarkMode } = useTheme();
     const [formData, setFormData] = useState({
         station: '',
         problemType: '',
@@ -366,13 +368,21 @@ function ReportProblem() {
     };
 
     return (
-        <div id="report-problem-page">
+        <div id="report-problem-page" className={isDarkMode ? '' : 'light'} style={{
+            backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+            color: isDarkMode ? '#eaecef' : '#1f2937'
+        }}>
             <div className="container">
                 {/* Header */}
                 <div className="header">
-                    <span className="badge-red">Report an Issue</span>
-                    <h1>Report a Problem</h1>
-                    <p className="subtitle">
+                    <span className="badge-red" style={{
+                        backgroundColor: isDarkMode ? '#ef4444' : '#ef4444',
+                        color: isDarkMode ? '#ffffff' : '#ffffff'
+                    }}>Report an Issue</span>
+                    <h1 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Report a Problem</h1>
+                    <p className="subtitle" style={{
+                        color: isDarkMode ? '#9aa3b2' : '#374151'
+                    }}>
                         Encountered an issue with one of our EcoCharge stations? Let us know so we can 
                         fix it quickly and keep our network running smoothly for everyone.
                     </p>
@@ -381,9 +391,13 @@ function ReportProblem() {
                 <div className="main-grid">
                     {/* Report Form */}
                     <div className="form-section">
-                        <div className="card">
+                        <div className="card" style={{
+                            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header">
-                                <h3 className="card-title">
+                                <h3 className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                                         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -391,15 +405,19 @@ function ReportProblem() {
                                     </svg>
                                     Submit Problem Report
                                 </h3>
-                                <p className="card-description">
+                                <p className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                     Please provide as much detail as possible to help us resolve the issue quickly.
                                 </p>
                             </div>
                             <div className="card-content">
                                 {!isAuthenticated ? (
                                     <div className="login-prompt">
-                                        <p className="login-text">Please log in to report a problem</p>
-                                        <button onClick={handleGoogleLoginClick} className="google-login-btn">
+                                        <p className="login-text" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Please log in to report a problem</p>
+                                        <button onClick={handleGoogleLoginClick} className="google-login-btn" style={{
+                                            backgroundColor: isDarkMode ? '#121a24' : '#ffffff',
+                                            color: isDarkMode ? '#eaecef' : '#374151',
+                                            border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db'
+                                        }}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                                 <circle cx="12" cy="7" r="4"></circle>
@@ -409,7 +427,10 @@ function ReportProblem() {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="user-info">
+                                        <div className="user-info" style={{
+                                            backgroundColor: isDarkMode ? '#06110a' : '#f0fdf4',
+                                            border: isDarkMode ? '1px solid #16391f' : '1px solid #bbf7d0'
+                                        }}>
                                             <img 
                                                 src={getUserAvatar(user)} 
                                                 alt={user?.displayName}
@@ -423,14 +444,14 @@ function ReportProblem() {
                                                 }}
                                             />
                                             <div className="user-details">
-                                                <p className="user-name">{user?.displayName}</p>
-                                                <p className="user-email">{user?.email}</p>
+                                                <p className="user-name" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{user?.displayName}</p>
+                                                <p className="user-email" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>{user?.email}</p>
                                             </div>
                                         </div>
                                         
                                         <form onSubmit={handleSubmit} className="report-form">
                                             <div className="form-group">
-                                                <label htmlFor="station" className="form-label">
+                                                <label htmlFor="station" className="form-label" style={{color: isDarkMode ? '#eaecef' : '#374151'}}>
                                                     Station Location *
                                                 </label>
                                                 <select 
@@ -439,6 +460,11 @@ function ReportProblem() {
                                                     onChange={(e) => setFormData({ ...formData, station: e.target.value })}
                                                     className="form-select"
                                                     required
+                                                    style={{
+                                                        backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
+                                                        border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
+                                                        color: isDarkMode ? '#eaecef' : '#374151'
+                                                    }}
                                                 >
                                                     <option value="">Select the station with the problem</option>
                                                     {stations.map((station) => (
@@ -450,7 +476,7 @@ function ReportProblem() {
                                             </div>
 
                                             <div className="form-group">
-                                                <label htmlFor="problemType" className="form-label">
+                                                <label htmlFor="problemType" className="form-label" style={{color: isDarkMode ? '#eaecef' : '#374151'}}>
                                                     Problem Type *
                                                 </label>
                                                 <select 
@@ -459,6 +485,11 @@ function ReportProblem() {
                                                     onChange={(e) => setFormData({ ...formData, problemType: e.target.value })}
                                                     className="form-select"
                                                     required
+                                                    style={{
+                                                        backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
+                                                        border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
+                                                        color: isDarkMode ? '#eaecef' : '#374151'
+                                                    }}
                                                 >
                                                     <option value="">What type of problem are you experiencing?</option>
                                                     {problemTypes.map((type) => (
@@ -468,7 +499,7 @@ function ReportProblem() {
                                             </div>
 
                                             <div className="form-group">
-                                                <label htmlFor="urgency" className="form-label">
+                                                <label htmlFor="urgency" className="form-label" style={{color: isDarkMode ? '#eaecef' : '#374151'}}>
                                                     Urgency Level *
                                                 </label>
                                                 <select 
@@ -477,6 +508,11 @@ function ReportProblem() {
                                                     onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
                                                     className="form-select"
                                                     required
+                                                    style={{
+                                                        backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
+                                                        border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
+                                                        color: isDarkMode ? '#eaecef' : '#374151'
+                                                    }}
                                                 >
                                                     <option value="">How urgent is this issue?</option>
                                                     {urgencyLevels.map((level) => (
@@ -488,7 +524,7 @@ function ReportProblem() {
                                             </div>
                                             
                                             <div className="form-group">
-                                                <label htmlFor="description" className="form-label">
+                                                <label htmlFor="description" className="form-label" style={{color: isDarkMode ? '#eaecef' : '#374151'}}>
                                                     Problem Description *
                                                 </label>
                                                 <textarea
@@ -498,6 +534,11 @@ function ReportProblem() {
                                                     value={formData.description}
                                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                                     required
+                                                    style={{
+                                                        backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
+                                                        border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
+                                                        color: isDarkMode ? '#eaecef' : '#374151'
+                                                    }}
                                                 />
                                             </div>
                                             
@@ -532,33 +573,41 @@ function ReportProblem() {
                     {/* Recent Reports & Info */}
                     <div className="info-section">
                         {/* Response Time Info */}
-                        <div className="card response-card">
+                        <div className="card response-card" style={{
+                            backgroundColor: isDarkMode ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1))' : 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1))',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header">
-                                <h3 className="card-title">Our Response Promise</h3>
+                                <h3 className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Our Response Promise</h3>
                             </div>
                             <div className="card-content">
                                 <div className="response-times">
                                     <div className="response-item">
                                         <div className="response-badge critical">1h</div>
-                                        <span>Critical issues: Within 1 hour</span>
+                                        <span style={{color: isDarkMode ? '#eaecef' : '#374151'}}>Critical issues: Within 1 hour</span>
                                     </div>
                                     <div className="response-item">
                                         <div className="response-badge high">4h</div>
-                                        <span>High priority: Within 4 hours</span>
+                                        <span style={{color: isDarkMode ? '#eaecef' : '#374151'}}>High priority: Within 4 hours</span>
                                     </div>
                                     <div className="response-item">
                                         <div className="response-badge normal">24h</div>
-                                        <span>Other issues: Within 24 hours</span>
+                                        <span style={{color: isDarkMode ? '#eaecef' : '#374151'}}>Other issues: Within 24 hours</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Recent Reports */}
-                        <div className="card">
+                        <div className="card" style={{
+                            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header">
-                                <h3 className="card-title">Recent Problem Reports</h3>
-                                <p className="card-description">
+                                <h3 className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Recent Problem Reports</h3>
+                                <p className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                     Track the status of recently reported issues
                                 </p>
                             </div>
@@ -566,12 +615,15 @@ function ReportProblem() {
                                 {loading ? (
                                     <div className="loading-container">
                                         <div className="loading-spinner"></div>
-                                        <p>Loading reports...</p>
+                                        <p style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Loading reports...</p>
                                     </div>
                                 ) : error ? (
                                     <div className="error-container">
-                                        <p className="error-message">{error}</p>
-                                        <button onClick={fetchReports} className="retry-button">
+                                        <p className="error-message" style={{color: isDarkMode ? '#ef4444' : '#dc2626'}}>{error}</p>
+                                        <button onClick={fetchReports} className="retry-button" style={{
+                                            backgroundColor: isDarkMode ? '#3b82f6' : '#3b82f6',
+                                            color: '#ffffff'
+                                        }}>
                                             Try Again
                                         </button>
                                     </div>
@@ -579,11 +631,14 @@ function ReportProblem() {
                                 <div className="reports-list">
                                          {formattedReports.length > 0 ? (
                                              formattedReports.map((report) => (
-                                        <div key={report.id} className="report-item">
+                                        <div key={report.id} className="report-item" style={{
+                                            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                                            border: isDarkMode ? '1px solid #1e2633' : '1px solid #d1d5db'
+                                        }}>
                                             <div className="report-header">
                                                 <div className="report-info">
-                                                     <h4 className="report-title">{report.issue}</h4>
-                                                    <div className="report-location">
+                                                     <h4 className="report-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{report.issue}</h4>
+                                                    <div className="report-location" style={{color: isDarkMode ? '#9ca3af' : '#6b7280'}}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                             <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                             <circle cx="12" cy="10" r="3"></circle>
@@ -619,21 +674,21 @@ function ReportProblem() {
                                             </div>
                                                      )}
                                                      <div className="reporter-details">
-                                                         <span className="reporter-name">{report.reportedByName}</span>
-                                                         <span className="report-date">{report.date}</span>
+                                                         <span className="reporter-name" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{report.reportedByName}</span>
+                                                         <span className="report-date" style={{color: isDarkMode ? '#9ca3af' : '#6b7280'}}>{report.date}</span>
                                 </div>
                                                  </div>
                                              </div>
                                              {report.description && (
                                                  <div className="report-description">
-                                                     <p>"{report.description}"</p>
+                                                     <p style={{color: isDarkMode ? '#d1d5db' : '#4b5563'}}>"{report.description}"</p>
                                                  </div>
                                              )}
                                         </div>
                                              ))
                                          ) : (
                                              <div className="no-reports">
-                                                 <p>No recent reports found.</p>
+                                                 <p style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>No recent reports found.</p>
                                              </div>
                                          )}
                                  </div>
@@ -642,19 +697,23 @@ function ReportProblem() {
                         </div>
 
                         {/* Emergency Contact */}
-                        <div className="card emergency-card">
+                        <div className="card emergency-card" style={{
+                            backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.05)' : 'rgba(239, 68, 68, 0.05)',
+                            border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}>
                             <div className="card-header">
-                                <h3 className="card-title emergency-title">Emergency Contact</h3>
-                                <p className="card-description">
+                                <h3 className="card-title emergency-title" style={{color: isDarkMode ? '#ef4444' : '#dc2626'}}>Emergency Contact</h3>
+                                <p className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>
                                     For urgent safety concerns or emergencies
                                 </p>
                             </div>
                             <div className="card-content">
                                 <div className="emergency-info">
-                                    <p className="emergency-text">
-                                        Campus Security: <span className="emergency-number">+63 (2) 8806-3549</span>
+                                    <p className="emergency-text" style={{color: isDarkMode ? '#eaecef' : '#374151'}}>
+                                        Campus Security: <span className="emergency-number" style={{color: isDarkMode ? '#ef4444' : '#dc2626'}}>+63 (2) 8806-3549</span>
                                     </p>
-                                    <p className="emergency-note">Available 24/7 for emergency situations</p>
+                                    <p className="emergency-note" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Available 24/7 for emergency situations</p>
                                 </div>
                             </div>
                         </div>

@@ -284,7 +284,7 @@ const AdminDevices = () => {
     const matchesSearch = device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          device.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          device.building.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || device.status === filterStatus;
+    const matchesFilter = filterStatus === 'all' || device.status?.toLowerCase() === filterStatus.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
@@ -537,7 +537,7 @@ const AdminDevices = () => {
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="maintenance">Maintenance</option>
-              <option value="offline">Offline</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
           

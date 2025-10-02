@@ -21,6 +21,90 @@ code {
   box-sizing: border-box;
 }
 
+/* Global Theme Transition Styles for Admin Components */
+#admin-header,
+#admin-header *,
+#admin-dashboard,
+#admin-dashboard *,
+#admin-login-page,
+#admin-login-page *,
+.admin-settings-modal,
+.admin-settings-modal *,
+.admin-settings-modal-overlay {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease,
+              opacity 0.3s ease !important;
+}
+
+/* Ensure smooth transitions for inline styles */
+[style*="backgroundColor"],
+[style*="background-color"],
+[style*="color"],
+[style*="border"],
+[style*="borderColor"],
+[style*="border-color"] {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease,
+              opacity 0.3s ease !important;
+}
+
+/* CSS Custom Properties for smooth theme transitions */
+:root {
+  --admin-bg-primary: #0b0e13;
+  --admin-bg-secondary: #0f141c;
+  --admin-bg-tertiary: #1e2633;
+  --admin-text-primary: #ffffff;
+  --admin-text-secondary: #9aa3b2;
+  --admin-text-tertiary: #6b7280;
+  --admin-border-primary: #1e2633;
+  --admin-border-secondary: #374151;
+  --admin-shadow-primary: none;
+  --admin-shadow-secondary: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.light {
+  --admin-bg-primary: #ffffff;
+  --admin-bg-secondary: #ffffff;
+  --admin-bg-tertiary: #f3f4f6;
+  --admin-text-primary: #1f2937;
+  --admin-text-secondary: #1f2937;
+  --admin-text-tertiary: #6b7280;
+  --admin-border-primary: #d1d5db;
+  --admin-border-secondary: #e5e7eb;
+  --admin-shadow-primary: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --admin-shadow-secondary: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Apply CSS variables to admin components */
+#admin-header,
+#admin-dashboard,
+#admin-login-page,
+.admin-settings-modal {
+  background-color: var(--admin-bg-primary);
+  color: var(--admin-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* Enhanced theme transition for all elements */
+.theme-transitioning {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.theme-transitioning * {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Force transitions on specific properties */
+.theme-transitioning [style*="background"],
+.theme-transitioning [style*="color"],
+.theme-transitioning [style*="border"] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 /* Custom Scrollbar Styles for Dark Theme */
 ::-webkit-scrollbar {
   width: 8px;

@@ -43,9 +43,28 @@ function GoogleLoginModal() {
     if (!isModalOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50" onClick={closeModal}>
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded-xl max-w-md w-full mx-4 shadow-2xl`} onClick={(e) => e.stopPropagation()}>
-                <div className={`flex items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div 
+            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" 
+            style={{
+                backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.5)'
+            }}
+            onClick={closeModal}
+        >
+            <div 
+                className="rounded-xl max-w-md w-full mx-4" 
+                style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                    boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div 
+                    className="flex items-center justify-between p-6" 
+                    style={{
+                        borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
+                    }}
+                >
                     <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -53,7 +72,26 @@ function GoogleLoginModal() {
                         </svg>
                         Login
                     </h3>
-                    <button onClick={closeModal} className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-colors`}>
+                    <button 
+                        onClick={closeModal} 
+                        className="transition-colors"
+                        style={{
+                            color: isDarkMode ? '#9aa3b2' : '#6b7280',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            padding: '4px',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                            e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.color = isDarkMode ? '#9aa3b2' : '#6b7280';
+                            e.target.style.backgroundColor = 'transparent';
+                        }}
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -61,21 +99,47 @@ function GoogleLoginModal() {
                     </button>
                 </div>
                 <div className="p-6">
-                    <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-6 leading-relaxed`}>
+                    <p className="text-sm mb-6 leading-relaxed" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                         Please log in to access all features.
                     </p>
                     <button 
                         onClick={handleGoogleLogin} 
                         disabled={isSigningIn || loading}
-                        className={`w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-gray-800 rounded-lg font-medium transition-colors ${
+                        className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                             isSigningIn || loading 
                                 ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:bg-gray-100'
+                                : 'hover:shadow-lg'
                         }`}
+                        style={{
+                            backgroundColor: isDarkMode ? '#ffffff' : '#ffffff',
+                            color: isDarkMode ? '#1f2937' : '#1f2937',
+                            border: isDarkMode ? '1px solid #e5e7eb' : '2px solid #d1d5db',
+                            boxShadow: isDarkMode ? '0 2px 4px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isSigningIn && !loading) {
+                                e.target.style.backgroundColor = isDarkMode ? '#f9fafb' : '#f9fafb';
+                                e.target.style.borderColor = isDarkMode ? '#d1d5db' : '#9ca3af';
+                                e.target.style.transform = 'translateY(-1px)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isSigningIn && !loading) {
+                                e.target.style.backgroundColor = '#ffffff';
+                                e.target.style.borderColor = isDarkMode ? '#e5e7eb' : '#d1d5db';
+                                e.target.style.transform = 'translateY(0)';
+                            }
+                        }}
                     >
                         {isSigningIn || loading ? (
                             <>
-                                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                <div 
+                                    className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                                    style={{
+                                        borderColor: isDarkMode ? '#6b7280' : '#6b7280',
+                                        borderTopColor: 'transparent'
+                                    }}
+                                ></div>
                                 Signing in...
                             </>
                         ) : (

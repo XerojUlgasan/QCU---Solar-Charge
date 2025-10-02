@@ -21,6 +21,9 @@ export const ThemeProvider = ({ children }) => {
     });
 
     useEffect(() => {
+        // Add transition class for smooth theme switching
+        document.documentElement.classList.add('theme-transitioning');
+        
         // Update document class and localStorage
         if (isDarkMode) {
             document.documentElement.classList.add('dark');
@@ -31,6 +34,13 @@ export const ThemeProvider = ({ children }) => {
             document.documentElement.classList.remove('dark');
             localStorage.setItem('theme', 'light');
         }
+        
+        // Remove transition class after animation completes
+        const timer = setTimeout(() => {
+            document.documentElement.classList.remove('theme-transitioning');
+        }, 300);
+        
+        return () => clearTimeout(timer);
     }, [isDarkMode]);
 
     const toggleTheme = () => {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap, Mail, Lock, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { sendOtp, verifyOtp, changePassword } from '../utils/api';
 import logo from '../logo.svg';
 import '../styles/AdminLogin.css';
@@ -11,6 +12,7 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const { adminLogin, loading } = useAdminAuth();
+  const { isDarkMode } = useTheme();
 
   // State declarations
   const [formData, setFormData] = useState({
@@ -352,37 +354,74 @@ const AdminLogin = () => {
   };
 
   return (
-    <div id="admin-login-page">
+    <div id="admin-login-page" className={isDarkMode ? '' : 'light'} style={{
+      backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+      color: isDarkMode ? '#ffffff' : '#1f2937'
+    }}>
       <div className="flex items-center justify-center min-h-screen">
         <div className="container">
           {/* Logo/Header */}
           <div className="header">
-            <div className="logo-container" onClick={handleLogoClick}>
+            <div className="logo-container" onClick={handleLogoClick} style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '9rem',
+              height: '9rem',
+              margin: '0 auto 1rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}>
               <img 
                 src={logo} 
                 alt="QCU EcoCharge Logo" 
                 className="logo-icon"
+                style={{
+                  width: '9rem',
+                  height: '9rem',
+                  color: '#ffffff'
+                }}
               />
             </div>
-            <h1 className="title" onClick={handleLogoClick}>QCU EcoCharge</h1>
-            <div className="badge">
+            <h1 className="title" onClick={handleLogoClick} style={{
+              color: isDarkMode ? '#ffffff' : '#1f2937',
+              fontSize: '2rem',
+              fontWeight: '700',
+              marginTop: '-3rem'
+            }}>QCU EcoCharge</h1>
+            <div className="badge" style={{
+              backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.1)' : 'rgba(251, 146, 60, 0.1)',
+              color: isDarkMode ? '#fb923c' : '#fb923c'
+            }}>
               <Shield className="badge-icon" />
               Admin Portal
             </div>
           </div>
 
           {/* Login Card */}
-          <div className="login-card">
+          <div className="login-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            marginTop: '-1rem'
+          }}>
             <div className="card-header">
-              <h2 className="card-title">Administrator Portal</h2>
-              <p className="card-description">
+              <h2 className="card-title" style={{
+                color: isDarkMode ? '#ffffff' : '#1f2937',
+                fontSize: '1.75rem',
+                fontWeight: '700'
+              }}>Administrator Portal</h2>
+              <p className="card-description" style={{
+                color: isDarkMode ? '#9aa3b2' : '#374151',
+                fontSize: '0.875rem'
+              }}>
                 Secure access to QCU EcoCharge administrative controls and system management
               </p>
             </div>
             <div className="card-content">
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label htmlFor="username" className="form-label">Username or Email</label>
+                  <label htmlFor="username" className="form-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Username or Email</label>
                   <input
                     id="username"
                     type="text"
@@ -391,11 +430,16 @@ const AdminLogin = () => {
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     required
                     className="form-input"
+                    style={{
+                      backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
+                      border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                      color: isDarkMode ? '#ffffff' : '#1f2937'
+                    }}
                   />
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="password" className="form-label">Password</label>
+                  <label htmlFor="password" className="form-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Password</label>
                   <div className="password-container">
                     <input
                       id="password"
@@ -405,11 +449,17 @@ const AdminLogin = () => {
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required
                       className="form-input"
+                      style={{
+                        backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
+                        border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                        color: isDarkMode ? '#ffffff' : '#1f2937'
+                      }}
                     />
                     <button
                       type="button"
                       className="password-toggle"
                       onClick={() => setShowPassword(!showPassword)}
+                      style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -424,6 +474,10 @@ const AdminLogin = () => {
                   type="submit" 
                   className="submit-button"
                   disabled={loading}
+                  style={{
+                    backgroundColor: isDarkMode ? '#ffffff' : '#000000',
+                    color: isDarkMode ? '#000000' : '#ffffff'
+                  }}
                 >
                   {loading ? (
                     <>
@@ -445,15 +499,19 @@ const AdminLogin = () => {
                   type="button"
                   className="forgot-password-link"
                   onClick={() => setIsModalOpen(true)}
+                  style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}
                 >
                   Forgot your password?
                 </button>
               </div>
 
               {/* Admin Access Notice */}
-              <div className="admin-notice">
-                <p className="notice-title">Admin Access Only</p>
-                <div className="notice-text">
+              <div className="admin-notice" style={{
+                backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)'
+              }}>
+                <p className="notice-title" style={{color: isDarkMode ? '#ef4444' : '#dc2626'}}>Admin Access Only</p>
+                <div className="notice-text" style={{color: isDarkMode ? '#9ca3af' : '#6b7280'}}>
                   <p>This portal is restricted to authorized administrators only.</p>
                   <p>Please contact your system administrator for access credentials.</p>
                   <p>All login attempts are logged and monitored for security purposes.</p>
@@ -464,7 +522,7 @@ const AdminLogin = () => {
 
           {/* Security Notice */}
           <div className="security-notice">
-            <p>This is a secure admin portal. All actions are logged and monitored.</p>
+            <p style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>This is a secure admin portal. All actions are logged and monitored.</p>
           </div>
         </div>
       </div>
@@ -472,10 +530,16 @@ const AdminLogin = () => {
       {/* Forgot Password Modal */}
       {isModalOpen && (
         <div className="modal-bg">
-          <div className="modal-box">
+          <div className="modal-box" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+            border: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb',
+            boxShadow: isDarkMode ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
             {/* Header */}
-            <div className="modal-header-new">
-              <h2 className="modal-title-new">
+            <div className="modal-header-new" style={{
+              borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb'
+            }}>
+              <h2 className="modal-title-new" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
                 {forgotPasswordStep === 'email' && 'Reset Password'}
                 {forgotPasswordStep === 'otp' && 'Verify Your Email'}
                 {forgotPasswordStep === 'password' && 'Create New Password'}
@@ -486,6 +550,19 @@ const AdminLogin = () => {
                 onClick={() => {
                   setIsModalOpen(false);
                   resetForgotPasswordModal();
+                }}
+                style={{
+                  color: isDarkMode ? '#9aa3b2' : '#6b7280',
+                  backgroundColor: 'transparent',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = isDarkMode ? '#ffffff' : '#374151';
+                  e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = isDarkMode ? '#9aa3b2' : '#6b7280';
+                  e.target.style.backgroundColor = 'transparent';
                 }}
               >
                 <X className="h-5 w-5" />
@@ -499,12 +576,12 @@ const AdminLogin = () => {
                   <div className="step-icon-new email-icon-new">
                     <Mail className="h-8 w-8" />
                   </div>
-                  <p className="step-text">
+                  <p className="step-text" style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>
                     Enter your email address and we'll send you a verification code to reset your password.
                   </p>
                   
                   <div className="input-group">
-                    <label className="input-label">Email Address</label>
+                    <label className="input-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Email Address</label>
                     <input
                       type="email"
                       placeholder="admin@ecocharge.com"
@@ -512,6 +589,11 @@ const AdminLogin = () => {
                       onChange={(e) => setForgotEmail(e.target.value)}
                       required
                       className="input-field"
+                      style={{
+                        backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
+                        border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                        color: isDarkMode ? '#ffffff' : '#1f2937'
+                      }}
                     />
                   </div>
 
@@ -533,12 +615,12 @@ const AdminLogin = () => {
                   <div className="step-icon-new otp-icon-new">
                     <Shield className="h-8 w-8" />
                   </div>
-                  <p className="step-text">
+                  <p className="step-text" style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>
                     We've sent a 6-character verification code to {forgotEmail}. Please enter it below.
                   </p>
                   
                   <div className="input-group">
-                    <label className="input-label">Verification Code</label>
+                    <label className="input-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Verification Code</label>
                     <div className="otp-container">
                       {[0, 1, 2, 3, 4, 5].map((index) => (
                     <input
@@ -583,7 +665,12 @@ const AdminLogin = () => {
                             }
                           }}
                           maxLength={1}
-                      required
+                          required
+                          style={{
+                            backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
+                            border: isDarkMode ? '2px solid #1f2937' : '2px solid #d1d5db',
+                            color: isDarkMode ? '#ffffff' : '#1f2937'
+                          }}
                     />
                       ))}
                     </div>
@@ -621,12 +708,12 @@ const AdminLogin = () => {
                   <div className="step-icon-new password-icon-new">
                     <Lock className="h-8 w-8" />
                   </div>
-                  <p className="step-text">
+                  <p className="step-text" style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>
                     Create a new password for your admin account. Make sure it's strong and secure.
                   </p>
                   
                   <div className="input-group">
-                    <label className="input-label">New Password</label>
+                    <label className="input-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>New Password</label>
                     <div className="password-field">
                       <input
                         type={showNewPassword ? "text" : "password"}
@@ -635,11 +722,17 @@ const AdminLogin = () => {
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                         className="input-field"
+                        style={{
+                          backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
+                          border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                          color: isDarkMode ? '#ffffff' : '#1f2937'
+                        }}
                       />
                       <button
                         type="button"
                         className="password-toggle-btn"
                         onClick={() => setShowNewPassword(!showNewPassword)}
+                        style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}
                       >
                         {showNewPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -648,11 +741,11 @@ const AdminLogin = () => {
                         )}
                       </button>
                     </div>
-                    <p className="input-help">Password must be at least 8 characters and contain both letters and numbers</p>
+                    <p className="input-help" style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>Password must be at least 8 characters and contain both letters and numbers</p>
                   </div>
 
                   <div className="input-group">
-                    <label className="input-label">Confirm Password</label>
+                    <label className="input-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Confirm Password</label>
                     <div className="password-field">
                       <input
                         type={showConfirmPassword ? "text" : "password"}
@@ -661,11 +754,17 @@ const AdminLogin = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         className="input-field"
+                        style={{
+                          backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
+                          border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
+                          color: isDarkMode ? '#ffffff' : '#1f2937'
+                        }}
                       />
                       <button
                         type="button"
                         className="password-toggle-btn"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -676,9 +775,12 @@ const AdminLogin = () => {
                     </div>
                   </div>
 
-                  <div className="password-rules">
-                    <p>Password requirements:</p>
-                    <ul>
+                  <div className="password-rules" style={{
+                    backgroundColor: isDarkMode ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.05))' : 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.05))',
+                    border: isDarkMode ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(34, 197, 94, 0.3)'
+                  }}>
+                    <p style={{color: isDarkMode ? '#22c55e' : '#16a34a'}}>Password requirements:</p>
+                    <ul style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>
                       <li>At least 8 characters long</li>
                       <li>Contains both letters and numbers</li>
                       <li>Use a unique password</li>
@@ -704,8 +806,8 @@ const AdminLogin = () => {
                     <CheckCircle className="h-8 w-8" />
                   </div>
                   
-                  <h3 className="success-title">Password Reset Successful!</h3>
-                  <p className="step-text">
+                  <h3 className="success-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Password Reset Successful!</h3>
+                  <p className="step-text" style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>
                     Your admin password has been successfully reset. You can now use your new password to sign in.
                   </p>
 

@@ -52,7 +52,7 @@ function About() {
   const team = [
     {
       name: "Xeroj N. Ulgasan",
-      role: "Project Manager",
+      role: "Project Manager/Programmer",
       description: "Leading sustainable technology initiatives at QCU",
       initials: "XU",
       image: "/images/team/maria-santos.png"
@@ -65,65 +65,65 @@ function About() {
       image: "/images/team/ErnestoAgustin.png"
     },
     {
-      name: "Sarah Kim",
-      role: "UX Designer",
+      name: "John Kenneth Ramos",
+      role: "System Analyst/Quality Assurance",
       description: "Designing user-friendly interfaces for charging stations",
-      initials: "SK",
+      initials: "KR",
       image: "/images/team/sarah-kim.png"
     },
     {
-      name: "Alex Rodriguez",
-      role: "Campus Coordinator",
+      name: "Ace Jester Almase",
+      role: "Technical Writer",
       description: "Managing station deployment and user support",
-      initials: "AR",
+      initials: "AA",
       image: "/images/team/alex-rodriguez.png"
     },
     {
-      name: "Emily Watson",
-      role: "Software Developer",
+      name: "Karl Dominique Sarcia",
+      role: "Researcher",
       description: "Building the backend systems and mobile applications",
-      initials: "EW",
+      initials: "KS",
       image: "/images/team/emily-watson.png"
     },
     {
-      name: "Michael Torres",
-      role: "Hardware Engineer",
+      name: "Nurshayeeda Asaad",
+      role: "Technical Writer",
       description: "Designing and implementing charging station hardware",
-      initials: "MT",
+      initials: "NA",
       image: "/images/team/michael-torres.png"
     },
     {
-      name: "Lisa Park",
-      role: "Data Analyst",
+      name: "John Rod Chester Orogo",
+      role: "Technical Writer",
       description: "Analyzing usage patterns and optimizing system performance",
-      initials: "LP",
+      initials: "JO",
       image: "/images/team/lisa-park.png"
     },
     {
-      name: "David Johnson",
-      role: "Maintenance Specialist",
+      name: "Carl Jeus S. Cacho",
+      role: "UI/UX Designer",
       description: "Ensuring optimal performance and reliability of stations",
-      initials: "DJ",
+      initials: "CC",
       image: "/images/team/david-johnson.png"
     },
     {
-      name: "Rachel Green",
-      role: "Marketing Coordinator",
+      name: "Antonio Delas Eras",
+      role: "UI/UX Designer",
       description: "Promoting sustainable charging solutions across campus",
-      initials: "RG",
+      initials: "AE",
       image: "/images/team/rachel-green.png"
     },
     {
-      name: "James Wilson",
-      role: "Research Assistant",
+      name: "Karl Vergara",
+      role: "Researcher",
       description: "Supporting research and development of new features",
-      initials: "JW",
+      initials: "KV",
       image: "/images/team/james-wilson.png"
     }
   ];
 
   return (
-    <div className={`min-h-screen py-20 px-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{backgroundColor: isDarkMode ? '#0b0e13' : '#fafafa'}}>
+    <div className={`min-h-screen py-20 px-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff'}}>
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -132,13 +132,14 @@ function About() {
             borderRadius: '8px',
             fontWeight: '600',
             fontSize: '12px',
-            backgroundColor: isDarkMode ? '#0e5429' : '#d1fae5',
-            color: isDarkMode ? '#ffffff' : '#065f46'
+            backgroundColor: isDarkMode ? '#0e5429' : '#dcfce7',
+            color: isDarkMode ? '#ffffff' : '#166534',
+            border: isDarkMode ? 'none' : '1px solid #bbf7d0'
           }}>
             About QCU EcoCharge
           </span>
           <h1 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '40px'}}>Powering Tomorrow with Clean Energy</h1>
-          <p className="max-w-3xl mx-auto" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
+          <p className="max-w-3xl mx-auto" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
             QCU EcoCharge Station represents our commitment to sustainable technology and environmental 
             responsibility. We're transforming how students and faculty charge their devices on campus.
           </p>
@@ -148,11 +149,11 @@ function About() {
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
             <h2 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Our Mission</h2>
-            <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
+            <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
               To provide sustainable, accessible, and convenient charging solutions that reduce our 
               environmental impact while meeting the growing energy needs of our campus community.
             </p>
-            <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '18px'}}>
+            <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
               Through innovative solar technology and smart RFID systems, we're creating a network 
               of charging stations that not only serve our immediate needs but also contribute to 
               a more sustainable future.
@@ -189,7 +190,8 @@ function About() {
               <div key={index} className={`flex flex-col rounded-xl text-center hover:shadow-lg transition-all duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'}`} style={{
                 backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
                 border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db', 
-                padding: '20px'
+                padding: '20px',
+                boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}>
                 <div className={`mx-auto rounded-lg flex items-center justify-center text-white mb-4 ${isDarkMode ? '' : 'shadow-md'}`} style={{
                   background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)', 
@@ -199,7 +201,7 @@ function About() {
                   {value.icon}
                 </div>
                 <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '18px'}}>{value.title}</h4>
-                                <p style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>{value.description}</p>
+                                <p style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>{value.description}</p>
               </div>
             ))}
           </div>
@@ -220,7 +222,8 @@ function About() {
                 backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
                 border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db', 
                 padding: '16px',
-                minHeight: '160px'
+                minHeight: '160px',
+                boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}>
                 <div className="mx-auto w-36 h-36 rounded-full overflow-hidden mb-4" style={{
                   background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)',
@@ -251,21 +254,22 @@ function About() {
         {/* Impact Section */}
         <div className={`rounded-2xl p-8 text-center ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'} transition-all duration-300`} style={{
           backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
-          border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+          border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+          boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}>
           <h2 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Our Environmental Impact</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className={`font-bold mb-2 ${isDarkMode ? 'text-green-600' : 'text-emerald-600'}`} style={{fontSize: '28px'}}>500kg</div>
-              <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>CO₂ Emissions Saved</div>
+              <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>CO₂ Emissions Saved</div>
             </div>
             <div>
               <div className={`font-bold mb-2 ${isDarkMode ? 'text-blue-600' : 'text-blue-500'}`} style={{fontSize: '28px'}}>2.5MWh</div>
-              <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>Clean Energy Generated</div>
+              <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>Clean Energy Generated</div>
             </div>
             <div>
               <div className={`font-bold mb-2 ${isDarkMode ? 'text-purple-600' : 'text-purple-500'}`} style={{fontSize: '28px'}}>1,200+</div>
-              <div style={{color: isDarkMode ? '#9aa3b2' : '#374151', fontSize: '16px'}}>Students Served</div>
+              <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>Students Served</div>
             </div>
           </div>
         </div>
