@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { postContact } from '../utils/api';
 import "../styles/Contact.css";
 
@@ -9,6 +10,7 @@ function Contact() {
 	const { showSuccess, showError } = useNotification();
 	const { openModal } = useGoogleLogin();
 	const { user, isAuthenticated, signInWithGoogle } = useAuth();
+	const { isDarkMode } = useTheme();
 	const [formData, setFormData] = useState({ subject: "", message: "" });
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -112,21 +114,66 @@ function Contact() {
 		}
 	}
   return (
-		<div id="contact-page">
+		<div id="contact-page" className={isDarkMode ? '' : 'light'}>
 			<div className="container">
 				<div className="header">
-					<span className="badge-blue">Get In Touch</span>
-					<h1 className="font-bold mb-6" style={{fontSize: '40px'}}>Contact Us</h1>
-					<p className="subtitle">Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.</p>
+					<span 
+						className="badge-blue" 
+						style={{
+							background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #22c55e, #3b82f6)',
+							color: '#ffffff'
+						}}
+					>
+						Get In Touch
+					</span>
+					<h1 
+						className="font-bold mb-6" 
+						style={{
+							fontSize: '40px',
+							color: isDarkMode ? '#ffffff' : '#1f2937'
+						}}
+					>
+						Contact Us
+					</h1>
+					<p 
+						className="subtitle"
+						style={{
+							color: isDarkMode ? '#9aa3b2' : '#374151'
+						}}
+					>
+						Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.
+					</p>
         </div>
 
 				<div className="grid">
-					<div className="card left">
-						<h3>Send us a Message</h3>
-						<p className="desc">Fill out the form below and we'll get back to you as soon as possible.</p>
+					<div 
+						className="card left"
+						style={{
+							background: isDarkMode ? '#0f141c' : '#f9fafb',
+							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+						}}
+					>
+						<h3 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Send us a Message</h3>
+						<p 
+							className="desc"
+							style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+						>
+							Fill out the form below and we'll get back to you as soon as possible.
+						</p>
 						{!isAuthenticated && (
-							<div className="login-box">
-								<p className="muted">Please log in to send us a message</p>
+							<div 
+								className="login-box"
+								style={{
+									background: isDarkMode ? '#0c121a' : '#f3f4f6',
+									border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db'
+								}}
+							>
+								<p 
+									className="muted"
+									style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+								>
+									Please log in to send us a message
+								</p>
 								<button className="google-btn" onClick={handleGoogleLoginClick}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
 										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -139,7 +186,13 @@ function Contact() {
 
 						{isAuthenticated && user && (
 							<>
-								<div className="user-box">
+								<div 
+									className="user-box"
+									style={{
+										background: isDarkMode ? '#06110a' : '#f0fdf4',
+										border: isDarkMode ? '1px solid #16391f' : '1px solid #bbf7d0'
+									}}
+								>
 									<img 
 										src={getUserAvatar(user)} 
 										alt={user.displayName}
@@ -152,24 +205,73 @@ function Contact() {
 										}}
 									/>
                       <div>
-										<p className="user-name">{user.displayName}</p>
-										<p className="muted">{user.email}</p>
+										<p 
+											className="user-name"
+											style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}
+										>
+											{user.displayName}
+										</p>
+										<p 
+											className="muted"
+											style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+										>
+											{user.email}
+										</p>
                       </div>
                     </div>
                     
 								<form onSubmit={handleSubmit} className="contact-form">
 									<div className="form-field">
-										<label htmlFor="subject">Subject</label>
-										<input id="subject" type="text" placeholder="What can we help you with?" value={formData.subject} onChange={(e)=>setFormData({...formData, subject:e.target.value})} required />
+										<label 
+											htmlFor="subject"
+											style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}
+										>
+											Subject
+										</label>
+										<input 
+											id="subject" 
+											type="text" 
+											placeholder="What can we help you with?" 
+											value={formData.subject} 
+											onChange={(e)=>setFormData({...formData, subject:e.target.value})} 
+											required 
+											style={{
+												background: isDarkMode ? '#0b1119' : '#ffffff',
+												border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
+												color: isDarkMode ? '#eaecef' : '#374151'
+											}}
+										/>
                       </div>
 									<div className="form-field">
-										<label htmlFor="message">Message</label>
-										<textarea id="message" rows="6" placeholder="Please describe your question or issue in detail..." value={formData.message} onChange={(e)=>setFormData({...formData, message:e.target.value})} required />
+										<label 
+											htmlFor="message"
+											style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}
+										>
+											Message
+										</label>
+										<textarea 
+											id="message" 
+											rows="6" 
+											placeholder="Please describe your question or issue in detail..." 
+											value={formData.message} 
+											onChange={(e)=>setFormData({...formData, message:e.target.value})} 
+											required 
+											style={{
+												background: isDarkMode ? '#0b1119' : '#ffffff',
+												border: isDarkMode ? '1px solid #2a3446' : '1px solid #d1d5db',
+												color: isDarkMode ? '#eaecef' : '#374151'
+											}}
+										/>
                       </div>
 									<button 
 										className="submit-btn" 
 										type="submit" 
 										disabled={isSubmitting}
+										style={{
+											background: isDarkMode ? '#0f1a28' : '#3b82f6',
+											color: isDarkMode ? '#eaecef' : '#ffffff',
+											border: isDarkMode ? '1px solid #2a3446' : '1px solid #3b82f6'
+										}}
 									>
 										{isSubmitting ? 'Sending...' : 'Send Message'}
 									</button>
@@ -179,7 +281,13 @@ function Contact() {
           </div>
 
 					<div className="right-col">
-						<div className="card">
+						<div 
+							className="card"
+							style={{
+								background: isDarkMode ? '#0f141c' : '#f9fafb',
+								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+							}}
+						>
 							<div className="info">
 								<div className="info-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -188,16 +296,42 @@ function Contact() {
 									</svg>
 								</div>
 								<div>
-									<h4>Campus Location</h4>
-									<p className="muted">Quezon City University</p>
-									<p className="muted">673 Quirino Highway</p>
-									<p className="muted">San Bartolome, Novaliches</p>
-									<p className="muted">Quezon City, Philippines</p>
+									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Campus Location</h4>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Quezon City University
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										673 Quirino Highway
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										San Bartolome, Novaliches
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Quezon City, Philippines
+									</p>
 								</div>
                     </div>
                   </div>
 
-						<div className="card">
+						<div 
+							className="card"
+							style={{
+								background: isDarkMode ? '#0f141c' : '#f9fafb',
+								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+							}}
+						>
 							<div className="info">
 								<div className="info-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -205,15 +339,36 @@ function Contact() {
 									</svg>
 								</div>
 								<div>
-									<h4>Phone Support</h4>
-									<p className="muted">+63 (2) 8806-3549</p>
-									<p className="muted">Mon-Fri: 8:00 AM - 5:00 PM</p>
-									<p className="muted">Emergency: 24/7</p>
+									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Phone Support</h4>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										+63 (2) 8806-3549
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Mon-Fri: 8:00 AM - 5:00 PM
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Emergency: 24/7
+									</p>
 								</div>
 							</div>
 						</div>
 
-						<div className="card">
+						<div 
+							className="card"
+							style={{
+								background: isDarkMode ? '#0f141c' : '#f9fafb',
+								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+							}}
+						>
 							<div className="info">
 								<div className="info-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -222,15 +377,36 @@ function Contact() {
 									</svg>
 								</div>
 								<div>
-									<h4>Email Support</h4>
-									<p className="muted">ecocharge@qcu.edu.ph</p>
-									<p className="muted">support@qcu.edu.ph</p>
-									<p className="muted">Response time: 2-4 hours</p>
+									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Email Support</h4>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										ecocharge@qcu.edu.ph
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										support@qcu.edu.ph
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Response time: 2-4 hours
+									</p>
 								</div>
 							</div>
 						</div>
 
-						<div className="card">
+						<div 
+							className="card"
+							style={{
+								background: isDarkMode ? '#0f141c' : '#f9fafb',
+								border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
+							}}
+						>
 							<div className="info">
 								<div className="info-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -239,11 +415,31 @@ function Contact() {
 									</svg>
 								</div>
 								<div>
-									<h4>Operating Hours</h4>
-									<p className="muted">Charging Stations: 24/7</p>
-									<p className="muted">Technical Support:</p>
-									<p className="muted">Mon-Fri: 8:00 AM - 5:00 PM</p>
-									<p className="muted">Sat: 9:00 AM - 3:00 PM</p>
+									<h4 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>Operating Hours</h4>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Charging Stations: 24/7
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Technical Support:
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Mon-Fri: 8:00 AM - 5:00 PM
+									</p>
+									<p 
+										className="muted"
+										style={{ color: isDarkMode ? '#9aa3b2' : '#374151' }}
+									>
+										Sat: 9:00 AM - 3:00 PM
+									</p>
 								</div>
 							</div>
 						</div>
