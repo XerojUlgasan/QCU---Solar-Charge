@@ -17,12 +17,14 @@ import AdminHeader from './AdminHeader';
 import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminDevices.css';
 
 const AdminDevices = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
+  const { isDarkMode } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -443,7 +445,10 @@ const AdminDevices = () => {
     : devices.reduce((sum, d) => sum + parseFloat(d.revenue.replace('₱', '').replace(',', '') || '0'), 0);
 
   return (
-    <div id="admin-devices">
+    <div id="admin-devices" style={{
+      backgroundColor: isDarkMode ? undefined : '#f8fafc',
+      minHeight: '100vh'
+    }}>
       <AdminHeader 
         title="Device Management" 
         navigate={handleNavigation}
@@ -470,45 +475,57 @@ const AdminDevices = () => {
           <>
             {/* Header Section */}
             <div className="devices-header">
-              <h2 className="devices-title">Device Management</h2>
+              <h2 className="devices-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Device Management</h2>
             </div>
 
         {/* Summary Stats */}
         <div className="stats-grid">
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Active Devices</div>
-              <Activity className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Active Devices</div>
+              <Activity className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#2563eb'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value">{totalActive}/{devices.length}</div>
-              <div className="stat-description">
+              <div className="stat-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>{totalActive}/{devices.length}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>
                 {Math.round((totalActive / devices.length) * 100)}% operational
               </div>
             </div>
           </div>
 
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Total Power Output</div>
-              <Zap className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Total Power Output</div>
+              <Zap className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#f59e0b'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value">{formatTotalPower(totalPower)}</div>
-              <div className="stat-description">
+              <div className="stat-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>{formatTotalPower(totalPower)}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>
                 Current generation capacity
               </div>
             </div>
           </div>
 
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Total Revenue</div>
-              <DollarSign className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Total Revenue</div>
+              <DollarSign className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#16a34a'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value">₱{totalRevenue.toLocaleString()}</div>
-              <div className="stat-description">
+              <div className="stat-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>₱{totalRevenue.toLocaleString()}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>
                 Monthly earnings
               </div>
             </div>
@@ -533,6 +550,11 @@ const AdminDevices = () => {
               value={filterStatus} 
               onChange={(e) => setFilterStatus(e.target.value)}
               className="filter-select"
+              style={{
+                backgroundColor: isDarkMode ? undefined : '#ffffff',
+                border: isDarkMode ? undefined : '2px solid #d1d5db',
+                color: isDarkMode ? undefined : '#1f2937'
+              }}
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -556,6 +578,11 @@ const AdminDevices = () => {
             }}
             className="refresh-button"
             disabled={loading}
+            style={{
+              backgroundColor: isDarkMode ? undefined : '#ffffff',
+              border: isDarkMode ? undefined : '2px solid #d1d5db',
+              color: isDarkMode ? undefined : '#1f2937'
+            }}
           >
             <RefreshCw className={`refresh-icon ${loading ? 'spinning' : ''}`} />
             Refresh
@@ -564,17 +591,23 @@ const AdminDevices = () => {
 
         {/* Edit Device Dialog */}
         {isEditDialogOpen && (
-          <div className="dialog-overlay">
-            <div className="dialog-content">
+          <div className="dialog-overlay" style={{
+            backgroundColor: isDarkMode ? undefined : 'rgba(0, 0, 0, 0.5)'
+          }}>
+            <div className="dialog-content" style={{
+              backgroundColor: isDarkMode ? undefined : '#ffffff',
+              border: isDarkMode ? undefined : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? undefined : '0 20px 40px rgba(0, 0, 0, 0.15)'
+            }}>
               <div className="dialog-header">
-                <h3 className="dialog-title">Edit Device</h3>
-                <p className="dialog-description">
+                <h3 className="dialog-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Edit Device</h3>
+                <p className="dialog-description" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                   Update the details for {editingDevice?.name}.
                 </p>
               </div>
               <form onSubmit={handleSaveDevice} className="dialog-form">
                 <div className="form-group">
-                  <label htmlFor="name" className="form-label">Device Name</label>
+                  <label htmlFor="name" className="form-label" style={{color: isDarkMode ? undefined : '#1f2937'}}>Device Name</label>
                   <input
                     id="name"
                     type="text"
@@ -583,10 +616,15 @@ const AdminDevices = () => {
                     onChange={(e) => setDeviceForm({ ...deviceForm, name: e.target.value })}
                     required
                     className="form-input"
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937'
+                    }}
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="location" className="form-label">Location</label>
+                  <label htmlFor="location" className="form-label" style={{color: isDarkMode ? undefined : '#1f2937'}}>Location</label>
                   <input
                     id="location"
                     type="text"
@@ -595,10 +633,15 @@ const AdminDevices = () => {
                     onChange={(e) => setDeviceForm({ ...deviceForm, location: e.target.value })}
                     required
                     className="form-input"
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937'
+                    }}
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="building" className="form-label">Building</label>
+                  <label htmlFor="building" className="form-label" style={{color: isDarkMode ? undefined : '#1f2937'}}>Building</label>
                   <input
                     id="building"
                     type="text"
@@ -607,6 +650,11 @@ const AdminDevices = () => {
                     onChange={(e) => setDeviceForm({ ...deviceForm, building: e.target.value })}
                     required
                     className="form-input"
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937'
+                    }}
                   />
                 </div>
                 <div className="dialog-actions">
@@ -614,10 +662,19 @@ const AdminDevices = () => {
                     type="button" 
                     className="cancel-button"
                     onClick={() => setIsEditDialogOpen(false)}
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937'
+                    }}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="submit-button">
+                  <button type="submit" className="submit-button" style={{
+                    backgroundColor: isDarkMode ? undefined : '#2563eb',
+                    border: isDarkMode ? undefined : '2px solid #1d4ed8',
+                    color: '#ffffff'
+                  }}>
                     Save Changes
                   </button>
                 </div>
@@ -643,20 +700,25 @@ const AdminDevices = () => {
               key={device.id} 
               className="device-card"
               onClick={() => handleNavigation('admin-device-detail', device.id)}
+              style={{
+                backgroundColor: isDarkMode ? undefined : '#ffffff',
+                border: isDarkMode ? undefined : '2px solid #d1d5db',
+                boxShadow: isDarkMode ? undefined : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+              }}
             >
               <div className="device-header">
                 <div className="device-info">
-                  <div className="device-name">{device.name}</div>
+                  <div className="device-name" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.name}</div>
                   <div className="device-location">
                     <MapPin className="location-icon" />
-                    <span>{device.location} • {device.building}</span>
+                    <span style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.location} • {device.building}</span>
                   </div>
                 </div>
                 <div className="device-status-group">
                   <div className={`status-badge ${getStatusColor(device.status)}`}>
                     {device.status}
                   </div>
-                  <div className="device-id">{device.id}</div>
+                  <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.id}</div>
                 </div>
               </div>
               
@@ -665,34 +727,34 @@ const AdminDevices = () => {
                 <div className="metrics-grid">
                   <div className="metric-item">
                     <div className="metric-value metric-blue">{device.power}</div>
-                    <div className="metric-label">Power</div>
+                    <div className="metric-label" style={{color: isDarkMode ? undefined : '#1f2937'}}>Power</div>
                   </div>
                   <div className="metric-item">
                     <div className="metric-value metric-green">{device.revenue}</div>
-                    <div className="metric-label">Revenue</div>
+                    <div className="metric-label" style={{color: isDarkMode ? undefined : '#1f2937'}}>Revenue</div>
                   </div>
                 </div>
 
                 {/* Technical Details */}
                 <div className="technical-details">
                   <div className="detail-row">
-                    <span>Voltage:</span>
-                    <span className="detail-value">{device.voltage}</span>
+                    <span style={{color: isDarkMode ? undefined : '#1f2937'}}>Voltage:</span>
+                    <span className="detail-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.voltage}</span>
                   </div>
                   <div className="detail-row">
-                    <span>Current:</span>
-                    <span className="detail-value">{device.current}</span>
+                    <span style={{color: isDarkMode ? undefined : '#1f2937'}}>Current:</span>
+                    <span className="detail-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.current}</span>
                   </div>
                   <div className="detail-row">
-                    <span>Temperature:</span>
-                    <span className="detail-value">{device.temperature}</span>
+                    <span style={{color: isDarkMode ? undefined : '#1f2937'}}>Temperature:</span>
+                    <span className="detail-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.temperature}</span>
                   </div>
                 </div>
 
                 {/* Battery Level */}
                 <div className="battery-section">
                   <div className="battery-header">
-                    <span>Battery Level:</span>
+                    <span style={{color: isDarkMode ? undefined : '#1f2937'}}>Battery Level:</span>
                     <span className={`battery-value ${getBatteryColor(device.batteryLevel)}`}>
                       {device.batteryLevel}%
                     </span>
@@ -714,6 +776,12 @@ const AdminDevices = () => {
                       e.stopPropagation();
                       handleEditDevice(device);
                     }}
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937',
+                      boxShadow: isDarkMode ? undefined : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+                    }}
                   >
                     <Edit className="button-icon" />
                     Edit Device
@@ -725,13 +793,18 @@ const AdminDevices = () => {
                       e.stopPropagation();
                       handleConfigureDevice(device);
                     }}
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#2563eb',
+                      border: isDarkMode ? undefined : '2px solid #1d4ed8',
+                      color: '#ffffff'
+                    }}
                   >
                     <Settings className="button-icon" />
                     Configure Device
                   </button>
                 </div>
 
-                <div className="last-updated">
+                <div className="last-updated" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                   Last updated: {device.lastUpdate}
                 </div>
               </div>
