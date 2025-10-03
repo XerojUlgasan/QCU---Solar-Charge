@@ -16,12 +16,14 @@ import {
 import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminProblems.css';
 
 const AdminProblems = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
+  const { isDarkMode } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('newest');
   const [filterUrgency, setFilterUrgency] = useState('all');
@@ -564,52 +566,68 @@ const AdminProblems = () => {
       <div className="problems-content">
         {/* Header Section */}
         <div className="problems-header">
-          <h2 className="problems-title">Problem Reports</h2>
+          <h2 className="problems-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Problem Reports</h2>
         </div>
 
         {/* Summary Stats */}
         <div className="stats-grid">
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Total Reports</div>
-              <MessageSquare className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Total Reports</div>
+              <MessageSquare className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#2563eb'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value">{statsData.total}</div>
-              <div className="stat-description">All time</div>
+              <div className="stat-value" style={{color: isDarkMode ? undefined : '#1f2937'}}>{statsData.total}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>All time</div>
             </div>
           </div>
 
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Under Investigation</div>
-              <Clock className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Under Investigation</div>
+              <Clock className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#d97706'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value stat-yellow">{statsData.pending}</div>
-              <div className="stat-description">Active cases</div>
+              <div className="stat-value stat-yellow" style={{color: isDarkMode ? undefined : '#f59e0b'}}>{statsData.pending}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>Active cases</div>
             </div>
           </div>
 
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Resolved</div>
-              <CheckCircle className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Resolved</div>
+              <CheckCircle className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#16a34a'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value stat-green">{statsData.resolved}</div>
-              <div className="stat-description">Completed</div>
+              <div className="stat-value stat-green" style={{color: isDarkMode ? undefined : '#10b981'}}>{statsData.resolved}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>Completed</div>
             </div>
           </div>
 
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? undefined : '#f9fafb',
+            border: isDarkMode ? undefined : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? undefined : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Critical Issues</div>
-              <AlertTriangle className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Critical Issues</div>
+              <AlertTriangle className="w-6 h-6 stat-icon" style={{color: isDarkMode ? undefined : '#dc2626'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value stat-red">{statsData.critical}</div>
-              <div className="stat-description">High priority</div>
+              <div className="stat-value stat-red" style={{color: isDarkMode ? undefined : '#ef4444'}}>{statsData.critical}</div>
+              <div className="stat-description" style={{color: isDarkMode ? undefined : '#6b7280'}}>High priority</div>
             </div>
           </div>
         </div>
@@ -633,6 +651,11 @@ const AdminProblems = () => {
               value={filterStatus} 
               onChange={(e) => setFilterStatus(e.target.value)}
               className="filter-select"
+              style={{
+                backgroundColor: isDarkMode ? undefined : '#ffffff',
+                border: isDarkMode ? undefined : '2px solid #d1d5db',
+                color: isDarkMode ? undefined : '#1f2937'
+              }}
             >
               <option value="all">All Status</option>
               <option value="investigating">Investigating</option>
@@ -646,6 +669,11 @@ const AdminProblems = () => {
               value={filterUrgency} 
               onChange={(e) => setFilterUrgency(e.target.value)}
               className="filter-select"
+              style={{
+                backgroundColor: isDarkMode ? undefined : '#ffffff',
+                border: isDarkMode ? undefined : '2px solid #d1d5db',
+                color: isDarkMode ? undefined : '#1f2937'
+              }}
             >
               <option value="all">All Urgency</option>
               <option value="critical">Critical</option>
@@ -660,6 +688,11 @@ const AdminProblems = () => {
                 onClick={fetchReports}
                 className="refresh-button"
                 disabled={loading}
+                style={{
+                  backgroundColor: isDarkMode ? undefined : '#ffffff',
+                  border: isDarkMode ? undefined : '2px solid #d1d5db',
+                  color: isDarkMode ? undefined : '#1f2937'
+                }}
               >
                 <RefreshCw className={`refresh-icon ${loading ? 'spinning' : ''}`} />
                 Refresh
@@ -684,11 +717,15 @@ const AdminProblems = () => {
             </div>
           ) : filteredReports.length > 0 ? (
             filteredReports.map((report) => (
-            <div key={report.id} className="report-card">
+            <div key={report.id} className="report-card" style={{
+              backgroundColor: isDarkMode ? undefined : '#ffffff',
+              border: isDarkMode ? undefined : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? undefined : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+            }}>
               <div className="report-header">
                 <div className="report-info">
                   <div className="report-title-group">
-                    <div className="report-title">{report.issue}</div>
+                    <div className="report-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>{report.issue}</div>
                     <div className="report-badges">
                       <div className={`urgency-badge ${getUrgencyColor(report.urgency)}`}>
                         {report.urgency}
@@ -703,7 +740,7 @@ const AdminProblems = () => {
                   <div className="report-details">
                     <div className="detail-item">
                       <MapPin className="detail-icon" />
-                      <span className="station-location">{report.stationLocation}</span>
+                      <span className="station-location" style={{color: isDarkMode ? undefined : '#1f2937'}}>{report.stationLocation}</span>
                     </div>
                     <div className="detail-item user-info-item">
                       <div className="user-info">
@@ -724,11 +761,11 @@ const AdminProblems = () => {
                         <div className="user-details">
                           <div className="user-email">
                       <User className="detail-icon" />
-                      <span>{report.userEmail}</span>
+                      <span style={{color: isDarkMode ? undefined : '#1f2937'}}>{report.userEmail}</span>
                     </div>
                           <div className="datetime-info">
                       <Calendar className="detail-icon" />
-                      <span>{report.reportedDate} at {report.reportedTime}</span>
+                      <span style={{color: isDarkMode ? undefined : '#1f2937'}}>{report.reportedDate} at {report.reportedTime}</span>
                           </div>
                         </div>
                       </div>
@@ -743,6 +780,11 @@ const AdminProblems = () => {
                       setSelectedReport(report);
                       setPopupReport(report);
                       setIsDialogOpen(true);
+                    }}
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937'
                     }}
                   >
                     View Details
@@ -788,16 +830,22 @@ const AdminProblems = () => {
 
         {/* Report Details Dialog */}
         {isDialogOpen && selectedReport && (
-          <div className="dialog-overlay">
-            <div className="dialog-content">
+          <div className="dialog-overlay" style={{
+            backgroundColor: isDarkMode ? undefined : 'rgba(0, 0, 0, 0.5)'
+          }}>
+            <div className="dialog-content" style={{
+              backgroundColor: isDarkMode ? undefined : '#ffffff',
+              border: isDarkMode ? undefined : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? undefined : '0 20px 40px rgba(0, 0, 0, 0.15)'
+            }}>
               <div className="dialog-header">
                 <div className="dialog-title-group">
-                  <h3 className="dialog-title">Report {selectedReport.id}</h3>
+                  <h3 className="dialog-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Report {selectedReport.id}</h3>
                   <div className={`urgency-badge ${getUrgencyColor(selectedReport.urgency)}`}>
                     {selectedReport.urgency}
                   </div>
                 </div>
-                <p className="dialog-description">
+                <p className="dialog-description" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                   Reported by {selectedReport.userName} on {selectedReport.reportedDate}
                 </p>
                 <button 
@@ -806,6 +854,10 @@ const AdminProblems = () => {
                     setIsDialogOpen(false);
                     setPopupReport(null);
                   }}
+                  style={{
+                    color: isDarkMode ? undefined : '#1f2937',
+                    backgroundColor: 'transparent'
+                  }}
                 >
                   ×
                 </button>
@@ -813,53 +865,63 @@ const AdminProblems = () => {
               
               <div className="dialog-body">
                 <div className="problem-section">
-                  <h4 className="section-title">Problem Description</h4>
-                  <div className="problem-description">
+                  <h4 className="section-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Problem Description</h4>
+                  <div className="problem-description" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                     {selectedReport.description}
                   </div>
                 </div>
                 
                 <div className="details-grid">
                   <div className="detail-section">
-                    <h4 className="section-title">Station Details</h4>
+                    <h4 className="section-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Station Details</h4>
                     <div className="detail-content">
-                      <p className="station-name">{selectedReport.stationName}</p>
-                      <p className="station-location">{selectedReport.stationLocation}</p>
-                      <p>ID: {selectedReport.stationId}</p>
+                      <p className="station-name" style={{color: isDarkMode ? undefined : '#1f2937'}}>{selectedReport.stationName}</p>
+                      <p className="station-location" style={{color: isDarkMode ? undefined : '#1f2937'}}>{selectedReport.stationLocation}</p>
+                      <p style={{color: isDarkMode ? undefined : '#1f2937'}}>ID: {selectedReport.stationId}</p>
                     </div>
                   </div>
                   <div className="detail-section">
-                    <h4 className="section-title">Reporter</h4>
+                    <h4 className="section-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Reporter</h4>
                     <div className="detail-content">
-                      <p>{selectedReport.userName}</p>
-                      <p>{selectedReport.userEmail}</p>
+                      <p style={{color: isDarkMode ? undefined : '#1f2937'}}>{selectedReport.userName}</p>
+                      <p style={{color: isDarkMode ? undefined : '#1f2937'}}>{selectedReport.userEmail}</p>
                     </div>
                   </div>
                 </div>
 
                 {safeToLowerCase(selectedReport.status) === 'resolved' && selectedReport.solution && (
                   <div className="solution-section">
-                    <h4 className="section-title">Solution</h4>
-                    <div className="solution-content">
+                    <h4 className="section-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Solution</h4>
+                    <div className="solution-content" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                       {selectedReport.solution}
                     </div>
-                    <p className="solution-date">
+                    <p className="solution-date" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                       Resolved on {selectedReport.resolvedDate} at {selectedReport.resolvedTime}
                     </p>
                   </div>
                 )}
 
                 <div className="response-section">
-                  <h4 className="section-title">Send Response to User</h4>
+                  <h4 className="section-title" style={{color: isDarkMode ? undefined : '#1f2937'}}>Send Response to User</h4>
                   <textarea
                     placeholder="Type your response to the user..."
                     value={responseText}
                     onChange={(e) => setResponseText(e.target.value)}
                     className="response-textarea"
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#ffffff',
+                      border: isDarkMode ? undefined : '2px solid #d1d5db',
+                      color: isDarkMode ? undefined : '#1f2937'
+                    }}
                   />
                   <button 
                     className="send-response-button"
                     onClick={handleSendResponse}
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#2563eb',
+                      border: isDarkMode ? undefined : '2px solid #1d4ed8',
+                      color: '#ffffff'
+                    }}
                   >
                     Send Response
                   </button>
@@ -874,6 +936,11 @@ const AdminProblems = () => {
                           safeToLowerCase(popupReport.status) === 'investigating' ? 'for review' : 'investigating'
                         )}
                         disabled={updatingStatus}
+                        style={{
+                          backgroundColor: isDarkMode ? undefined : (safeToLowerCase(popupReport.status) === 'investigating' ? '#2563eb' : '#d97706'),
+                          border: isDarkMode ? undefined : (safeToLowerCase(popupReport.status) === 'investigating' ? '2px solid #1d4ed8' : '2px solid #b45309'),
+                          color: '#ffffff'
+                        }}
                       >
                         {updatingStatus ? 'Updating...' : 
                           safeToLowerCase(popupReport.status) === 'investigating' ? 'Mark as For Review' : 'Mark as Investigating'
@@ -883,6 +950,11 @@ const AdminProblems = () => {
                         className="action-button"
                         onClick={() => handleUpdateStatus(popupReport.id, 'resolved')}
                         disabled={updatingStatus}
+                        style={{
+                          backgroundColor: isDarkMode ? undefined : '#16a34a',
+                          border: isDarkMode ? undefined : '2px solid #15803d',
+                          color: '#ffffff'
+                        }}
                       >
                         {updatingStatus ? 'Updating...' : 'Mark as Resolved'}
                       </button>
@@ -891,6 +963,11 @@ const AdminProblems = () => {
                   <button 
                     className="action-button"
                     onClick={() => handleNavigation('admin-device-detail', popupReport.stationId)}
+                    style={{
+                      backgroundColor: isDarkMode ? undefined : '#2563eb',
+                      border: isDarkMode ? undefined : '2px solid #1d4ed8',
+                      color: '#ffffff'
+                    }}
                   >
                     <ExternalLink className="button-icon" />
                     View Station

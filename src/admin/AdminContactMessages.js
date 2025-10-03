@@ -16,12 +16,14 @@ import {
 import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminContactMessages.css';
 
 const AdminContactMessages = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
+  const { isDarkMode } = useTheme();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -410,7 +412,10 @@ const AdminContactMessages = () => {
   };
 
   return (
-    <div id="admin-contact-messages">
+    <div id="admin-contact-messages" style={{
+      backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+      color: isDarkMode ? '#ffffff' : '#1f2937'
+    }}>
       <AdminHeader 
         title="Contact Messages" 
         navigate={handleNavigation}
@@ -419,41 +424,53 @@ const AdminContactMessages = () => {
       <div className="contact-content">
         {/* Header Section */}
         <div className="contact-header">
-          <h2 className="contact-title">Contact Messages</h2>
+          <h2 className="contact-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Contact Messages</h2>
         </div>
 
         {/* Summary Stats */}
         <div className="stats-grid">
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Total Messages</div>
-              <Mail className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? '#e2e8f0' : '#1f2937'}}>Total Messages</div>
+              <Mail className="w-6 h-6 stat-icon" style={{color: isDarkMode ? '#3b82f6' : '#2563eb'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value">{stats.total}</div>
-              <div className="stat-description">All time</div>
+              <div className="stat-value" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{stats.total}</div>
+              <div className="stat-description" style={{color: isDarkMode ? '#94a3b8' : '#6b7280'}}>All time</div>
             </div>
           </div>
 
-           <div className="stat-card">
+           <div className="stat-card" style={{
+             backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+             border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+             boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+           }}>
              <div className="stat-header">
-               <div className="stat-title">Unread</div>
-               <Clock className="w-6 h-6 stat-icon" />
+               <div className="stat-title" style={{color: isDarkMode ? '#e2e8f0' : '#1f2937'}}>Unread</div>
+               <Clock className="w-6 h-6 stat-icon" style={{color: isDarkMode ? '#f59e0b' : '#d97706'}} />
              </div>
              <div className="stat-content">
-               <div className="stat-value stat-yellow">{stats.unread}</div>
-               <div className="stat-description">Awaiting response</div>
+               <div className="stat-value stat-yellow" style={{color: isDarkMode ? '#f59e0b' : '#f59e0b'}}>{stats.unread}</div>
+               <div className="stat-description" style={{color: isDarkMode ? '#94a3b8' : '#6b7280'}}>Awaiting response</div>
              </div>
            </div>
 
-          <div className="stat-card">
+          <div className="stat-card" style={{
+            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          }}>
             <div className="stat-header">
-              <div className="stat-title">Responded</div>
-              <MessageSquare className="w-6 h-6 stat-icon" />
+              <div className="stat-title" style={{color: isDarkMode ? '#e2e8f0' : '#1f2937'}}>Responded</div>
+              <MessageSquare className="w-6 h-6 stat-icon" style={{color: isDarkMode ? '#10b981' : '#16a34a'}} />
             </div>
             <div className="stat-content">
-              <div className="stat-value stat-blue">{stats.responded}</div>
-              <div className="stat-description">Replied to</div>
+              <div className="stat-value stat-blue" style={{color: isDarkMode ? '#3b82f6' : '#10b981'}}>{stats.responded}</div>
+              <div className="stat-description" style={{color: isDarkMode ? '#94a3b8' : '#6b7280'}}>Replied to</div>
             </div>
           </div>
         </div>
@@ -463,13 +480,18 @@ const AdminContactMessages = () => {
           <div className="search-filter-group">
             <div className="filters-left">
               <div className="search-container">
-                <Search className="search-icon" />
+                <Search className="search-icon" style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}} />
                 <input
                   type="text"
                   placeholder="Search messages..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="search-input"
+                  style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                    border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                    color: isDarkMode ? '#ffffff' : '#1f2937'
+                  }}
                 />
               </div>
               
@@ -477,6 +499,11 @@ const AdminContactMessages = () => {
                  value={statusFilter} 
                  onChange={(e) => setStatusFilter(e.target.value)}
                  className="filter-select"
+                 style={{
+                   backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                   border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                   color: isDarkMode ? '#ffffff' : '#1f2937'
+                 }}
                >
                  <option value="all">All Status</option>
                  <option value="unread">Unread</option>
@@ -487,6 +514,11 @@ const AdminContactMessages = () => {
                  value={dateFilter} 
                  onChange={(e) => setDateFilter(e.target.value)}
                  className="filter-select"
+                 style={{
+                   backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                   border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                   color: isDarkMode ? '#ffffff' : '#1f2937'
+                 }}
                >
                  <option value="newest">Newest First</option>
                  <option value="oldest">Oldest First</option>
@@ -498,6 +530,11 @@ const AdminContactMessages = () => {
                 onClick={handleRefresh}
                 className="refresh-button"
                 disabled={isLoading}
+                style={{
+                  backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                  border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                  color: isDarkMode ? '#ffffff' : '#1f2937'
+                }}
               >
                 <RefreshCw className="refresh-icon" />
                 Refresh
@@ -522,11 +559,15 @@ const AdminContactMessages = () => {
             </div>
           ) : filteredMessages.length > 0 ? (
             filteredMessages.map((message) => (
-              <div key={message.id} className="message-card">
+              <div key={message.id} className="message-card" style={{
+                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              }}>
                 <div className="message-header">
                   <div className="message-info">
                     <div className="message-title-group">
-                      <div className="message-title">Subject: {message.subject}</div>
+                      <div className="message-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Subject: {message.subject}</div>
                       <div className="message-badges">
                         <div className={`status-badge ${getStatusColor(message)}`}>
                           {getStatusIcon(message)}
@@ -543,21 +584,25 @@ const AdminContactMessages = () => {
                               src={message.photo_url} 
                               alt="Sender" 
                               className="user-photo"
+                              style={{border: isDarkMode ? '2px solid #1e2633' : '2px solid #d1d5db'}}
                               onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'flex';
                               }}
                             />
                           ) : null}
-                          <div className="user-photo-fallback" style={{ display: message.photo_url ? 'none' : 'flex' }}>
+                          <div className="user-photo-fallback" style={{ 
+                            display: message.photo_url ? 'none' : 'flex',
+                            border: isDarkMode ? '2px solid #1e2633' : '2px solid #d1d5db'
+                          }}>
                             <User className="photo-icon" />
                           </div>
                           <div className="user-details">
-                            <div className="user-email">
+                            <div className="user-email" style={{color: isDarkMode ? '#cbd5e1' : '#1f2937'}}>
                               <User className="detail-icon" />
                               <span>{message.from}</span>
                             </div>
-                            <div className="datetime-info">
+                            <div className="datetime-info" style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}}>
                               <Clock className="detail-icon" />
                               <span>{formatDate(message.timestamp)}</span>
                             </div>
@@ -569,9 +614,12 @@ const AdminContactMessages = () => {
                 </div>
                 
                 <div className="message-content">
-                  <div className="description-box">
-                    <div className="description-label">Message:</div>
-                    <div className="description-text">
+                  <div className="description-box" style={{
+                    backgroundColor: isDarkMode ? 'rgba(107, 114, 128, 0.05)' : 'rgba(107, 114, 128, 0.05)',
+                    border: isDarkMode ? '1px solid rgba(107, 114, 128, 0.1)' : '1px solid #d1d5db'
+                  }}>
+                    <div className="description-label" style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}}>Message:</div>
+                    <div className="description-text" style={{color: isDarkMode ? '#d1d5db' : '#1f2937'}}>
                       "{message.message}"
                     </div>
                   </div>
@@ -585,6 +633,11 @@ const AdminContactMessages = () => {
                       setResponseText(message.admin_response || '');
                       setIsDialogOpen(true);
                     }}
+                    style={{
+                      backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                      border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                      color: isDarkMode ? '#ffffff' : '#1f2937'
+                    }}
                   >
                     View Details
                   </button>
@@ -593,19 +646,25 @@ const AdminContactMessages = () => {
             ))
           ) : (
             <div className="no-messages">
-              <Mail className="no-messages-icon" />
-              <p>No contact messages found matching your criteria.</p>
+              <Mail className="no-messages-icon" style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}} />
+              <p style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}}>No contact messages found matching your criteria.</p>
             </div>
           )}
         </div>
 
         {/* Message Details Dialog */}
         {isDialogOpen && selectedMessage && (
-          <div className="dialog-overlay">
-            <div className="dialog-content">
+          <div className="dialog-overlay" style={{
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.5)'
+          }}>
+            <div className="dialog-content" style={{
+              backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+              border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+              boxShadow: isDarkMode ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+            }}>
                  <div className="dialog-header">
                    <div className="dialog-title-group">
-                     <h3 className="dialog-title">Message {selectedMessage.id}</h3>
+                     <h3 className="dialog-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Message {selectedMessage.id}</h3>
                      <div className={`status-badge ${getStatusColor(selectedMessage)}`}>
                        {getStatusText(selectedMessage)}
                      </div>
@@ -613,6 +672,10 @@ const AdminContactMessages = () => {
                    <button 
                      className="dialog-close"
                      onClick={() => setIsDialogOpen(false)}
+                     style={{
+                       color: isDarkMode ? '#94a3b8' : '#1f2937',
+                       backgroundColor: 'transparent'
+                     }}
                    >
                      ×
                    </button>
@@ -620,62 +683,80 @@ const AdminContactMessages = () => {
               
               <div className="dialog-body">
                  <div className="message-section">
-                   <h4 className="section-title">Message Details</h4>
+                   <h4 className="section-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Message Details</h4>
                    <div className="sender-info">
                      {selectedMessage.photo_url ? (
                        <img 
                          src={selectedMessage.photo_url} 
                          alt="Sender" 
                          className="sender-photo"
+                         style={{border: isDarkMode ? '2px solid #1e2633' : '2px solid #d1d5db'}}
                          onError={(e) => {
                            e.target.style.display = 'none';
                            e.target.nextSibling.style.display = 'flex';
                          }}
                        />
                      ) : null}
-                     <div className="sender-photo-fallback" style={{ display: selectedMessage.photo_url ? 'none' : 'flex' }}>
+                     <div className="sender-photo-fallback" style={{ 
+                       display: selectedMessage.photo_url ? 'none' : 'flex',
+                       border: isDarkMode ? '2px solid #1e2633' : '2px solid #d1d5db'
+                     }}>
                        <User className="photo-icon" />
                      </div>
                      <div className="sender-details">
-                       <div className="message-description">
+                       <div className="message-description" style={{color: isDarkMode ? '#d1d5db' : '#1f2937'}}>
                          <strong>Subject:</strong> {selectedMessage.subject}
                        </div>
-                       <div className="message-description">
+                       <div className="message-description" style={{color: isDarkMode ? '#d1d5db' : '#1f2937'}}>
                          <strong>From:</strong> {selectedMessage.from}
                        </div>
-                       <div className="message-description">
+                       <div className="message-description" style={{color: isDarkMode ? '#d1d5db' : '#1f2937'}}>
                          <strong>Date:</strong> {formatDate(selectedMessage.timestamp)}
                        </div>
                      </div>
                    </div>
-                   <div className="message-description">
+                   <div className="message-description" style={{color: isDarkMode ? '#d1d5db' : '#1f2937'}}>
                      <strong>Message:</strong> "{selectedMessage.message}"
                    </div>
                  </div>
 
                 {selectedMessage.admin_response && (
                   <div className="response-section">
-                    <h4 className="section-title">Previous Response</h4>
-                    <div className="response-content">
+                    <h4 className="section-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Previous Response</h4>
+                    <div className="response-content" style={{
+                      backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.05)' : 'rgba(107, 114, 128, 0.05)',
+                      border: isDarkMode ? '1px solid rgba(59, 130, 246, 0.1)' : '1px solid #d1d5db',
+                      color: isDarkMode ? '#d1d5db' : '#1f2937'
+                    }}>
                       {selectedMessage.admin_response}
                     </div>
-                    <p className="response-date">
+                    <p className="response-date" style={{color: isDarkMode ? '#94a3b8' : '#1f2937'}}>
                       Responded on {selectedMessage.responded_at ? formatDate(selectedMessage.responded_at) : 'N/A'}
                     </p>
                   </div>
                 )}
 
                 <div className="response-section">
-                  <h4 className="section-title">Send Response to User</h4>
+                  <h4 className="section-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Send Response to User</h4>
                   <textarea
                     placeholder="Type your response to the user..."
                     value={responseText}
                     onChange={(e) => setResponseText(e.target.value)}
                     className="response-textarea"
+                    style={{
+                      backgroundColor: isDarkMode ? '#0b1119' : '#ffffff',
+                      border: isDarkMode ? '1px solid #2a3446' : '2px solid #d1d5db',
+                      color: isDarkMode ? '#ffffff' : '#1f2937'
+                    }}
                   />
                   <button 
                     className="send-response-button"
                     onClick={handleSendResponse}
+                    style={{
+                      backgroundColor: isDarkMode ? '#3b82f6' : '#3b82f6',
+                      border: isDarkMode ? '1px solid #3b82f6' : '2px solid #2563eb',
+                      color: '#ffffff'
+                    }}
                   >
                     Send Response
                   </button>
@@ -690,3 +771,5 @@ const AdminContactMessages = () => {
 };
 
 export default AdminContactMessages;
+
+

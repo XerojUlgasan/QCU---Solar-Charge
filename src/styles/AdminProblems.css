@@ -1087,3 +1087,64 @@
 .light #admin-problems .no-reports-icon {
     color: #4b5563;
 }
+
+/* Light mode badge styles */
+.light #admin-problems .urgency-critical {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1px solid #ef4444;
+}
+
+.light #admin-problems .urgency-high {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: #ea580c;
+    border: 1px solid #f97316;
+}
+
+.light #admin-problems .urgency-medium {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+    border: 1px solid #f59e0b;
+}
+
+.light #admin-problems .urgency-low {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+    border: 1px solid #22c55e;
+}
+
+.light #admin-problems .urgency-default {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: #374151;
+    border: 1px solid #6b7280;
+}
+
+.light #admin-problems .status-resolved {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+    border: 1px solid #22c55e;
+}
+
+.light #admin-problems .status-investigating {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+    border: 1px solid #f59e0b;
+}
+
+.light #admin-problems .status-scheduled {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+    border: 1px solid #3b82f6;
+}
+
+.light #admin-problems .status-pending {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: #374151;
+    border: 1px solid #6b7280;
+}
+
+.light #admin-problems .status-default {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: #374151;
+    border: 1px solid #6b7280;
+}

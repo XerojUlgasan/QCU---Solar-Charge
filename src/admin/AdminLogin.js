@@ -671,7 +671,7 @@ const AdminLogin = () => {
                             }
                           }}
                           maxLength={1}
-                          required
+                      required
                           style={{
                             backgroundColor: isDarkMode ? '#1e2633' : '#f9fafb',
                             border: isDarkMode ? '2px solid #1f2937' : '2px solid #d1d5db',
