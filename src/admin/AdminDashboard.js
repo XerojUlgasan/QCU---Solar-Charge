@@ -1683,7 +1683,7 @@ const AdminDashboard = () => {
             </div>
             <div className="card-content">
                   {deviceStatus.length > 0 ? (
-                    deviceStatus.map((device) => (
+                    deviceStatus.slice(0, 3).map((device) => (
                 <div 
                   key={device.id} 
                   className="device-item"
@@ -1737,23 +1737,23 @@ const AdminDashboard = () => {
                 <div className="energy-progress">
                   <div className="progress-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
                     <span>Current Power Output</span>
-                    <span className="progress-value">{overviewData.power_output || overviewData.power}W</span>
+                    <span className="progress-value">{overviewData.power_output?.toFixed(2) || 0}W</span>
                   </div>
                   <div className="progress-bar" style={{backgroundColor: isDarkMode ? '#1e2633' : '#e5e7eb'}}>
                     <div className="progress-fill" style={{width: `${Math.min((overviewData.percentage || 0), 100)}%`}}></div>
                   </div>
                   <div className="progress-text" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
-                    {overviewData.percentage || 0}% battery level
+                    {overviewData.percentage?.toFixed(2) || 0}% battery level
                   </div>
                 </div>
                 
                 <div className="energy-metrics">
                   <div className="metric-card metric-green">
-                    <div className="metric-value">{overviewData.volt}V</div>
+                    <div className="metric-value">{overviewData.volt?.toFixed(2)}V</div>
                     <div className="metric-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Voltage</div>
                   </div>
                   <div className="metric-card metric-blue">
-                    <div className="metric-value">{overviewData.current}A</div>
+                    <div className="metric-value">{overviewData.current?.toFixed(2)}A</div>
                     <div className="metric-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Current</div>
                   </div>
                 </div>
