@@ -48,7 +48,7 @@ export const AdminAuthProvider = ({ children }) => {
             
             console.log('Attempting admin login with credentials:', credentials);
             
-            const response = await fetch('https://api-qcusolarcharge.up.railway.app/login/postLogin', {
+            const response = await fetch('https://my-node-api-j9ua.onrender.com/login/postLogin', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export const AdminAuthProvider = ({ children }) => {
             console.log('Fetching admin data with credentials:', credentials);
             
             // Try to fetch admin profile/data using the credentials
-            const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/profile', {
+            const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

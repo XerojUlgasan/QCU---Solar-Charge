@@ -73,7 +73,7 @@ const AdminLogin = () => {
     // Debug: Let's see what the API actually returns
     console.log('=== DEBUG: Testing API Response ===');
     try {
-      const debugResponse = await fetch('https://api-qcusolarcharge.up.railway.app/login/postLogin', {
+      const debugResponse = await fetch('https://my-node-api-j9ua.onrender.com/login/postLogin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -843,7 +843,7 @@ window.testOtpApi = async (email) => {
   console.log('Testing with email:', email);
   
   try {
-    const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/sendOtp', {
+    const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/sendOtp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -879,7 +879,7 @@ window.testVerifyOtpApi = async (otp, email) => {
   console.log('Testing email:', email);
   
   try {
-    const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/verifyOtp', {
+    const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/verifyOtp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -916,7 +916,7 @@ window.testChangePasswordApi = async (otp, email, newPassword) => {
   console.log('Testing new password:', newPassword);
   
   try {
-    const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/changePassword', {
+    const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/changePassword', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

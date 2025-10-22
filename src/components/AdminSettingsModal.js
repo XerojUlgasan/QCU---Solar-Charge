@@ -498,7 +498,7 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     console.log('Testing with email:', email);
     
     try {
-      const response = await fetch('https://api-qcusolarcharge.up.railway.app/admin/sentOtp', {
+      const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/sentOtp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

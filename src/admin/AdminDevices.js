@@ -54,7 +54,7 @@ const AdminDevices = () => {
     try {
       console.log('Fetching devices data from /admin/dashboard...');
       
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -351,7 +351,7 @@ const AdminDevices = () => {
       console.log('Update payload:', updateData);
       
       // Call the update device API
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/updateDevice', {
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/updateDevice', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

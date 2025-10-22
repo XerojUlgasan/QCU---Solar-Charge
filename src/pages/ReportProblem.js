@@ -30,7 +30,7 @@ function ReportProblem() {
             setError(null);
             
             console.log('📊 Fetching reports from API...');
-            const response = await authenticatedGet('https://api-qcusolarcharge.up.railway.app/report/getReports');
+            const response = await authenticatedGet('https://my-node-api-j9ua.onrender.com/report/getReports');
             
             console.log('📊 API Response status:', response.status);
             console.log('📊 API Response ok:', response.ok);
@@ -137,7 +137,7 @@ function ReportProblem() {
                 photo_url: user?.photoURL || null
             };
             
-            const endpoint = 'https://api-qcusolarcharge.up.railway.app/report/postReports';
+            const endpoint = 'https://my-node-api-j9ua.onrender.com/report/postReports';
             const response = await authenticatedPost(endpoint, reportData);
             
             if (response.ok) {

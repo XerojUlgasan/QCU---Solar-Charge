@@ -75,7 +75,7 @@ const AdminContactMessages = () => {
       console.log('=== FETCHING CONTACT MESSAGES ===');
       
       // Try to fetch from API first
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/contact/getContact');
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/contact/getContact');
       
       console.log('Contact messages response status:', response.status);
       console.log('Contact messages response ok:', response.ok);
@@ -184,7 +184,7 @@ const AdminContactMessages = () => {
       
       console.log('Response data:', responseData);
       
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/sendResponseContact', {
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/sendResponseContact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +215,7 @@ const AdminContactMessages = () => {
         
         // Try to update the message status on the server
         try {
-          const updateResponse = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/updateContactStatus', {
+          const updateResponse = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/updateContactStatus', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -50,7 +50,7 @@ const AdminProblems = () => {
       setError(null);
       
       console.log('=== FETCHING ADMIN REPORTS DEBUG ===');
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/report/getreports');
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/report/getreports');
       
       console.log('Admin reports response status:', response.status);
       console.log('Admin reports response ok:', response.ok);
@@ -88,7 +88,7 @@ const AdminProblems = () => {
     try {
       console.log('=== FETCHING DEVICE INFO FROM DASHBOARD ===');
       
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
       
       if (response.ok) {
         const data = await response.json();
@@ -426,7 +426,7 @@ const AdminProblems = () => {
       }
       
       // Send the response using the admin API
-      const response = await authenticatedAdminFetch('https://api-qcusolarcharge.up.railway.app/admin/sendResponseReport', {
+      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/sendResponseReport', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -508,7 +508,7 @@ const AdminProblems = () => {
       console.log('Update data:', updateData);
       
       // Use the correct API endpoint for updating reports
-      const endpoint = 'https://api-qcusolarcharge.up.railway.app/admin/updateReport';
+      const endpoint = 'https://my-node-api-j9ua.onrender.com/admin/updateReport';
       
       console.log(`Updating report via: ${endpoint}`);
       

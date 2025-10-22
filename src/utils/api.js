@@ -90,7 +90,7 @@ export const authenticatedDelete = (url) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const postContact = async (from, subject, message, photo_url) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/contact/postContact';
+    const url = 'https://my-node-api-j9ua.onrender.com/contact/postContact';
     const data = {
         from,
         subject,
@@ -105,7 +105,7 @@ export const postContact = async (from, subject, message, photo_url) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const getAdminInformation = async () => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/getAdminInformation';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/getAdminInformation';
     return authenticatedGet(url);
 };
 
@@ -117,7 +117,7 @@ export const getAdminInformation = async () => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const setAdminInformation = async (full_name, primary_email, backup_email) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/setAdminInformation';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/setAdminInformation';
     const data = {
         full_name,
         primary_email,
@@ -137,7 +137,7 @@ export const setAdminInformation = async (full_name, primary_email, backup_email
  * @returns {Promise<Response>} - Fetch response
  */
 export const changeAdminUsername = async (new_username, current_password) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/changeAdminUsername';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/changeAdminUsername';
     const data = {
         new_username,
         current_password
@@ -153,7 +153,7 @@ export const changeAdminUsername = async (new_username, current_password) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const changeAdminPassword = async (current_password, new_password) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/changeAdminPassword';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/changeAdminPassword';
     const data = {
         current_password,
         new_password
@@ -168,7 +168,7 @@ export const changeAdminPassword = async (current_password, new_password) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const sendOtp = async (email) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/sendOtp';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/sendOtp';
     const data = {
         email
     };
@@ -248,7 +248,7 @@ const generateDemoOtp = () => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const verifyOtp = async (otp, email) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/verifyOtp';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/verifyOtp';
     const data = {
         otp,
         email
@@ -281,7 +281,7 @@ export const verifyOtp = async (otp, email) => {
 };
 
 export const changePassword = async (otp, email, newPassword) => {
-    const url = 'https://api-qcusolarcharge.up.railway.app/admin/changePassword';
+    const url = 'https://my-node-api-j9ua.onrender.com/admin/changePassword';
     const data = {
         otp,
         email,

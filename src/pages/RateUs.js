@@ -40,7 +40,7 @@ function RateUs() {
             setError(null);
             
             // Build URL with email query parameter if user is authenticated
-            let url = 'https://api-qcusolarcharge.up.railway.app/rates/getrates';
+            let url = 'https://my-node-api-j9ua.onrender.com/rates/getrates';
             if (user?.email) {
                 url += `?email=${encodeURIComponent(user.email)}`;
             }
@@ -62,7 +62,7 @@ function RateUs() {
             
             // Fetch updated device information from admin dashboard
             try {
-                const deviceResponse = await authenticatedGet('https://api-qcusolarcharge.up.railway.app/admin/dashboard');
+                const deviceResponse = await authenticatedGet('https://my-node-api-j9ua.onrender.com/admin/dashboard');
                 if (deviceResponse.ok) {
                     const deviceData = await deviceResponse.json();
                     console.log('📊 Device data from dashboard:', deviceData);
@@ -610,7 +610,7 @@ function RateUs() {
             }
             
             // Use the correct endpoint for editing ratings
-            const endpoint = 'https://api-qcusolarcharge.up.railway.app/rates/editrates';
+            const endpoint = 'https://my-node-api-j9ua.onrender.com/rates/editrates';
             console.log('📡 Making POST request to:', endpoint);
             
             const response = await fetch(endpoint, {
@@ -681,7 +681,7 @@ function RateUs() {
             };
             
             // Use the correct endpoint for posting ratings
-            const endpoint = 'https://api-qcusolarcharge.up.railway.app/rates/postRates';
+            const endpoint = 'https://my-node-api-j9ua.onrender.com/rates/postRates';
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
