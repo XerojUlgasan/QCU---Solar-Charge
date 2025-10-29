@@ -6,7 +6,6 @@ import {
   Zap, 
   Thermometer, 
   AlertTriangle, 
-  Mail, 
   Power, 
   Battery,
   Trash2,
@@ -31,14 +30,12 @@ const DeviceConfigurationModal = ({
   const [formData, setFormData] = useState({
     minutesPerCoinRate: '',
     samplesPerHourRate: '',
-    lowPowerMode: false,
     minTemperature: '',
     maxTemperature: '',
     minBattery: '',
     maxBattery: '',
     updateLatency: '',
     enableDeviceAlerts: false,
-    emailsToNotify: ''
   });
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -53,7 +50,6 @@ const DeviceConfigurationModal = ({
   const [showCloseConfirmation, setShowCloseConfirmation] = useState(false);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [lastFetchedDeviceId, setLastFetchedDeviceId] = useState(null);
-  const [emailValidationError, setEmailValidationError] = useState('');
   const [fieldValidationErrors, setFieldValidationErrors] = useState({});
   const [showBatteryWarning, setShowBatteryWarning] = useState(false);
   const [pendingBatteryValue, setPendingBatteryValue] = useState('');
@@ -107,40 +103,17 @@ const DeviceConfigurationModal = ({
     return { isValid: true, error: '' };
   };
 
-  // Email validation function
-  const validateEmails = (emailString) => {
-    if (!emailString || emailString.trim() === '') {
-      return { isValid: true, error: '' }; // Empty is valid
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const emails = emailString.split(',').map(email => email.trim()).filter(email => email);
-    
-    for (const email of emails) {
-      if (!emailRegex.test(email)) {
-        return { 
-          isValid: false, 
-          error: `Invalid email format: "${email}". Please use format: user@domain.com` 
-        };
-      }
-    }
-    
-    return { isValid: true, error: '' };
-  };
-
   // Set default configuration when no config exists
   const setDefaultConfiguration = () => {
     const defaultFormData = {
       minutesPerCoinRate: '5',
       samplesPerHourRate: '60',
-      lowPowerMode: false,
       minTemperature: '20',
       maxTemperature: '40',
       minBattery: '50',
       maxBattery: '100',
       updateLatency: '3',
       enableDeviceAlerts: true,
-      emailsToNotify: ''
     };
 
     setFormData(defaultFormData);
@@ -162,14 +135,12 @@ const DeviceConfigurationModal = ({
     setFormData({
       minutesPerCoinRate: '',
       samplesPerHourRate: '',
-      lowPowerMode: false,
       minTemperature: '',
       maxTemperature: '',
       minBattery: '',
       maxBattery: '',
       updateLatency: '',
       enableDeviceAlerts: false,
-      emailsToNotify: ''
     });
     setError(null);
     setIsLoading(true);
@@ -219,23 +190,17 @@ const DeviceConfigurationModal = ({
         return;
       }
       
-      // Convert emails array to string for form display
-      const emailsString = Array.isArray(configData.emails) 
-        ? configData.emails.join(', ')
-        : (configData.emails || '');
 
       // Map API response to form data based on actual API field names
       const newFormData = {
         minutesPerCoinRate: configData.minute_per_peso || '',
         samplesPerHourRate: configData.samples_per_hour || '',
-        lowPowerMode: configData.low_power || false,
         minTemperature: configData.min_temp || '',
         maxTemperature: configData.max_temp || '',
         minBattery: configData.min_batt || '',
         maxBattery: configData.max_batt || '',
         updateLatency: configData.update_gap_seconds || '',
         enableDeviceAlerts: configData.device_alert_enabled || false,
-        emailsToNotify: emailsString
       };
 
       setFormData(newFormData);
@@ -272,14 +237,12 @@ const DeviceConfigurationModal = ({
         setFormData({
           minutesPerCoinRate: device.minutesPerCoinRate || '',
           samplesPerHourRate: device.samplesPerHourRate || '',
-          lowPowerMode: device.lowPowerMode || false,
           minTemperature: device.minTemperature || '',
           maxTemperature: device.maxTemperature || '',
           minBattery: device.minBattery || '',
           maxBattery: device.maxBattery || '',
           updateLatency: device.updateLatency || '',
           enableDeviceAlerts: device.enableDeviceAlerts || false,
-          emailsToNotify: device.emailsToNotify || ''
         });
       }
     } finally {
@@ -380,21 +343,19 @@ const DeviceConfigurationModal = ({
     const defaultFormData = {
       minutesPerCoinRate: '5',
       samplesPerHourRate: '60',
-      lowPowerMode: false,
       minTemperature: '20',
       maxTemperature: '40',
       minBattery: '50',
       maxBattery: '100',
       updateLatency: '3',
       enableDeviceAlerts: true,
-      emailsToNotify: ''
+
     };
 
     setFormData(defaultFormData);
     setDeviceEnabled(true);
     setHasUnsavedChanges(true);
     setFieldValidationErrors({});
-    setEmailValidationError('');
     
     showSuccess('Configuration reset to default values');
   };
@@ -473,16 +434,6 @@ const DeviceConfigurationModal = ({
       return; // Don't proceed to save confirmation yet
     }
     
-    // Validate emails before showing save confirmation
-    const emailValidation = validateEmails(formData.emailsToNotify);
-    if (!emailValidation.isValid) {
-      setEmailValidationError(emailValidation.error);
-      showError(emailValidation.error);
-      return; // Don't show save confirmation modal
-    }
-    
-    // Clear any previous email validation errors
-    setEmailValidationError('');
     setShowSaveConfirmation(true);
   };
 
@@ -549,14 +500,12 @@ const DeviceConfigurationModal = ({
     setFormData({
       minutesPerCoinRate: originalFormData.minutesPerCoinRate || '',
       samplesPerHourRate: originalFormData.samplesPerHourRate || '',
-      lowPowerMode: originalFormData.lowPowerMode || false,
       minTemperature: originalFormData.minTemperature || '',
       maxTemperature: originalFormData.maxTemperature || '',
       minBattery: originalFormData.minBattery || '',
       maxBattery: originalFormData.maxBattery || '',
       updateLatency: originalFormData.updateLatency || '',
       enableDeviceAlerts: originalFormData.enableDeviceAlerts || false,
-      emailsToNotify: originalFormData.emailsToNotify || ''
     });
     
     // Reset device enabled state to original (use device.isEnabled as fallback)
@@ -568,8 +517,8 @@ const DeviceConfigurationModal = ({
     // Clear unsaved changes flag
     setHasUnsavedChanges(false);
     
-    // Clear any email validation errors
-    setEmailValidationError('');
+
+    
     
     setShowCloseConfirmation(false);
     onClose();
@@ -585,17 +534,6 @@ const DeviceConfigurationModal = ({
     setPendingBatteryValue('');
     
     // Proceed to save confirmation
-    // Validate emails before showing save confirmation
-    const emailValidation = validateEmails(formData.emailsToNotify);
-    if (!emailValidation.isValid) {
-      setEmailValidationError(emailValidation.error);
-      showError(emailValidation.error);
-      return; // Don't show save confirmation modal
-    }
-    
-    // Clear any previous email validation errors
-    setEmailValidationError('');
-    setShowSaveConfirmation(true);
   };
 
   const handleBatteryWarningCancel = () => {
@@ -614,33 +552,12 @@ const DeviceConfigurationModal = ({
 
       console.log('Form data received:', formData);
 
-      // Convert emails to string format for API
-      let emailsString = '';
-      if (formData.emailsToNotify) {
-        if (typeof formData.emailsToNotify === 'string') {
-          // If it's already a string, clean it up
-          emailsString = formData.emailsToNotify.split(',').map(email => email.trim()).filter(email => email).join(', ');
-        } else if (Array.isArray(formData.emailsToNotify)) {
-          // If it's an array, join with commas
-          emailsString = formData.emailsToNotify.filter(email => email && email.trim()).join(', ');
-        }
-      }
-      
-      console.log('Emails processing:', {
-        original: formData.emailsToNotify,
-        type: typeof formData.emailsToNotify,
-        isArray: Array.isArray(formData.emailsToNotify),
-        processed: emailsString,
-        length: emailsString.split(',').length
-      });
 
       // Map form data to API request format
       const requestData = {
         device_id: deviceId,
         device_alert_enabled: formData.enableDeviceAlerts,
         device_enabled: deviceEnabled,
-        emails: emailsString,
-        low_power: formData.lowPowerMode,
         max_batt: parseFloat(formData.maxBattery) || 100,
         max_temp: parseFloat(formData.maxTemperature) || 40,
         min_batt: parseFloat(formData.minBattery) || 50,
@@ -651,12 +568,6 @@ const DeviceConfigurationModal = ({
       };
 
       console.log('Saving device configuration:', requestData);
-      console.log('Email field in request:', {
-        emails: requestData.emails,
-        type: typeof requestData.emails,
-        isArray: Array.isArray(requestData.emails),
-        length: requestData.emails.split(',').length
-      });
 
       const url = API_BASE_URL + '/admin/setDeviceConfig';
       console.log('Making POST request to:', url);
@@ -881,46 +792,11 @@ const DeviceConfigurationModal = ({
                 <span className="config-help">Update interval in seconds (min: 3)</span>
               </div>
 
-              {/* Emails to notify */}
-              <div className="config-field config-field-wide">
-                <label className="config-label">
-                  <Mail className="config-field-icon mail-icon" />
-                  Emails to Notify
-                </label>
-                <textarea
-                  value={formData.emailsToNotify}
-                  onChange={(e) => handleInputChange('emailsToNotify', e.target.value)}
-                  placeholder="admin@example.com, tech@example.com"
-                  className={`config-input config-textarea ${emailValidationError ? 'config-input-error' : ''}`}
-                  rows={3}
-                />
-                {emailValidationError ? (
-                  <span className="config-error-text">{emailValidationError}</span>
-                ) : (
-                  <span className="config-help">Comma-separated email addresses</span>
-                )}
-              </div>
             </div>
 
             {/* Toggle Options */}
             <div className="config-toggles">
               <div className="config-toggle">
-                <label className="toggle-label">
-                  <input
-                    type="checkbox"
-                    checked={formData.lowPowerMode}
-                    onChange={(e) => handleInputChange('lowPowerMode', e.target.checked)}
-                    className="toggle-checkbox"
-                  />
-                  <span className="toggle-slider"></span>
-                  <div className="toggle-content">
-                    <Power className="toggle-icon power-icon" />
-                    <div>
-                      <span className="toggle-title">Low Power Mode</span>
-                      <span className="toggle-description">Increases update latency</span>
-                    </div>
-                  </div>
-                </label>
               </div>
 
               <div className="config-toggle">
