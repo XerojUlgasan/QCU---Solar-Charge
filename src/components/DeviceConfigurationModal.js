@@ -413,7 +413,8 @@ const DeviceConfigurationModal = ({
         console.log('Deleting device:', device.id);
         console.log('API URL:', url);
         
-        const response = await authenticatedDelete(url);
+        const body = { device_id: device.id };
+        const response = await authenticatedDelete(url, body);
         console.log('Delete response status:', response.status);
         console.log('Delete response ok:', response.ok);
 

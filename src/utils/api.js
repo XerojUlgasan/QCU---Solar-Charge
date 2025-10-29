@@ -74,14 +74,26 @@ export const authenticatedPut = (url, data) => {
         body: JSON.stringify(data)
     });
 };
-
 /**
  * Make a DELETE request with authentication
  * @param {string} url - API endpoint URL
+ * @param {object} [body] - Optional request body
  * @returns {Promise<Response>} - Fetch response
  */
-export const authenticatedDelete = (url) => {
-    return authenticatedFetch(url, { method: 'DELETE' });
+export const authenticatedDelete = (url, body) => {
+  const options = {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+  };
+
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  return authenticatedFetch(url, options);
 };
 
 /**
