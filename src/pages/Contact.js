@@ -3,7 +3,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { postContact } from '../utils/api';
+import { API_BASE_URL, postContact } from '../utils/api';
 import "../styles/Contact.css";
 
 function Contact() {
@@ -54,7 +54,7 @@ function Contact() {
 			console.log('User email:', user.email);
 			console.log('Subject:', formData.subject);
 			console.log('Message:', formData.message);
-			console.log('API endpoint: https://api-qcusolarcharge.up.railway.app/contact/postContact');
+			console.log('API endpoint:', `${API_BASE_URL}/contact/postContact`);
 			
 			// Log the exact data being sent
 			const contactData = {

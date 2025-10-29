@@ -3,7 +3,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { authenticatedGet, authenticatedPost } from '../utils/api';
+import { authenticatedGet, authenticatedPost, API_BASE_URL } from '../utils/api';
 import "../styles/ReportProblem.css";
 
 function ReportProblem() {
@@ -30,7 +30,7 @@ function ReportProblem() {
             setError(null);
             
             console.log('📊 Fetching reports from API...');
-            const response = await authenticatedGet('https://my-node-api-j9ua.onrender.com/report/getReports');
+            const response = await authenticatedGet(API_BASE_URL + '/report/getReports');
             
             console.log('📊 API Response status:', response.status);
             console.log('📊 API Response ok:', response.ok);
@@ -137,7 +137,7 @@ function ReportProblem() {
                 photo_url: user?.photoURL || null
             };
             
-            const endpoint = 'https://my-node-api-j9ua.onrender.com/report/postReports';
+            const endpoint = API_BASE_URL + '/report/postReports';
             const response = await authenticatedPost(endpoint, reportData);
             
             if (response.ok) {

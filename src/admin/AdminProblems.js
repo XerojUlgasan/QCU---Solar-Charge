@@ -18,6 +18,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminProblems.css';
+import { API_BASE_URL } from '../utils/api';
 
 const AdminProblems = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const AdminProblems = () => {
       setError(null);
       
       console.log('=== FETCHING ADMIN REPORTS DEBUG ===');
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/report/getreports');
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/report/getreports');
       
       console.log('Admin reports response status:', response.status);
       console.log('Admin reports response ok:', response.ok);
@@ -88,7 +89,7 @@ const AdminProblems = () => {
     try {
       console.log('=== FETCHING DEVICE INFO FROM DASHBOARD ===');
       
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/admin/dashboard');
       
       if (response.ok) {
         const data = await response.json();
@@ -426,7 +427,7 @@ const AdminProblems = () => {
       }
       
       // Send the response using the admin API
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/sendResponseReport', {
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/admin/sendResponseReport', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -508,7 +509,7 @@ const AdminProblems = () => {
       console.log('Update data:', updateData);
       
       // Use the correct API endpoint for updating reports
-      const endpoint = 'https://my-node-api-j9ua.onrender.com/admin/updateReport';
+      const endpoint = API_BASE_URL + '/admin/updateReport';
       
       console.log(`Updating report via: ${endpoint}`);
       

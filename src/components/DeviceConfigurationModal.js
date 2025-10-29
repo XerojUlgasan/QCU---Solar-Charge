@@ -15,7 +15,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { authenticatedGet, authenticatedPost, authenticatedDelete } from '../utils/api';
+import { authenticatedGet, authenticatedPost, authenticatedDelete, API_BASE_URL } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import '../styles/DeviceConfigurationModal.css';
 
@@ -175,7 +175,7 @@ const DeviceConfigurationModal = ({
     setIsLoading(true);
     
     try {
-      const url = `https://my-node-api-j9ua.onrender.com/admin/getDeviceConfig?device_id=${deviceId}&t=${Date.now()}`;
+      const url = `${API_BASE_URL}/admin/getDeviceConfig?device_id=${deviceId}&t=${Date.now()}`;
       console.log('Making API request to:', url);
       const response = await authenticatedGet(url);
       
@@ -409,7 +409,7 @@ const DeviceConfigurationModal = ({
       setIsDeleting(true);
       
       try {
-        const url = `https://my-node-api-j9ua.onrender.com/admin/deleteDevice?device_id=${device.id}`;
+        const url = `${API_BASE_URL}/admin/deleteDevice?device_id=${device.id}`;
         console.log('Deleting device:', device.id);
         console.log('API URL:', url);
         
@@ -657,7 +657,7 @@ const DeviceConfigurationModal = ({
         length: requestData.emails.split(',').length
       });
 
-      const url = 'https://my-node-api-j9ua.onrender.com/admin/setDeviceConfig';
+      const url = API_BASE_URL + '/admin/setDeviceConfig';
       console.log('Making POST request to:', url);
       console.log('Request data:', requestData);
       

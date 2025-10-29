@@ -31,6 +31,7 @@ import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import '../styles/DeviceDetail.css';
+import { API_BASE_URL } from '../utils/api';
 
 const DeviceDetail = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const DeviceDetail = () => {
       
       try {
         console.log('Trying devices endpoint...');
-        response = await authenticatedAdminFetch(`https://my-node-api-j9ua.onrender.com/admin/devices?device_id=${deviceId}`);
+        response = await authenticatedAdminFetch( API_BASE_URL + `/admin/devices?device_id=${deviceId}`);
         
         console.log('Device response status:', response.status);
         console.log('Device response ok:', response.ok);
@@ -113,7 +114,7 @@ const DeviceDetail = () => {
           // Also fetch device metadata from dashboard endpoint
           try {
             console.log('Fetching device metadata from dashboard...');
-            const dashboardResponse = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
+            const dashboardResponse = await authenticatedAdminFetch( API_BASE_URL + '/admin/dashboard');
             if (dashboardResponse.ok) {
               const dashboardData = await dashboardResponse.json();
               console.log('Dashboard data:', dashboardData);
@@ -153,7 +154,7 @@ const DeviceDetail = () => {
         console.log('Devices endpoint failed, trying dashboard endpoint...', devicesError.message);
         
         // Fallback to dashboard endpoint
-        response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
+        response = await authenticatedAdminFetch(API_BASE_URL + '/admin/dashboard');
         
         if (!response.ok) {
           throw new Error(`Both endpoints failed. Devices: ${devicesError.message}, Dashboard: ${response.status}`);

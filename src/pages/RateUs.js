@@ -3,9 +3,10 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { authenticatedGet } from '../utils/api';
+import { authenticatedGet, API_BASE_URL } from '../utils/api';
 import logo from '../logo.svg';
 import "../styles/RateUs.css";
+
 
 function RateUs() {
     const { showSuccess, showError } = useNotification();
@@ -40,7 +41,7 @@ function RateUs() {
             setError(null);
             
             // Build URL with email query parameter if user is authenticated
-            let url = 'https://my-node-api-j9ua.onrender.com/rates/getrates';
+            let url = API_BASE_URL + '/rates/getrates';
             if (user?.email) {
                 url += `?email=${encodeURIComponent(user.email)}`;
             }
@@ -62,7 +63,7 @@ function RateUs() {
             
             // Fetch updated device information from admin dashboard
             try {
-                const deviceResponse = await authenticatedGet('https://my-node-api-j9ua.onrender.com/admin/dashboard');
+                const deviceResponse = await authenticatedGet(API_BASE_URL + '/admin/dashboard');
                 if (deviceResponse.ok) {
                     const deviceData = await deviceResponse.json();
                     console.log('📊 Device data from dashboard:', deviceData);
@@ -610,7 +611,7 @@ function RateUs() {
             }
             
             // Use the correct endpoint for editing ratings
-            const endpoint = 'https://my-node-api-j9ua.onrender.com/rates/editrates';
+            const endpoint = API_BASE_URL + '/rates/editrates';
             console.log('📡 Making POST request to:', endpoint);
             
             const response = await fetch(endpoint, {
@@ -681,7 +682,7 @@ function RateUs() {
             };
             
             // Use the correct endpoint for posting ratings
-            const endpoint = 'https://my-node-api-j9ua.onrender.com/rates/postRates';
+            const endpoint = API_BASE_URL + '/rates/postRates';
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {

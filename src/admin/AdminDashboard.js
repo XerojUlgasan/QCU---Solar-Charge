@@ -22,6 +22,7 @@ import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminDashboard.css';
+import { API_BASE_URL } from '../utils/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -86,13 +87,13 @@ const AdminDashboard = () => {
       
       // Test 1: Check if /admin/dashboard exists
       console.log('Test 1: Checking /admin/dashboard endpoint...');
-      const dashboardResponse = await fetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
+      const dashboardResponse = await fetch(API_BASE_URL + '/admin/dashboard');
       console.log('Dashboard endpoint status:', dashboardResponse.status);
       console.log('Dashboard endpoint headers:', Object.fromEntries(dashboardResponse.headers.entries()));
       
       // Test 2: Check if /overview/getoverview works (as comparison)
       console.log('Test 2: Checking /overview/getoverview endpoint...');
-      const overviewResponse = await fetch('https://my-node-api-j9ua.onrender.com/overview/getoverview');
+      const overviewResponse = await fetch(API_BASE_URL + '/overview/getoverview');
       console.log('Overview endpoint status:', overviewResponse.status);
       
       // Test 3: Check authentication
@@ -120,7 +121,7 @@ const AdminDashboard = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard', {
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/admin/dashboard', {
         signal: controller.signal
       });
       
@@ -267,7 +268,7 @@ const AdminDashboard = () => {
   // Fetch recent reports from API
   const fetchRecentReports = useCallback(async () => {
     try {
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/report/getReports');
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/report/getReports');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

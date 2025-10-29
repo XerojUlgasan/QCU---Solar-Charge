@@ -11,7 +11,8 @@ import {
   Search,
   Filter,
   RefreshCw,
-  Settings
+  Settings,
+  Import
 } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
@@ -19,6 +20,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminDevices.css';
+import { API_BASE_URL } from '../utils/api';
 
 const AdminDevices = () => {
   const navigate = useNavigate();
@@ -54,7 +56,7 @@ const AdminDevices = () => {
     try {
       console.log('Fetching devices data from /admin/dashboard...');
       
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/dashboard');
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/admin/dashboard');
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -351,7 +353,7 @@ const AdminDevices = () => {
       console.log('Update payload:', updateData);
       
       // Call the update device API
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/updateDevice', {
+      const response = await authenticatedAdminFetch(API_BASE_URL +'/admin/updateDevice', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

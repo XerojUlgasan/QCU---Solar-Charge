@@ -12,7 +12,7 @@ import {
   Loader2,
   UserCheck
 } from 'lucide-react';
-import { getAdminInformation, setAdminInformation, changeAdminUsername, changeAdminPassword, sendOtp } from '../utils/api';
+import { getAdminInformation, setAdminInformation, changeAdminUsername, changeAdminPassword, sendOtp, API_BASE_URL } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -498,7 +498,7 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     console.log('Testing with email:', email);
     
     try {
-      const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/sentOtp', {
+      const response = await fetch(API_BASE_URL + '/admin/sentOtp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

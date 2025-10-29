@@ -1,5 +1,8 @@
 import { auth } from '../firebase';
 
+// Centralized API Base URL
+export const API_BASE_URL = 'https://my-node-api-j9ua.onrender.com';
+
 /**
  * Make an authenticated API call with JWT token
  * @param {string} url - API endpoint URL
@@ -90,7 +93,7 @@ export const authenticatedDelete = (url) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const postContact = async (from, subject, message, photo_url) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/contact/postContact';
+    const url = API_BASE_URL + '/contact/postContact';
     const data = {
         from,
         subject,
@@ -105,7 +108,7 @@ export const postContact = async (from, subject, message, photo_url) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const getAdminInformation = async () => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/getAdminInformation';
+    const url = API_BASE_URL + '/admin/getAdminInformation';
     return authenticatedGet(url);
 };
 
@@ -117,7 +120,7 @@ export const getAdminInformation = async () => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const setAdminInformation = async (full_name, primary_email, backup_email) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/setAdminInformation';
+    const url = API_BASE_URL + '/admin/setAdminInformation';
     const data = {
         full_name,
         primary_email,
@@ -137,7 +140,7 @@ export const setAdminInformation = async (full_name, primary_email, backup_email
  * @returns {Promise<Response>} - Fetch response
  */
 export const changeAdminUsername = async (new_username, current_password) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/changeAdminUsername';
+    const url = API_BASE_URL + '/admin/changeAdminUsername';
     const data = {
         new_username,
         current_password
@@ -153,7 +156,7 @@ export const changeAdminUsername = async (new_username, current_password) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const changeAdminPassword = async (current_password, new_password) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/changeAdminPassword';
+    const url = API_BASE_URL + '/admin/changeAdminPassword';
     const data = {
         current_password,
         new_password
@@ -168,7 +171,7 @@ export const changeAdminPassword = async (current_password, new_password) => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const sendOtp = async (email) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/sendOtp';
+    const url = API_BASE_URL + '/admin/sendOtp';
     const data = {
         email
     };
@@ -248,7 +251,7 @@ const generateDemoOtp = () => {
  * @returns {Promise<Response>} - Fetch response
  */
 export const verifyOtp = async (otp, email) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/verifyOtp';
+    const url = API_BASE_URL + '/admin/verifyOtp';
     const data = {
         otp,
         email
@@ -281,7 +284,7 @@ export const verifyOtp = async (otp, email) => {
 };
 
 export const changePassword = async (otp, email, newPassword) => {
-    const url = 'https://my-node-api-j9ua.onrender.com/admin/changePassword';
+    const url = API_BASE_URL + '/admin/changePassword';
     const data = {
         otp,
         email,

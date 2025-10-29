@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import "../styles/Overview.css";
-
+import { API_BASE_URL } from '../utils/api';
 function Overview() {
     const { isDarkMode } = useTheme();
     
@@ -23,7 +23,7 @@ function Overview() {
     const fetchOverviewData = async () => {
         try {
             setLoading(true);
-            const response = await fetch('https://api-qcusolarcharge.up.railway.app/overview/getoverview');
+            const response = await fetch(API_BASE_URL + '/overview/getoverview');
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);

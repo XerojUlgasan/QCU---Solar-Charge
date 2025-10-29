@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../utils/api';
 
 const AdminAuthContext = createContext();
 
@@ -48,7 +49,7 @@ export const AdminAuthProvider = ({ children }) => {
             
             console.log('Attempting admin login with credentials:', credentials);
             
-            const response = await fetch('https://my-node-api-j9ua.onrender.com/login/postLogin', {
+            const response = await fetch(API_BASE_URL + '/login/postLogin', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ export const AdminAuthProvider = ({ children }) => {
             console.log('Fetching admin data with credentials:', credentials);
             
             // Try to fetch admin profile/data using the credentials
-            const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/profile', {
+            const response = await fetch(API_BASE_URL + '/admin/profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

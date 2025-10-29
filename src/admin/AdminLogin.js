@@ -4,7 +4,7 @@ import { Shield, Eye, EyeOff, Zap, Mail, Lock, CheckCircle, ArrowLeft, X } from 
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { sendOtp, verifyOtp, changePassword } from '../utils/api';
+import { sendOtp, verifyOtp, changePassword, API_BASE_URL } from '../utils/api';
 import logo from '../logo.svg';
 import '../styles/AdminLogin.css';
 
@@ -73,7 +73,7 @@ const AdminLogin = () => {
     // Debug: Let's see what the API actually returns
     console.log('=== DEBUG: Testing API Response ===');
     try {
-      const debugResponse = await fetch('https://my-node-api-j9ua.onrender.com/login/postLogin', {
+      const debugResponse = await fetch(API_BASE_URL + '/login/postLogin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -843,7 +843,7 @@ window.testOtpApi = async (email) => {
   console.log('Testing with email:', email);
   
   try {
-    const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/sendOtp', {
+    const response = await fetch(API_BASE_URL + '/admin/sendOtp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -879,7 +879,7 @@ window.testVerifyOtpApi = async (otp, email) => {
   console.log('Testing email:', email);
   
   try {
-    const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/verifyOtp', {
+    const response = await fetch(API_BASE_URL + '/admin/verifyOtp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -916,7 +916,7 @@ window.testChangePasswordApi = async (otp, email, newPassword) => {
   console.log('Testing new password:', newPassword);
   
   try {
-    const response = await fetch('https://my-node-api-j9ua.onrender.com/admin/changePassword', {
+    const response = await fetch(API_BASE_URL + '/admin/changePassword', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -18,6 +18,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import '../styles/AdminContactMessages.css';
+import { API_BASE_URL } from '../utils/api';
 
 const AdminContactMessages = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const AdminContactMessages = () => {
       console.log('=== FETCHING CONTACT MESSAGES ===');
       
       // Try to fetch from API first
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/contact/getContact');
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/contact/getContact');
       
       console.log('Contact messages response status:', response.status);
       console.log('Contact messages response ok:', response.ok);
@@ -184,7 +185,7 @@ const AdminContactMessages = () => {
       
       console.log('Response data:', responseData);
       
-      const response = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/sendResponseContact', {
+      const response = await authenticatedAdminFetch( API_BASE_URL + '/admin/sendResponseContact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +216,7 @@ const AdminContactMessages = () => {
         
         // Try to update the message status on the server
         try {
-          const updateResponse = await authenticatedAdminFetch('https://my-node-api-j9ua.onrender.com/admin/updateContactStatus', {
+          const updateResponse = await authenticatedAdminFetch(API_BASE_URL + '/admin/updateContactStatus', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
