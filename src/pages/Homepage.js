@@ -170,9 +170,6 @@ function Homepage() {
                         Join thousands of users who have made the switch to eco-friendly charging.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
-                        <Link to="/rfid" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 ${isDarkMode ? 'bg-white text-green-600 hover:bg-gray-100' : 'bg-white text-emerald-600 hover:bg-gray-50 shadow-lg hover:shadow-xl border border-emerald-200'}`}>
-                            Get Your RFID Card
-                        </Link>
                         <Link to="/overview#station-status" className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border text-white border-white hover:bg-white h-10 rounded-md px-6 ${isDarkMode ? 'hover:text-green-600' : 'hover:text-emerald-600 shadow-sm hover:shadow-md'}`}>
                             View Locations
                         </Link>

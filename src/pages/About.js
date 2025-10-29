@@ -86,13 +86,6 @@ function About() {
       image: "/images/team/emily-watson.png"
     },
     {
-      name: "Nurshayeeda Asaad",
-      role: "Technical Writer",
-      description: "Designing and implementing charging station hardware",
-      initials: "NA",
-      image: "/images/team/michael-torres.png"
-    },
-    {
       name: "John Rod Chester Orogo",
       role: "Technical Writer",
       description: "Analyzing usage patterns and optimizing system performance",
@@ -155,7 +148,7 @@ function About() {
               environmental impact while meeting the growing energy needs of our campus community.
             </p>
             <p className="mb-6" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '18px'}}>
-              Through innovative solar technology and smart RFID systems, we're creating a network 
+              Through innovative solar technology, we're creating a network 
               of charging stations that not only serve our immediate needs but also contribute to 
               a more sustainable future.
             </p>
@@ -163,10 +156,6 @@ function About() {
               <div className="flex items-start space-x-3">
                 <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 8px rgba(16, 185, 129, 0.6)'}}></div>
                 <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>100% renewable solar energy</span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 8px rgba(16, 185, 129, 0.6)'}}></div>
-                <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>Smart RFID technology for easy access</span>
               </div>
               <div className="flex items-start space-x-3">
                 <div className={`w-2 h-2 rounded-full mt-2 ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 8px rgba(16, 185, 129, 0.6)'}}></div>
