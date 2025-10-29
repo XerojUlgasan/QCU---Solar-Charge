@@ -1702,20 +1702,13 @@ const DeviceDetail = () => {
               Sessions
             </button>
             <button 
-              className={`tab-button ${activeTab === 'maintenance' ? 'active' : ''}`}
-              onClick={() => setActiveTab('maintenance')}
-            >
-              Maintenance
-            </button>
-            <button 
               className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
               onClick={() => setActiveTab('analytics')}
             >
               Analytics
             </button>
           </div>
-
-          {/* Real-time Tab */}
+                    {/* Real-time Tab */}
           {activeTab === 'realtime' && (
             <div className="tab-content">
               <div className="realtime-grid">
@@ -1939,71 +1932,6 @@ const DeviceDetail = () => {
           </div>
           )}
 
-          {/* Maintenance Tab */}
-          {activeTab === 'maintenance' && (
-            <div className="tab-content">
-            <div className="maintenance-grid">
-              <div className="maintenance-card">
-                  <div className="maintenance-header">
-                    <h3 className="maintenance-title">
-                      <Wrench className="w-5 h-5" style={{ color: '#10b981' }} />
-                      Maintenance Schedule
-                    </h3>
-                </div>
-                  <div className="maintenance-content">
-                    <div className="maintenance-list">
-                  <div className="maintenance-item">
-                        <div className="maintenance-info">
-                    <Calendar className="maintenance-icon" />
-                          <div className="maintenance-details">
-                            <div className="maintenance-label">Last Maintenance</div>
-                      <div className="maintenance-date">{device.lastMaintenance}</div>
-                    </div>
-                        </div>
-                        <span className="maintenance-status completed">
-                          Completed
-                        </span>
-                  </div>
-                  
-                  <div className="maintenance-item">
-                        <div className="maintenance-info">
-                    <Calendar className="maintenance-icon" />
-                          <div className="maintenance-details">
-                            <div className="maintenance-label">Next Maintenance</div>
-                      <div className="maintenance-date">2024-12-22</div>
-                    </div>
-                        </div>
-                        <span className="maintenance-status scheduled">
-                          Scheduled
-                        </span>
-                      </div>
-                  </div>
-                </div>
-              </div>
-
-                <div className="maintenance-card">
-                  <div className="maintenance-header">
-                    <h3 className="maintenance-title">
-                      <Info className="w-5 h-5" style={{ color: '#8b5cf6' }} />
-                      Device Information
-                    </h3>
-                </div>
-                  <div className="maintenance-content">
-                    <div className="device-info-list">
-                      <div className="device-info-item">
-                        <span className="device-info-label">Installation Date</span>
-                        <span className="device-info-value">2024-01-15</span>
-                    </div>
-                      <div className="device-info-item">
-                        <span className="device-info-label">Hardware Version</span>
-                        <span className="device-info-value">ECS-Gen2</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          )}
 
           {/* Enhanced Analytics Tab */}
           {activeTab === 'analytics' && (
