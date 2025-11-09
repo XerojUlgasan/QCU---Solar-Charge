@@ -12,7 +12,7 @@ import {
   Loader2,
   UserCheck
 } from 'lucide-react';
-import { getAdminInformation, setAdminInformation, changeAdminUsername, changeAdminPassword, sendOtp, API_BASE_URL } from '../utils/api';
+import { API_BASE_URL } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -20,7 +20,7 @@ import '../styles/AdminSettingsModal.css';
 
 const AdminSettingsModal = ({ isOpen, onClose }) => {
   const { showSuccess } = useNotification();
-  const { admin } = useAdminAuth();
+  const { admin, authenticatedAdminFetch } = useAdminAuth();
   const { isDarkMode } = useTheme();
 
   // Handle browser extension errors
@@ -117,13 +117,14 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
       // Reset forgot password state when modal closes
       resetForgotPasswordState();
     }
-  }, [isOpen, admin]);
+  }, [isOpen, admin, authenticatedAdminFetch]);
 
   const loadAdminInformation = async () => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await getAdminInformation();
+      const url = API_BASE_URL + '/admin/getAdminInformation';
+      const response = await authenticatedAdminFetch(url);
       console.log('Load response:', response);
       if (response.ok) {
         const data = await response.json();
@@ -238,11 +239,11 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         backup_email: typeof dataToSend.backup_email
       });
       
-      const response = await setAdminInformation(
-        adminInfo.full_name,
-        adminInfo.primary_email,
-        adminInfo.backup_email || '' // Send empty string if backup email is empty
-      );
+      const url = API_BASE_URL + '/admin/setAdminInformation';
+      const response = await authenticatedAdminFetch(url, {
+        method: 'POST',
+        body: JSON.stringify(dataToSend)
+      });
       
       console.log('Save response:', response);
       
@@ -304,10 +305,14 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     setUsernameError('');
     
     try {
-      const response = await changeAdminUsername(
-        usernameChangeData.new_username,
-        usernameChangeData.current_password
-      );
+      const url = API_BASE_URL + '/admin/changeAdminUsername';
+      const response = await authenticatedAdminFetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          new_username: usernameChangeData.new_username,
+          current_password: usernameChangeData.current_password
+        })
+      });
       
       if (response.ok) {
         const responseData = await response.json();
@@ -385,10 +390,14 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     setPasswordError('');
     
     try {
-      const response = await changeAdminPassword(
-        passwordChangeData.current_password,
-        passwordChangeData.new_password
-      );
+      const url = API_BASE_URL + '/admin/changeAdminPassword';
+      const response = await authenticatedAdminFetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          current_password: passwordChangeData.current_password,
+          new_password: passwordChangeData.new_password
+        })
+      });
       
       if (response.ok) {
         const responseData = await response.json();
@@ -445,7 +454,14 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
       console.log('Sending OTP to:', forgotPasswordEmail);
       console.log('Email validation:', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail));
       
-      const response = await sendOtp(forgotPasswordEmail);
+      const url = API_BASE_URL + '/admin/sendOtp';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail })
+      });
       
       console.log('OTP Response status:', response.status);
       console.log('OTP Response ok:', response.ok);

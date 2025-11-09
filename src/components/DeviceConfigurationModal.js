@@ -14,8 +14,9 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { authenticatedGet, authenticatedPost, authenticatedDelete, API_BASE_URL } from '../utils/api';
+import { API_BASE_URL } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import '../styles/DeviceConfigurationModal.css';
 
 const DeviceConfigurationModal = ({ 
@@ -27,6 +28,7 @@ const DeviceConfigurationModal = ({
   onDelete 
 }) => {
   const { showSuccess, showError } = useNotification();
+  const { authenticatedAdminFetch } = useAdminAuth();
   const [formData, setFormData] = useState({
     minutesPerCoinRate: '',
     samplesPerHourRate: '',
@@ -148,7 +150,7 @@ const DeviceConfigurationModal = ({
     try {
       const url = `${API_BASE_URL}/admin/getDeviceConfig?device_id=${deviceId}&t=${Date.now()}`;
       console.log('Making API request to:', url);
-      const response = await authenticatedGet(url);
+      const response = await authenticatedAdminFetch(url);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch device configuration: ${response.status} ${response.statusText}`);
@@ -375,7 +377,10 @@ const DeviceConfigurationModal = ({
         console.log('API URL:', url);
         
         const body = { device_id: device.id };
-        const response = await authenticatedDelete(url, body);
+        const response = await authenticatedAdminFetch(url, {
+          method: 'DELETE',
+          body: JSON.stringify(body)
+        });
         console.log('Delete response status:', response.status);
         console.log('Delete response ok:', response.ok);
 
@@ -534,6 +539,7 @@ const DeviceConfigurationModal = ({
     setPendingBatteryValue('');
     
     // Proceed to save confirmation
+    setShowSaveConfirmation(true);
   };
 
   const handleBatteryWarningCancel = () => {
@@ -573,7 +579,10 @@ const DeviceConfigurationModal = ({
       console.log('Making POST request to:', url);
       console.log('Request data:', requestData);
       
-      const response = await authenticatedPost(url, requestData);
+      const response = await authenticatedAdminFetch(url, {
+        method: 'POST',
+        body: JSON.stringify(requestData)
+      });
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
 
@@ -613,13 +622,16 @@ const DeviceConfigurationModal = ({
             </div>
           </div>
           <div className="device-config-header-actions">
-            <button 
-              className="device-config-save"
-              onClick={handleSaveConfigurations}
-              title="Save Configuration"
-            >
-              Save
-            </button>
+            {/* Only show Save button when data is successfully loaded */}
+            {!isLoading && !error && originalFormData && (
+              <button 
+                className="device-config-save"
+                onClick={handleSaveConfigurations}
+                title="Save Configuration"
+              >
+                Save
+              </button>
+            )}
             <button 
               className="device-config-close"
               onClick={handleClose}
@@ -865,8 +877,8 @@ const DeviceConfigurationModal = ({
           )}
         </div>
 
-        {/* Footer */}
-        {!isLoading && (
+        {/* Footer - Only show when data is successfully loaded (no error, not loading, and data exists) */}
+        {!isLoading && !error && originalFormData && (
           <div className="device-config-footer">
             <button 
               className="config-button cancel-button"
