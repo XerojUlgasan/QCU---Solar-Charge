@@ -3,6 +3,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import { authenticatedGet, authenticatedPost, API_BASE_URL } from '../utils/api';
 import "../styles/ReportProblem.css";
 
@@ -11,6 +12,7 @@ function ReportProblem() {
     const { openModal } = useGoogleLogin();
     const { user, isAuthenticated, idToken } = useAuth();
     const { isDarkMode } = useTheme();
+    const { onCollectionChange, isConnected } = useSocket();
     const [formData, setFormData] = useState({
         station: '',
         problemType: '',
@@ -68,6 +70,83 @@ function ReportProblem() {
             setLoading(false);
         }
     };
+
+    // Listen to socket changes and update reports array directly
+    useEffect(() => {
+        if (!isConnected) return;
+
+        // Listen to reports changes
+        const cleanupReports = onCollectionChange('reports', (data) => {
+            console.log('📡 Report change detected in ReportProblem:', data);
+            
+            setRecentReports(prevReports => {
+                const { type, id, data: reportData } = data;
+                
+                if (type === 'added') {
+                    // Add new report to the array (prepend for newest first)
+                    const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
+                    if (!reportExists) {
+                        console.log('➕ Adding new report:', id);
+                        return [reportData, ...prevReports];
+                    }
+                } else if (type === 'modified') {
+                    // Update existing report
+                    console.log('🔄 Updating report:', id);
+                    return prevReports.map(report => 
+                        (report.id === id || report.report_id === id) ? { ...report, ...reportData } : report
+                    );
+                } else if (type === 'removed') {
+                    // Remove report from array
+                    console.log('➖ Removing report:', id);
+                    return prevReports.filter(report => report.id !== id && report.report_id !== id);
+                }
+                
+                return prevReports;
+            });
+        });
+
+        // Listen to device changes (for station locations)
+        const cleanupDevices = onCollectionChange('devices', (data) => {
+            console.log('📡 Device change detected in ReportProblem, updating stations...', data);
+            
+            setStations(prevStations => {
+                const { type, id, data: deviceData } = data;
+                const deviceId = id || deviceData?.id || deviceData?.device_id;
+                
+                if (type === 'added' || type === 'modified') {
+                    const stationExists = prevStations.some(station => 
+                        station.device_id === deviceId || station.id === deviceId
+                    );
+                    const newStation = {
+                        device_id: deviceId,
+                        id: deviceId,
+                        location: deviceData.location,
+                        building: deviceData.building,
+                        name: deviceData.name
+                    };
+                    
+                    if (stationExists) {
+                        return prevStations.map(station => 
+                            (station.device_id === deviceId || station.id === deviceId) ? newStation : station
+                        );
+                    } else {
+                        return [...prevStations, newStation];
+                    }
+                } else if (type === 'removed') {
+                    return prevStations.filter(station => 
+                        station.device_id !== deviceId && station.id !== deviceId
+                    );
+                }
+                
+                return prevStations;
+            });
+        });
+
+        return () => {
+            cleanupReports();
+            cleanupDevices();
+        };
+    }, [isConnected, onCollectionChange]);
 
     // Fetch reports when component mounts or when authentication state changes
     useEffect(() => {

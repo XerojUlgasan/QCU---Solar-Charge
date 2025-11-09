@@ -19,6 +19,7 @@ import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import '../styles/AdminDevices.css';
 import { API_BASE_URL } from '../utils/api';
 
@@ -27,6 +28,7 @@ const AdminDevices = () => {
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
   const { isDarkMode } = useTheme();
+  const { onCollectionChange, isConnected } = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -247,6 +249,57 @@ const AdminDevices = () => {
       return `${days} day${days > 1 ? 's' : ''} ago`;
     }
   };
+
+  // Listen to socket changes and update devices array directly
+  useEffect(() => {
+    if (!isConnected) return;
+
+    // Listen to device changes
+    const cleanupDevices = onCollectionChange('devices', (data) => {
+      console.log('📡 Device change detected in AdminDevices:', data);
+      
+      setDevices(prevDevices => {
+        const { type, id, data: deviceData } = data;
+        const deviceId = id || deviceData?.id || deviceData?.device_id;
+        
+        if (type === 'added') {
+          // Add new device - need to calculate revenue first
+          const deviceExists = prevDevices.some(dev => dev.id === deviceId);
+          if (!deviceExists) {
+            console.log('➕ Adding new device:', deviceId);
+            // For new devices, we'll need to refetch to get proper formatting
+            // But for now, add a basic device entry
+            fetchDevicesData();
+            return prevDevices;
+          }
+        } else if (type === 'modified') {
+          // Update existing device
+          console.log('🔄 Updating device:', deviceId);
+          // For device updates, refetch to ensure revenue calculations are correct
+          fetchDevicesData();
+          return prevDevices;
+        } else if (type === 'removed') {
+          // Remove device from array
+          console.log('➖ Removing device:', deviceId);
+          return prevDevices.filter(dev => dev.id !== deviceId);
+        }
+        
+        return prevDevices;
+      });
+    });
+
+    // Listen to transaction changes (for revenue updates)
+    const cleanupTransactions = onCollectionChange('transactions', (data) => {
+      console.log('📡 Transaction change detected in AdminDevices, updating revenue...', data);
+      // Transactions affect revenue calculations, so refetch devices
+      fetchDevicesData();
+    });
+
+    return () => {
+      cleanupDevices();
+      cleanupTransactions();
+    };
+  }, [isConnected, onCollectionChange, fetchDevicesData]);
 
   // Fetch data when component mounts
   useEffect(() => {

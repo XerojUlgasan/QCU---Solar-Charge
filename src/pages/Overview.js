@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import "../styles/Overview.css";
 import { API_BASE_URL } from '../utils/api';
 function Overview() {
     const { isDarkMode } = useTheme();
+    const { onCollectionChange, isConnected } = useSocket();
     
     const [overviewData, setOverviewData] = useState({
         active: 0,
@@ -15,10 +17,6 @@ function Overview() {
     const [error, setError] = useState('');
     const [showAllStations, setShowAllStations] = useState(false);
     const [statusFilter, setStatusFilter] = useState('all');
-
-    useEffect(() => {
-        fetchOverviewData();
-    }, []);
 
     const fetchOverviewData = async () => {
         try {
@@ -43,6 +41,82 @@ function Overview() {
             setLoading(false);
         }
     };
+
+    // Listen to socket changes and update data directly
+    useEffect(() => {
+        if (!isConnected) return;
+
+        // Listen to device changes
+        const cleanupDevices = onCollectionChange('devices', (data) => {
+            console.log('📡 Device change detected in Overview:', data);
+            
+            setOverviewData(prevData => {
+                const { type, id, data: deviceData } = data;
+                const deviceId = id || deviceData?.id || deviceData?.device_id;
+                
+                if (!prevData.devices) return prevData;
+                
+                if (type === 'added') {
+                    const deviceExists = prevData.devices.some(dev => dev.id === deviceId || dev.device_id === deviceId);
+                    if (!deviceExists) {
+                        console.log('➕ Adding new device to overview:', deviceId);
+                        return {
+                            ...prevData,
+                            devices: [...prevData.devices, deviceData],
+                            active: prevData.active + 1
+                        };
+                    }
+                } else if (type === 'modified') {
+                    console.log('🔄 Updating device in overview:', deviceId);
+                    const updatedDevices = prevData.devices.map(dev => 
+                        (dev.id === deviceId || dev.device_id === deviceId) ? { ...dev, ...deviceData } : dev
+                    );
+                    // Recalculate active devices
+                    const activeCount = updatedDevices.filter(dev => 
+                        dev.status?.toLowerCase() === 'active' || dev.status?.toLowerCase() === 'online'
+                    ).length;
+                    return {
+                        ...prevData,
+                        devices: updatedDevices,
+                        active: activeCount
+                    };
+                } else if (type === 'removed') {
+                    console.log('➖ Removing device from overview:', deviceId);
+                    const filteredDevices = prevData.devices.filter(dev => 
+                        dev.id !== deviceId && dev.device_id !== deviceId
+                    );
+                    return {
+                        ...prevData,
+                        devices: filteredDevices,
+                        active: Math.max(0, prevData.active - 1)
+                    };
+                }
+                
+                return prevData;
+            });
+        });
+
+        // Listen to transaction changes
+        const cleanupTransactions = onCollectionChange('transactions', (data) => {
+            console.log('📡 Transaction change detected in Overview:', data);
+            
+            if (data.type === 'added') {
+                setOverviewData(prevData => ({
+                    ...prevData,
+                    transactions_today: prevData.transactions_today + 1
+                }));
+            }
+        });
+
+        return () => {
+            cleanupDevices();
+            cleanupTransactions();
+        };
+    }, [isConnected, onCollectionChange]);
+
+    useEffect(() => {
+        fetchOverviewData();
+    }, []);
 
     const formatPower = (power) => {
         // Handle null, undefined, or non-numeric values

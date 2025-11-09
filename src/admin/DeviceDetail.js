@@ -30,6 +30,7 @@ import AdminHeader from './AdminHeader';
 import DeviceConfigurationModal from '../components/DeviceConfigurationModal';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { useSocket } from '../contexts/SocketContext';
 import '../styles/DeviceDetail.css';
 import { API_BASE_URL } from '../utils/api';
 
@@ -38,6 +39,7 @@ const DeviceDetail = () => {
   const { deviceId } = useParams();
   const { authenticatedAdminFetch } = useAdminAuth();
   const { showSuccess, showError } = useNotification();
+  const { onCollectionChange, onDocumentChange, isConnected } = useSocket();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('realtime');
   const [timeFilter, setTimeFilter] = useState('daily');
@@ -208,6 +210,72 @@ const DeviceDetail = () => {
       setLoading(false);
     }
   }, [deviceId, authenticatedAdminFetch, showError]);
+
+  // Listen to socket changes for this specific device and update data directly
+  useEffect(() => {
+    if (!isConnected || !deviceId) return;
+
+    // Listen to changes for this specific device
+    const cleanupDevice = onDocumentChange('devices', deviceId, (data) => {
+      console.log('📡 Device change detected for device', deviceId, ':', data);
+      
+      setDeviceData(prevData => {
+        if (!prevData) return prevData;
+        
+        if (data.type === 'modified') {
+          console.log('🔄 Updating device data directly from socket');
+          return {
+            ...prevData,
+            ...data.data,
+            // Preserve device_id
+            device_id: deviceId
+          };
+        }
+        
+        // For added/removed, we might need to refetch
+        if (data.type === 'removed') {
+          console.log('⚠️ Device removed, keeping current data');
+        }
+        
+        return prevData;
+      });
+    });
+
+    // Listen to device config changes for this device
+    const cleanupDeviceConfig = onDocumentChange('deviceConfig', deviceId, (data) => {
+      console.log('📡 Device config change detected for device', deviceId, ':', data);
+      // Config changes might affect multiple fields, so we can update deviceData
+      // but for now, refetch to ensure all config is properly reflected
+      fetchDeviceData();
+    });
+
+    // Listen to energy history changes (affects this device's energy data)
+    const cleanupEnergy = onCollectionChange('energyHistory', (data) => {
+      // Only update if the energy history is for this device
+      if (data.data && (data.data.device_id === deviceId || data.id === deviceId)) {
+        console.log('📡 Energy history change detected for device', deviceId, ':', data);
+        // Energy history changes might affect charts and analytics, so refetch
+        fetchDeviceData();
+      }
+    });
+
+    // Listen to transaction changes (affects this device's revenue)
+    const cleanupTransactions = onCollectionChange('transactions', (data) => {
+      // Only update if the transaction is for this device
+      if (data.data && data.data.device_id === deviceId) {
+        console.log('📡 Transaction change detected for device', deviceId, ':', data);
+        // Transaction changes affect revenue calculations, so refetch
+        fetchDeviceData();
+      }
+    });
+
+    return () => {
+      cleanupDevice();
+      cleanupDeviceConfig();
+      cleanupEnergy();
+      cleanupTransactions();
+    };
+  }, [isConnected, deviceId, onCollectionChange, onDocumentChange, fetchDeviceData]);
 
   // Helper function to format Firestore timestamps
   const formatFirestoreTimestamp = (timestamp) => {

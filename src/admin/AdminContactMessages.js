@@ -17,6 +17,7 @@ import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import '../styles/AdminContactMessages.css';
 import { API_BASE_URL } from '../utils/api';
 
@@ -25,6 +26,7 @@ const AdminContactMessages = () => {
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
   const { isDarkMode } = useTheme();
+  const { onCollectionChange, isConnected } = useSocket();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -133,6 +135,45 @@ const AdminContactMessages = () => {
       setIsLoading(false);
     }
   }, [authenticatedAdminFetch]);
+
+  // Listen to socket changes and update messages array directly
+  useEffect(() => {
+    if (!isConnected) return;
+
+    // Listen to contactUs changes
+    const cleanupContactUs = onCollectionChange('contactUs', (data) => {
+      console.log('📡 Contact message change detected:', data);
+      
+      setMessages(prevMessages => {
+        const { type, id, data: messageData } = data;
+        
+        if (type === 'added') {
+          // Add new message to the array (prepend for newest first)
+          const messageExists = prevMessages.some(msg => msg.id === id);
+          if (!messageExists) {
+            console.log('➕ Adding new contact message:', id);
+            return [messageData, ...prevMessages];
+          }
+        } else if (type === 'modified') {
+          // Update existing message
+          console.log('🔄 Updating contact message:', id);
+          return prevMessages.map(msg => 
+            msg.id === id ? { ...msg, ...messageData } : msg
+          );
+        } else if (type === 'removed') {
+          // Remove message from array
+          console.log('➖ Removing contact message:', id);
+          return prevMessages.filter(msg => msg.id !== id);
+        }
+        
+        return prevMessages;
+      });
+    });
+
+    return () => {
+      cleanupContactUs();
+    };
+  }, [isConnected, onCollectionChange]);
 
   // Fetch messages when component mounts
   useEffect(() => {

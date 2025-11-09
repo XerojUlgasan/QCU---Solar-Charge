@@ -17,6 +17,7 @@ import AdminHeader from './AdminHeader';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import '../styles/AdminProblems.css';
 import { API_BASE_URL } from '../utils/api';
 
@@ -25,6 +26,7 @@ const AdminProblems = () => {
   const { showSuccess, showError } = useNotification();
   const { authenticatedAdminFetch } = useAdminAuth();
   const { isDarkMode } = useTheme();
+  const { onCollectionChange, isConnected } = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('newest');
   const [filterUrgency, setFilterUrgency] = useState('all');
@@ -111,6 +113,70 @@ const AdminProblems = () => {
       setDeviceInfo([]);
     }
   }, [authenticatedAdminFetch]);
+
+  // Listen to socket changes and update reports array directly
+  useEffect(() => {
+    if (!isConnected) return;
+
+    // Listen to report changes
+    const cleanupReports = onCollectionChange('reports', (data) => {
+      console.log('📡 Report change detected:', data);
+      
+      setReports(prevReports => {
+        const { type, id, data: reportData } = data;
+        
+        if (type === 'added') {
+          // Add new report to the array (prepend for newest first)
+          const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
+          if (!reportExists) {
+            console.log('➕ Adding new report:', id);
+            return [reportData, ...prevReports];
+          }
+        } else if (type === 'modified') {
+          // Update existing report
+          console.log('🔄 Updating report:', id);
+          return prevReports.map(report => 
+            (report.id === id || report.report_id === id) ? { ...report, ...reportData } : report
+          );
+        } else if (type === 'removed') {
+          // Remove report from array
+          console.log('➖ Removing report:', id);
+          return prevReports.filter(report => report.id !== id && report.report_id !== id);
+        }
+        
+        return prevReports;
+      });
+    });
+
+    // Listen to device changes (affects device info dropdown)
+    const cleanupDevices = onCollectionChange('devices', (data) => {
+      console.log('📡 Device change detected in AdminProblems, updating device info...', data);
+      
+      setDeviceInfo(prevDevices => {
+        const { type, id, data: deviceData } = data;
+        
+        if (type === 'added') {
+          const deviceExists = prevDevices.some(dev => dev.id === id || dev.device_id === id);
+          if (!deviceExists) {
+            return [...prevDevices, deviceData];
+          }
+        } else if (type === 'modified') {
+          return prevDevices.map(dev => 
+            (dev.id === id || dev.device_id === id) ? { ...dev, ...deviceData } : dev
+          );
+        } else if (type === 'removed') {
+          return prevDevices.filter(dev => dev.id !== id && dev.device_id !== id);
+        }
+        
+        return prevDevices;
+      });
+    });
+
+    return () => {
+      cleanupReports();
+      cleanupDevices();
+    };
+  }, [isConnected, onCollectionChange]);
 
   // Fetch reports when component mounts
   useEffect(() => {

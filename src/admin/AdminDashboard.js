@@ -21,6 +21,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import AdminHeader from './AdminHeader';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import '../styles/AdminDashboard.css';
 import { API_BASE_URL } from '../utils/api';
 
@@ -28,6 +29,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { authenticatedAdminFetch } = useAdminAuth();
   const { isDarkMode } = useTheme();
+  const { onCollectionChange, isConnected } = useSocket();
   
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
@@ -282,6 +284,73 @@ const AdminDashboard = () => {
       // Don't set error state for reports as it's not critical
     }
   }, [authenticatedAdminFetch]);
+
+  // Listen to socket changes and update data directly
+  useEffect(() => {
+    if (!isConnected) return;
+
+    // Listen to device changes - refresh dashboard for complex calculations
+    const cleanupDevices = onCollectionChange('devices', (data) => {
+      console.log('📡 Device change detected, refreshing dashboard...', data);
+      fetchOverviewData();
+    });
+
+    // Listen to transaction changes - refresh dashboard for revenue calculations
+    const cleanupTransactions = onCollectionChange('transactions', (data) => {
+      console.log('📡 Transaction change detected, refreshing dashboard...', data);
+      fetchOverviewData();
+    });
+
+    // Listen to energy history changes - refresh dashboard for energy calculations
+    const cleanupEnergy = onCollectionChange('energyHistory', (data) => {
+      console.log('📡 Energy history change detected, refreshing dashboard...', data);
+      fetchOverviewData();
+    });
+
+    // Listen to device config changes - refresh dashboard
+    const cleanupDeviceConfig = onCollectionChange('deviceConfig', (data) => {
+      console.log('📡 Device config change detected, refreshing dashboard...', data);
+      fetchOverviewData();
+    });
+
+    // Listen to report changes - update reports array directly
+    const cleanupReports = onCollectionChange('reports', (data) => {
+      console.log('📡 Report change detected:', data);
+      
+      setRecentReports(prevReports => {
+        const { type, id, data: reportData } = data;
+        
+        if (type === 'added') {
+          // Add new report to the array (prepend for newest first)
+          const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
+          if (!reportExists) {
+            console.log('➕ Adding new report to dashboard:', id);
+            return [reportData, ...prevReports];
+          }
+        } else if (type === 'modified') {
+          // Update existing report
+          console.log('🔄 Updating report in dashboard:', id);
+          return prevReports.map(report => 
+            (report.id === id || report.report_id === id) ? { ...report, ...reportData } : report
+          );
+        } else if (type === 'removed') {
+          // Remove report from array
+          console.log('➖ Removing report from dashboard:', id);
+          return prevReports.filter(report => report.id !== id && report.report_id !== id);
+        }
+        
+        return prevReports;
+      });
+    });
+
+    return () => {
+      cleanupDevices();
+      cleanupTransactions();
+      cleanupEnergy();
+      cleanupDeviceConfig();
+      cleanupReports();
+    };
+  }, [isConnected, onCollectionChange, fetchOverviewData]);
 
   // Fetch all data when component mounts
   useEffect(() => {

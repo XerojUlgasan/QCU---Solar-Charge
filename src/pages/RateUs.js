@@ -3,6 +3,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSocket } from '../contexts/SocketContext';
 import { authenticatedGet, API_BASE_URL } from '../utils/api';
 import logo from '../logo.svg';
 import "../styles/RateUs.css";
@@ -13,6 +14,7 @@ function RateUs() {
     const { openModal } = useGoogleLogin();
     const { user, idToken, isAuthenticated } = useAuth();
     const { isDarkMode } = useTheme();
+    const { onCollectionChange, isConnected } = useSocket();
     const [selectedRating, setSelectedRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [feedback, setFeedback] = useState('');
@@ -135,6 +137,94 @@ function RateUs() {
             setLoading(false);
         }
     };
+
+    // Listen to socket changes and update reviews array directly
+    useEffect(() => {
+        if (!isConnected) return;
+
+        // Listen to ratings changes
+        const cleanupRatings = onCollectionChange('ratings', (data) => {
+            console.log('📡 Rating change detected in RateUs:', data);
+            
+            setReviews(prevReviews => {
+                const { type, id, data: ratingData } = data;
+                
+                if (type === 'added') {
+                    // Add new rating to the array
+                    const ratingExists = prevReviews.some(review => review.id === id || review.rating_id === id);
+                    if (!ratingExists) {
+                        console.log('➕ Adding new rating:', id);
+                        // Check if this is the user's own rating
+                        if (user?.email && ratingData.email === user.email) {
+                            setUserRating(ratingData);
+                        }
+                        return [...prevReviews, ratingData];
+                    }
+                } else if (type === 'modified') {
+                    // Update existing rating
+                    console.log('🔄 Updating rating:', id);
+                    const updatedReviews = prevReviews.map(review => 
+                        (review.id === id || review.rating_id === id) ? { ...review, ...ratingData } : review
+                    );
+                    // Update userRating if it's the user's rating
+                    if (user?.email && ratingData.email === user.email) {
+                        setUserRating(ratingData);
+                    }
+                    return updatedReviews;
+                } else if (type === 'removed') {
+                    // Remove rating from array
+                    console.log('➖ Removing rating:', id);
+                    const filteredReviews = prevReviews.filter(review => 
+                        review.id !== id && review.rating_id !== id
+                    );
+                    // Clear userRating if it was removed
+                    if (userRating && (userRating.id === id || userRating.rating_id === id)) {
+                        setUserRating(null);
+                    }
+                    return filteredReviews;
+                }
+                
+                return prevReviews;
+            });
+        });
+
+        // Listen to device changes (for station locations)
+        const cleanupDevices = onCollectionChange('devices', (data) => {
+            console.log('📡 Device change detected in RateUs, updating station locations...', data);
+            
+            setStationLocations(prevLocations => {
+                const { type, id, data: deviceData } = data;
+                const deviceId = id || deviceData?.id || deviceData?.device_id;
+                
+                if (type === 'added' || type === 'modified') {
+                    const locationExists = prevLocations.some(loc => loc.device_id === deviceId);
+                    const newLocation = {
+                        device_id: deviceId,
+                        location: deviceData.location,
+                        building: deviceData.building,
+                        name: deviceData.name
+                    };
+                    
+                    if (locationExists) {
+                        return prevLocations.map(loc => 
+                            loc.device_id === deviceId ? newLocation : loc
+                        );
+                    } else {
+                        return [...prevLocations, newLocation];
+                    }
+                } else if (type === 'removed') {
+                    return prevLocations.filter(loc => loc.device_id !== deviceId);
+                }
+                
+                return prevLocations;
+            });
+        });
+
+        return () => {
+            cleanupRatings();
+            cleanupDevices();
+        };
+    }, [isConnected, onCollectionChange, user?.email, userRating]);
 
     // Fetch reviews when component mounts or when authentication state changes
     useEffect(() => {
