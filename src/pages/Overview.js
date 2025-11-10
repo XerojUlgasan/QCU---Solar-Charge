@@ -60,17 +60,37 @@ function Overview() {
                     const deviceExists = prevData.devices.some(dev => dev.id === deviceId || dev.device_id === deviceId);
                     if (!deviceExists) {
                         console.log('➕ Adding new device to overview:', deviceId);
+                        // Normalize payload: ensure id/device_id and timestamps are present
+                        const normalized = {
+                            ...deviceData,
+                            id: deviceId || deviceData?.device_id,
+                            device_id: deviceId || deviceData?.device_id,
+                            // Prefer date_added if present; fallback to created_at/last_updated
+                            date_added: deviceData?.date_added || deviceData?.created_at || deviceData?.added_at || deviceData?.timestamp || null,
+                            last_updated: deviceData?.last_updated || deviceData?.updated_at || null
+                        };
                         return {
                             ...prevData,
                             // Prepend so newest appears on top
-                            devices: [deviceData, ...prevData.devices],
-                            active: prevData.active + 1
+                            devices: [normalized, ...prevData.devices],
+                            // Recompute active count safely
+                            active: [...prevData.devices, normalized].filter(dev => 
+                                (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
+                            ).length
                         };
                     }
                 } else if (type === 'modified') {
                     console.log('🔄 Updating device in overview:', deviceId);
                     const updatedDevices = prevData.devices.map(dev => 
-                        (dev.id === deviceId || dev.device_id === deviceId) ? { ...dev, ...deviceData } : dev
+                        (dev.id === deviceId || dev.device_id === deviceId) 
+                          ? { 
+                              ...dev, 
+                              ...deviceData,
+                              id: dev.id || deviceId,
+                              device_id: dev.device_id || deviceId,
+                              last_updated: deviceData?.last_updated || dev.last_updated
+                            } 
+                          : dev
                     );
                     // Recalculate active devices
                     const activeCount = updatedDevices.filter(dev => 

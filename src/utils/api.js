@@ -328,3 +328,17 @@ export const changePassword = async (otp, email, newPassword) => {
         throw error;
     }
 };
+
+// Record user login
+export const recordUserLogin = async ({ user_id, email, full_name }) => {
+    const url = API_BASE_URL + '/user/recordLogin';
+    const data = { user_id, email, full_name };
+    return authenticatedPost(url, data);
+};
+
+// Record user logout
+export const recordUserLogout = async ({ user_id }) => {
+    const url = API_BASE_URL + '/user/recordLogout';
+    const data = { user_id };
+    return authenticatedPost(url, data);
+};

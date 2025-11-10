@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, signInWithPopup, googleProvider, signOut, onAuthStateChanged } from '../firebase';
+import { recordUserLogin, recordUserLogout } from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -54,6 +55,17 @@ export const AuthProvider = ({ children }) => {
             setIdToken(token);
             localStorage.setItem('userLoggedIn', 'true');
             localStorage.setItem('userToken', token);
+
+            // Fire-and-forget record login
+            try {
+                await recordUserLogin({
+                    user_id: user.uid,
+                    email: user.email || '',
+                    full_name: user.displayName || ''
+                });
+            } catch (e) {
+                console.warn('recordUserLogin failed (non-blocking):', e?.message || e);
+            }
             
             return { success: true, user, token };
         } catch (error) {
@@ -67,6 +79,16 @@ export const AuthProvider = ({ children }) => {
     // Sign out
     const logout = async () => {
         try {
+            const currentUser = auth.currentUser;
+            const uid = currentUser?.uid;
+            // Fire-and-forget record logout before firebase signOut
+            if (uid) {
+                try {
+                    await recordUserLogout({ user_id: uid });
+                } catch (e) {
+                    console.warn('recordUserLogout failed (non-blocking):', e?.message || e);
+                }
+            }
             await signOut(auth);
             setUser(null);
             setIdToken(null);

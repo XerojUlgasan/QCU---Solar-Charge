@@ -22,6 +22,7 @@ import { AdminAuthProvider } from './contexts/AdminAuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import GoogleLoginModal from './components/GoogleLoginModal';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
+import RequireAdminAuth from './admin/RequireAdminAuth';
 
 function App() {
   return (
@@ -40,27 +41,37 @@ function App() {
         }/>
         <Route path='/admin/dashboard' element={
           <AdminAuthProvider>
-            <AdminDashboard />
+            <RequireAdminAuth>
+              <AdminDashboard />
+            </RequireAdminAuth>
           </AdminAuthProvider>
         }/>
         <Route path='/admin/devices' element={
           <AdminAuthProvider>
-            <AdminDevices />
+            <RequireAdminAuth>
+              <AdminDevices />
+            </RequireAdminAuth>
           </AdminAuthProvider>
         }/>
         <Route path='/admin/problems' element={
           <AdminAuthProvider>
-            <AdminProblems />
+            <RequireAdminAuth>
+              <AdminProblems />
+            </RequireAdminAuth>
           </AdminAuthProvider>
         }/>
         <Route path='/admin/contact' element={
           <AdminAuthProvider>
-            <AdminContactMessages />
+            <RequireAdminAuth>
+              <AdminContactMessages />
+            </RequireAdminAuth>
           </AdminAuthProvider>
         }/>
         <Route path='/admin/device/:deviceId' element={
           <AdminAuthProvider>
-            <DeviceDetail />
+            <RequireAdminAuth>
+              <DeviceDetail />
+            </RequireAdminAuth>
           </AdminAuthProvider>
         }/>
         
