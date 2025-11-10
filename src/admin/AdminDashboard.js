@@ -1753,16 +1753,17 @@ const AdminDashboard = () => {
             </div>
             <div className="card-content">
                   {deviceStatus.length > 0 ? (
-                    deviceStatus.slice(0, 3).map((device) => (
+                    deviceStatus.slice(0, 3).map((device, index) => (
                 <div 
                   key={device.id} 
-                  className="device-item"
-                  onClick={() => handleNavigation('admin-device-detail', device.id)}
+                  className="device-item fade-in"
                   style={{
+                    animationDelay: `${index * 0.1}s`,
                     backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
                     border: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb',
                     boxShadow: isDarkMode ? 'none' : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
                   }}
+                  onClick={() => handleNavigation('admin-device-detail', device.id)}
                 >
                   <div className="device-info">
                     <div className={`status-indicator ${getStatusColor(device.status)}`}></div>
@@ -1878,8 +1879,14 @@ const AdminDashboard = () => {
               </button>
             </div>
             <div className="card-content">
-              {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="transaction-item">
+              {recentTransactions.map((transaction, index) => (
+                <div 
+                  key={transaction.id} 
+                  className="transaction-item fade-in"
+                  style={{
+                    animationDelay: `${index * 0.1}s`
+                  }}
+                >
                   <div className="transaction-info">
                     <div className="transaction-icon">
                       {transaction.type === 'rfid' ? (

@@ -132,11 +132,20 @@ function ReportProblem() {
                         return [{ ...normalizedData, _isNew: true }, ...prevReports];
                     }
                 } else if (type === 'modified') {
-                    // Update existing report
+                    // Update existing report - ensure all fields including status are updated
                     console.log('🔄 Updating report:', id);
-                    return prevReports.map(report => 
-                        (report.id === id || report.report_id === id) ? { ...report, ...normalizedData } : report
-                    );
+                    return prevReports.map(report => {
+                        if (report.id === id || report.report_id === id || report.transaction_id === id) {
+                            // Merge all fields from reportData, ensuring status is updated
+                            return { 
+                                ...report, 
+                                ...normalizedData,
+                                status: reportData.status || report.status, // Ensure status is updated
+                                _isNew: false // Remove animation flag
+                            };
+                        }
+                        return report;
+                    });
                 } else if (type === 'removed') {
                     // Remove report from array
                     console.log('➖ Removing report:', id);
@@ -289,10 +298,7 @@ function ReportProblem() {
                 showSuccess(`Problem report submitted successfully! We'll investigate this issue promptly.`);
         setFormData({ station: '', problemType: '', description: '', urgency: '' });
                 
-                // Refresh reports to show the new report
-                setTimeout(() => {
-                    fetchReports();
-                }, 1000);
+                // Socket will handle the update, no need to refetch
             } else {
                 const errorText = await response.text();
                 throw new Error(`HTTP ${response.status}: ${errorText}`);

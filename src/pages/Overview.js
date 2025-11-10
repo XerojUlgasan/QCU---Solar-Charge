@@ -375,11 +375,16 @@ function Overview() {
                     ) : (
                     <div className="stations-grid">
                         {overviewData.devices.slice(0, 3).map((device, index) => (
-                            <div key={index} className={`station-card ${isDarkMode ? '' : 'light'}`} style={{
-                                backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
-                                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
-                                boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                            }}>
+                            <div 
+                                key={index} 
+                                className={`station-card fade-in ${isDarkMode ? '' : 'light'}`} 
+                                style={{
+                                    animationDelay: `${index * 0.1}s`,
+                                    backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
+                                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                                    boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                }}
+                            >
                                 <div className="station-header">
                                     <div className="station-info">
                                         <h3>{device.name || 'Unknown Device'}

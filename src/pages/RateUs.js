@@ -182,15 +182,28 @@ function RateUs() {
             setReviews(prevReviews => {
                 const { type, id, data: ratingData } = data;
                 
+                // Helper function to check if a review matches the ID
+                const matchesId = (review, checkId) => {
+                    return review.id === checkId || 
+                           review.rating_id === checkId || 
+                           review.rate_id === checkId ||
+                           review._id === checkId ||
+                           (ratingData.email && review.email === ratingData.email && checkId === id);
+                };
+                
                 if (type === 'added') {
-                    // Add new rating to the array
-                    const ratingExists = prevReviews.some(review => review.id === id || review.rating_id === id);
+                    // Add new rating to the array - check all possible ID fields
+                    const ratingExists = prevReviews.some(review => matchesId(review, id));
                     if (!ratingExists) {
                         console.log('➕ Adding new rating:', id);
                         
                         // Normalize timestamp - for new items, ensure it shows "just now"
+                        // Ensure all possible ID fields are set
                         const normalizedData = {
                             ...ratingData,
+                            id: id || ratingData.id || ratingData.rating_id || ratingData.rate_id || ratingData._id,
+                            rating_id: ratingData.rating_id || id,
+                            rate_id: ratingData.rate_id || id,
                             dateTime: normalizeTimestamp(
                                 ratingData.dateTime || ratingData.timestamp || ratingData.created_at,
                                 true // isNew = true for new ratings
@@ -206,20 +219,24 @@ function RateUs() {
                     }
                 } else if (type === 'modified') {
                     // Update existing rating - preserve original dateTime
+                    // Check all possible ID fields and email match
                     console.log('🔄 Updating rating:', id);
                     const updatedReviews = prevReviews.map(review => {
-                        if (review.id === id || review.rating_id === id) {
+                        if (matchesId(review, id)) {
                             // Preserve the original dateTime from the existing review
-                            // Only update if the new data has a valid dateTime and it's different
                             const existingDateTime = review.dateTime;
                             const newDateTime = ratingData.dateTime || ratingData.timestamp || ratingData.created_at;
                             
                             // Use existing dateTime if it exists, otherwise normalize the new one
                             const preservedDateTime = existingDateTime || normalizeTimestamp(newDateTime, false);
                             
+                            // Ensure all ID fields are preserved
                             return {
                                 ...review,
                                 ...ratingData,
+                                id: id || ratingData.id || review.id || ratingData.rating_id || ratingData.rate_id,
+                                rating_id: ratingData.rating_id || review.rating_id || id,
+                                rate_id: ratingData.rate_id || review.rate_id || id,
                                 dateTime: preservedDateTime, // Keep original submission time
                                 _isNew: false // Remove animation flag
                             };
@@ -229,9 +246,12 @@ function RateUs() {
                     
                     // Update userRating if it's the user's rating
                     if (user?.email && ratingData.email === user.email) {
-                        const existingReview = prevReviews.find(r => r.id === id || r.rating_id === id);
+                        const existingReview = prevReviews.find(r => matchesId(r, id));
                         const updatedUserRating = {
                             ...ratingData,
+                            id: id || ratingData.id || ratingData.rating_id || ratingData.rate_id,
+                            rating_id: ratingData.rating_id || id,
+                            rate_id: ratingData.rate_id || id,
                             dateTime: existingReview?.dateTime || normalizeTimestamp(
                                 ratingData.dateTime || ratingData.timestamp || ratingData.created_at,
                                 false
@@ -241,13 +261,11 @@ function RateUs() {
                     }
                     return updatedReviews;
                 } else if (type === 'removed') {
-                    // Remove rating from array
+                    // Remove rating from array - check all possible ID fields
                     console.log('➖ Removing rating:', id);
-                    const filteredReviews = prevReviews.filter(review => 
-                        review.id !== id && review.rating_id !== id
-                    );
+                    const filteredReviews = prevReviews.filter(review => !matchesId(review, id));
                     // Clear userRating if it was removed
-                    if (userRating && (userRating.id === id || userRating.rating_id === id)) {
+                    if (userRating && matchesId(userRating, id)) {
                         setUserRating(null);
                     }
                     return filteredReviews;
@@ -813,10 +831,7 @@ function RateUs() {
                 showSuccess('Rating updated successfully!');
                 setIsEditing(false);
                 
-                // Refresh reviews to show the updated rating
-                setTimeout(() => {
-                    fetchReviews();
-                }, 1000);
+                // Socket will handle the update, no need to refetch
             } else {
                 const errorText = await response.text();
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
@@ -886,10 +901,7 @@ function RateUs() {
         setFeedback('');
                 setSelectedLocation('');
                 
-                // Wait a moment before refreshing to ensure data is saved
-                setTimeout(() => {
-                    fetchReviews();
-                }, 1000);
+                // Socket will handle the update, no need to refetch
             } else {
                 const errorText = await response.text();
                 throw new Error(`HTTP ${response.status}: ${errorText}`);

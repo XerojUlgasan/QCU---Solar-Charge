@@ -1068,3 +1068,21 @@
     scrollbar-color: #d1d5db #f3f4f6;
 }
 
+/* Fade-in animation for device items and transaction items */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#admin-dashboard .device-item.fade-in,
+#admin-dashboard .transaction-item.fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+

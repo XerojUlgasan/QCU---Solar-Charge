@@ -750,16 +750,17 @@ const AdminDevices = () => {
 
         {/* Device Grid */}
         <div className="devices-grid">
-          {filteredDevices.map((device) => (
+          {filteredDevices.map((device, index) => (
             <div 
               key={device.id} 
-              className="device-card"
-              onClick={() => handleNavigation('admin-device-detail', device.id)}
+              className="device-card fade-in"
               style={{
+                animationDelay: `${index * 0.1}s`,
                 backgroundColor: isDarkMode ? undefined : '#ffffff',
                 border: isDarkMode ? undefined : '2px solid #d1d5db',
                 boxShadow: isDarkMode ? undefined : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
               }}
+              onClick={() => handleNavigation('admin-device-detail', device.id)}
             >
               <div className="device-header">
                 <div className="device-info">

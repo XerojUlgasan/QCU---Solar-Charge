@@ -438,6 +438,23 @@
     border-color: #e5e7eb;
 }
 
+/* Fade-in animation for station cards */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#overview-page .station-card.fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
 .light #overview-page .stat-label,
 .light #overview-page .card-description,
 .light #overview-page .station-location,
