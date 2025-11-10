@@ -1656,39 +1656,6 @@ const DeviceDetail = () => {
                   {device.id}
                 </span>
               </div>
-                {/* Timestamps */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9aa3b2', fontSize: '0.9rem' }}>
-                    <Clock className="w-4 h-4" />
-                    <span>
-                      Last updated:{' '}
-                      {(() => {
-                        try {
-                          const ts = deviceData?.last_updated;
-                          const d = ts?.seconds ? new Date(ts.seconds * 1000) : ts ? new Date(ts) : null;
-                          return d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown';
-                        } catch {
-                          return 'Unknown';
-                        }
-                      })()}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9aa3b2', fontSize: '0.9rem' }}>
-                    <Calendar className="w-4 h-4" />
-                    <span>
-                      Date added:{' '}
-                      {(() => {
-                        try {
-                          const ts = deviceData?.date_added || deviceData?.created_at;
-                          const d = ts?.seconds ? new Date(ts.seconds * 1000) : ts ? new Date(ts) : null;
-                          return d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown';
-                        } catch {
-                          return 'Unknown';
-                        }
-                      })()}
-                    </span>
-                  </div>
-                </div>
             </div>
           </div>
           

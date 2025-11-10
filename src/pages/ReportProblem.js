@@ -277,6 +277,7 @@ function ReportProblem() {
             const reportData = {
                 email: user?.email || '',
                 name: user?.displayName || user?.name || '',
+                user_id: user?.uid || '',
                 location: formData.station,
                 type: formData.problemType,
                 urgencyLevel: formData.urgency,

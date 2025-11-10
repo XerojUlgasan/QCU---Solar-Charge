@@ -903,6 +903,7 @@ function RateUs() {
             const ratingData = {
                 name: user?.displayName || 'Anonymous',
                 email: user?.email || '',
+                user_id: user?.uid || '',
                 rate: selectedRating,
                 comment: feedback || '',
                 location: parsedLocation,

@@ -61,20 +61,21 @@ function Overview() {
                     if (!deviceExists) {
                         console.log('➕ Adding new device to overview:', deviceId);
                         // Normalize payload: ensure id/device_id and timestamps are present
+                        const nowTs = { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
                         const normalized = {
                             ...deviceData,
                             id: deviceId || deviceData?.device_id,
                             device_id: deviceId || deviceData?.device_id,
-                            // Prefer date_added if present; fallback to created_at/last_updated
-                            date_added: deviceData?.date_added || deviceData?.created_at || deviceData?.added_at || deviceData?.timestamp || null,
-                            last_updated: deviceData?.last_updated || deviceData?.updated_at || null
+                            // Prefer date_added if present; fallback to created_at/last_updated, or now
+                            date_added: deviceData?.date_added || deviceData?.created_at || deviceData?.added_at || deviceData?.timestamp || nowTs,
+                            last_updated: deviceData?.last_updated || deviceData?.updated_at || nowTs
                         };
+                        const deduped = prevData.devices.filter(dev => (dev.id || dev.device_id) !== normalized.id && (dev.device_id || dev.id) !== normalized.device_id);
+                        const updatedList = [normalized, ...deduped];
                         return {
                             ...prevData,
-                            // Prepend so newest appears on top
-                            devices: [normalized, ...prevData.devices],
-                            // Recompute active count safely
-                            active: [...prevData.devices, normalized].filter(dev => 
+                            devices: updatedList,
+                            active: updatedList.filter(dev => 
                                 (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
                             ).length
                         };

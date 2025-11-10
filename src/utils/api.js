@@ -104,13 +104,14 @@ export const authenticatedDelete = (url, body) => {
  * @param {string} photo_url - Sender's photo URL
  * @returns {Promise<Response>} - Fetch response
  */
-export const postContact = async (from, subject, message, photo_url) => {
+export const postContact = async (from, subject, message, photo_url, user_id) => {
     const url = API_BASE_URL + '/contact/postContact';
     const data = {
         from,
         subject,
         message,
-        photo_url
+        photo_url,
+        user_id
     };
     return authenticatedPost(url, data);
 };

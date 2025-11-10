@@ -59,6 +59,7 @@ function Contact() {
 			// Log the exact data being sent
 			const contactData = {
 				from: user.email,
+				user_id: user?.uid || '',
 				subject: formData.subject.trim(),
 				message: formData.message.trim(),
 				photo_url: user.photoURL || null
@@ -69,7 +70,8 @@ function Contact() {
 				contactData.from,
 				contactData.subject,
 				contactData.message,
-				contactData.photo_url
+				contactData.photo_url,
+				contactData.user_id
 			);
 			
 			console.log('Contact API response:', response.status, response.ok);
