@@ -1186,3 +1186,19 @@
     color: #374151;
     border: 1px solid #6b7280;
 }
+
+/* Slide-in animation for new items */
+@keyframes slideInNew {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#admin-problems .report-card.slide-in-new {
+    animation: slideInNew 0.5s ease-out;
+}

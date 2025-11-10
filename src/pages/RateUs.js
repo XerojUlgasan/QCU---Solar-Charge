@@ -138,6 +138,39 @@ function RateUs() {
         }
     };
 
+    // Helper function to normalize timestamp from socket data
+    const normalizeTimestamp = (timestamp, isNew = false) => {
+        // For new items, use current time to show "just now" if no timestamp
+        if (isNew && !timestamp) {
+            return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+        }
+        
+        if (!timestamp) {
+            return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+        }
+        
+        // If already in Firestore format, return as is
+        if (typeof timestamp === 'object' && timestamp.seconds) {
+            return timestamp;
+        }
+        
+        // If it's a string, try to parse it
+        if (typeof timestamp === 'string') {
+            const date = new Date(timestamp);
+            if (!isNaN(date.getTime())) {
+                return { seconds: Math.floor(date.getTime() / 1000), nanoseconds: 0 };
+            }
+        }
+        
+        // If it's a Date object
+        if (timestamp instanceof Date) {
+            return { seconds: Math.floor(timestamp.getTime() / 1000), nanoseconds: 0 };
+        }
+        
+        // Fallback to current time
+        return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+    };
+
     // Listen to socket changes and update reviews array directly
     useEffect(() => {
         if (!isConnected) return;
@@ -154,21 +187,57 @@ function RateUs() {
                     const ratingExists = prevReviews.some(review => review.id === id || review.rating_id === id);
                     if (!ratingExists) {
                         console.log('➕ Adding new rating:', id);
+                        
+                        // Normalize timestamp - for new items, ensure it shows "just now"
+                        const normalizedData = {
+                            ...ratingData,
+                            dateTime: normalizeTimestamp(
+                                ratingData.dateTime || ratingData.timestamp || ratingData.created_at,
+                                true // isNew = true for new ratings
+                            ),
+                            _isNew: true // Flag for animation
+                        };
+                        
                         // Check if this is the user's own rating
-                        if (user?.email && ratingData.email === user.email) {
-                            setUserRating(ratingData);
+                        if (user?.email && normalizedData.email === user.email) {
+                            setUserRating(normalizedData);
                         }
-                        return [...prevReviews, ratingData];
+                        return [...prevReviews, normalizedData];
                     }
                 } else if (type === 'modified') {
-                    // Update existing rating
+                    // Update existing rating - preserve original dateTime
                     console.log('🔄 Updating rating:', id);
-                    const updatedReviews = prevReviews.map(review => 
-                        (review.id === id || review.rating_id === id) ? { ...review, ...ratingData } : review
-                    );
+                    const updatedReviews = prevReviews.map(review => {
+                        if (review.id === id || review.rating_id === id) {
+                            // Preserve the original dateTime from the existing review
+                            // Only update if the new data has a valid dateTime and it's different
+                            const existingDateTime = review.dateTime;
+                            const newDateTime = ratingData.dateTime || ratingData.timestamp || ratingData.created_at;
+                            
+                            // Use existing dateTime if it exists, otherwise normalize the new one
+                            const preservedDateTime = existingDateTime || normalizeTimestamp(newDateTime, false);
+                            
+                            return {
+                                ...review,
+                                ...ratingData,
+                                dateTime: preservedDateTime, // Keep original submission time
+                                _isNew: false // Remove animation flag
+                            };
+                        }
+                        return review;
+                    });
+                    
                     // Update userRating if it's the user's rating
                     if (user?.email && ratingData.email === user.email) {
-                        setUserRating(ratingData);
+                        const existingReview = prevReviews.find(r => r.id === id || r.rating_id === id);
+                        const updatedUserRating = {
+                            ...ratingData,
+                            dateTime: existingReview?.dateTime || normalizeTimestamp(
+                                ratingData.dateTime || ratingData.timestamp || ratingData.created_at,
+                                false
+                            )
+                        };
+                        setUserRating(updatedUserRating);
                     }
                     return updatedReviews;
                 } else if (type === 'removed') {
@@ -230,6 +299,23 @@ function RateUs() {
     useEffect(() => {
         fetchReviews();
     }, [idToken]); // Refetch when token changes
+
+    // Remove _isNew flag after animation completes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setReviews(prevReviews => 
+                prevReviews.map(review => {
+                    if (review._isNew) {
+                        const { _isNew, ...rest } = review;
+                        return rest;
+                    }
+                    return review;
+                })
+            );
+        }, 600); // Animation duration + small buffer
+
+        return () => clearTimeout(timer);
+    }, [reviews]);
 
     // Calculate rating distribution from API data
     const calculateRatingDistribution = () => {
@@ -396,7 +482,8 @@ function RateUs() {
                 return dateB - dateA;
             })
             .map(review => ({
-                // Keep rawDateTime for sorting purposes
+                // Keep rawDateTime for sorting purposes and preserve ID for animation matching
+                id: review.id, // Preserve ID for matching with original reviews
                 user: review.user,
                 rating: review.rating,
                 comment: review.comment,
@@ -1235,8 +1322,20 @@ function RateUs() {
                             </button>
                         </div>
                         <div className="reviews-list">
-                            {recentReviews.map((review, index) => (
-                                <div key={index} className="review-card" style={{
+                            {recentReviews.map((review, index) => {
+                                // Find the original review to check if it's new
+                                // Note: formatted reviews don't have _isNew, so we check the raw reviews array
+                                const reviewId = review.id || review.rating_id;
+                                const originalReview = reviews.find(r => 
+                                    (r.id || r.rating_id || r.rate_id) === reviewId
+                                );
+                                const isNew = originalReview?._isNew || false;
+                                
+                                return (
+                                <div 
+                                    key={review.id || review.rating_id || index} 
+                                    className={`review-card ${isNew ? 'slide-in-new' : ''}`}
+                                    style={{
                                     backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
                                     border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
                                     boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
@@ -1278,7 +1377,8 @@ function RateUs() {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                                     </div>
                                 </div>
@@ -1354,8 +1454,20 @@ function RateUs() {
                                     </div>
 
                         <div className="modal-reviews-list">
-                            {filteredReviews.map((review, index) => (
-                                <div key={index} className="modal-review-card">
+                            {filteredReviews.map((review, index) => {
+                                // Find the original review to check if it's new
+                                // Note: formatted reviews don't have _isNew, so we check the raw reviews array
+                                const reviewId = review.id || review.rating_id;
+                                const originalReview = reviews.find(r => 
+                                    (r.id || r.rating_id || r.rate_id) === reviewId
+                                );
+                                const isNew = originalReview?._isNew || false;
+                                
+                                return (
+                                <div 
+                                    key={review.id || review.rating_id || index} 
+                                    className={`modal-review-card ${isNew ? 'slide-in-new' : ''}`}
+                                >
                                     <div className="modal-review-header">
                                         <div className="modal-review-user">
                                             <img 
@@ -1396,7 +1508,8 @@ function RateUs() {
                         </div>
                             </div>
                         </div>
-                            ))}
+                                );
+                            })}
                     </div>
                 </div>
             </div>

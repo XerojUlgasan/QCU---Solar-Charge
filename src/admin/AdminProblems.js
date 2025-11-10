@@ -114,6 +114,35 @@ const AdminProblems = () => {
     }
   }, [authenticatedAdminFetch]);
 
+  // Helper function to normalize timestamp from socket data
+  const normalizeTimestamp = (timestamp) => {
+    if (!timestamp) {
+      // If no timestamp, use current time
+      return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+    }
+    
+    // If already in Firestore format, return as is
+    if (typeof timestamp === 'object' && timestamp.seconds) {
+      return timestamp;
+    }
+    
+    // If it's a string, try to parse it
+    if (typeof timestamp === 'string') {
+      const date = new Date(timestamp);
+      if (!isNaN(date.getTime())) {
+        return { seconds: Math.floor(date.getTime() / 1000), nanoseconds: 0 };
+      }
+    }
+    
+    // If it's a Date object
+    if (timestamp instanceof Date) {
+      return { seconds: Math.floor(timestamp.getTime() / 1000), nanoseconds: 0 };
+    }
+    
+    // Fallback to current time
+    return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+  };
+
   // Listen to socket changes and update reports array directly
   useEffect(() => {
     if (!isConnected) return;
@@ -125,18 +154,24 @@ const AdminProblems = () => {
       setReports(prevReports => {
         const { type, id, data: reportData } = data;
         
+        // Normalize timestamp to ensure it's in the correct format
+        const normalizedData = {
+          ...reportData,
+          dateTime: normalizeTimestamp(reportData.dateTime || reportData.timestamp || reportData.created_at)
+        };
+        
         if (type === 'added') {
           // Add new report to the array (prepend for newest first)
           const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
           if (!reportExists) {
             console.log('➕ Adding new report:', id);
-            return [reportData, ...prevReports];
+            return [{ ...normalizedData, _isNew: true }, ...prevReports];
           }
         } else if (type === 'modified') {
           // Update existing report
           console.log('🔄 Updating report:', id);
           return prevReports.map(report => 
-            (report.id === id || report.report_id === id) ? { ...report, ...reportData } : report
+            (report.id === id || report.report_id === id) ? { ...report, ...normalizedData } : report
           );
         } else if (type === 'removed') {
           // Remove report from array
@@ -183,6 +218,23 @@ const AdminProblems = () => {
     fetchReports();
     fetchDeviceInfo();
   }, [fetchReports, fetchDeviceInfo]);
+
+  // Remove _isNew flag after animation completes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setReports(prevReports => 
+        prevReports.map(report => {
+          if (report._isNew) {
+            const { _isNew, ...rest } = report;
+            return rest;
+          }
+          return report;
+        })
+      );
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [reports]);
 
   // Format date for display
   const formatDate = (dateTime) => {
@@ -784,7 +836,10 @@ const AdminProblems = () => {
             </div>
           ) : filteredReports.length > 0 ? (
             filteredReports.map((report) => (
-            <div key={report.id} className="report-card" style={{
+            <div 
+              key={report.id} 
+              className={`report-card ${report._isNew ? 'slide-in-new' : ''}`}
+              style={{
               backgroundColor: isDarkMode ? undefined : '#ffffff',
               border: isDarkMode ? undefined : '2px solid #d1d5db',
               boxShadow: isDarkMode ? undefined : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'

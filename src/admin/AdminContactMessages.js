@@ -136,6 +136,35 @@ const AdminContactMessages = () => {
     }
   }, [authenticatedAdminFetch]);
 
+  // Helper function to normalize timestamp from socket data
+  const normalizeTimestamp = (timestamp) => {
+    if (!timestamp) {
+      // If no timestamp, use current time
+      return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+    }
+    
+    // If already in Firestore format, return as is
+    if (typeof timestamp === 'object' && timestamp.seconds) {
+      return timestamp;
+    }
+    
+    // If it's a string, try to parse it
+    if (typeof timestamp === 'string') {
+      const date = new Date(timestamp);
+      if (!isNaN(date.getTime())) {
+        return { seconds: Math.floor(date.getTime() / 1000), nanoseconds: 0 };
+      }
+    }
+    
+    // If it's a Date object
+    if (timestamp instanceof Date) {
+      return { seconds: Math.floor(timestamp.getTime() / 1000), nanoseconds: 0 };
+    }
+    
+    // Fallback to current time
+    return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+  };
+
   // Listen to socket changes and update messages array directly
   useEffect(() => {
     if (!isConnected) return;
@@ -147,18 +176,24 @@ const AdminContactMessages = () => {
       setMessages(prevMessages => {
         const { type, id, data: messageData } = data;
         
+        // Normalize timestamp to ensure it's in the correct format
+        const normalizedData = {
+          ...messageData,
+          timestamp: normalizeTimestamp(messageData.timestamp || messageData.dateTime || messageData.created_at)
+        };
+        
         if (type === 'added') {
           // Add new message to the array (prepend for newest first)
           const messageExists = prevMessages.some(msg => msg.id === id);
           if (!messageExists) {
             console.log('➕ Adding new contact message:', id);
-            return [messageData, ...prevMessages];
+            return [{ ...normalizedData, _isNew: true }, ...prevMessages];
           }
         } else if (type === 'modified') {
           // Update existing message
           console.log('🔄 Updating contact message:', id);
           return prevMessages.map(msg => 
-            msg.id === id ? { ...msg, ...messageData } : msg
+            msg.id === id ? { ...msg, ...normalizedData } : msg
           );
         } else if (type === 'removed') {
           // Remove message from array
@@ -179,6 +214,23 @@ const AdminContactMessages = () => {
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
+
+  // Remove _isNew flag after animation completes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMessages(prevMessages => 
+        prevMessages.map(msg => {
+          if (msg._isNew) {
+            const { _isNew, ...rest } = msg;
+            return rest;
+          }
+          return msg;
+        })
+      );
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   const handleNavigation = (route, deviceId) => {
     switch (route) {
@@ -601,7 +653,10 @@ const AdminContactMessages = () => {
             </div>
           ) : filteredMessages.length > 0 ? (
             filteredMessages.map((message) => (
-              <div key={message.id} className="message-card" style={{
+              <div 
+                key={message.id} 
+                className={`message-card ${message._isNew ? 'slide-in-new' : ''}`}
+                style={{
                 backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
                 border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
                 boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'

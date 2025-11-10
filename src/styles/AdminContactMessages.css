@@ -1461,3 +1461,19 @@
         justify-content: center;
     }
 }
+
+/* Slide-in animation for new items */
+@keyframes slideInNew {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#admin-contact-messages .message-card.slide-in-new {
+    animation: slideInNew 0.5s ease-out;
+}

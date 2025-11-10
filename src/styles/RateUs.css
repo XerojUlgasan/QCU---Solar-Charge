@@ -1706,3 +1706,20 @@
         transform: translateY(0) scale(1);
     }
 }
+
+/* Slide-in animation for new items */
+@keyframes slideInNew {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#rate-us-page .review-card.slide-in-new,
+#rate-us-page .modal-review-card.slide-in-new {
+    animation: slideInNew 0.5s ease-out;
+}

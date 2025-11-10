@@ -71,6 +71,39 @@ function ReportProblem() {
         }
     };
 
+    // Helper function to normalize timestamp from socket data
+    const normalizeTimestamp = (timestamp, isNew = false) => {
+        // For new items, use current time to show "just now"
+        if (isNew && !timestamp) {
+            return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+        }
+        
+        if (!timestamp) {
+            return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+        }
+        
+        // If already in Firestore format, return as is
+        if (typeof timestamp === 'object' && timestamp.seconds) {
+            return timestamp;
+        }
+        
+        // If it's a string, try to parse it
+        if (typeof timestamp === 'string') {
+            const date = new Date(timestamp);
+            if (!isNaN(date.getTime())) {
+                return { seconds: Math.floor(date.getTime() / 1000), nanoseconds: 0 };
+            }
+        }
+        
+        // If it's a Date object
+        if (timestamp instanceof Date) {
+            return { seconds: Math.floor(timestamp.getTime() / 1000), nanoseconds: 0 };
+        }
+        
+        // Fallback to current time
+        return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+    };
+
     // Listen to socket changes and update reports array directly
     useEffect(() => {
         if (!isConnected) return;
@@ -82,18 +115,27 @@ function ReportProblem() {
             setRecentReports(prevReports => {
                 const { type, id, data: reportData } = data;
                 
+                // Normalize timestamp - for new items, ensure it shows "just now"
+                const normalizedData = {
+                    ...reportData,
+                    dateTime: normalizeTimestamp(
+                        reportData.dateTime || reportData.timestamp || reportData.created_at,
+                        type === 'added'
+                    )
+                };
+                
                 if (type === 'added') {
                     // Add new report to the array (prepend for newest first)
                     const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
                     if (!reportExists) {
                         console.log('➕ Adding new report:', id);
-                        return [reportData, ...prevReports];
+                        return [{ ...normalizedData, _isNew: true }, ...prevReports];
                     }
                 } else if (type === 'modified') {
                     // Update existing report
                     console.log('🔄 Updating report:', id);
                     return prevReports.map(report => 
-                        (report.id === id || report.report_id === id) ? { ...report, ...reportData } : report
+                        (report.id === id || report.report_id === id) ? { ...report, ...normalizedData } : report
                     );
                 } else if (type === 'removed') {
                     // Remove report from array
@@ -152,6 +194,23 @@ function ReportProblem() {
     useEffect(() => {
         fetchReports();
     }, [idToken]); // Refetch when token changes
+
+    // Remove _isNew flag after animation completes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setRecentReports(prevReports => 
+                prevReports.map(report => {
+                    if (report._isNew) {
+                        const { _isNew, ...rest } = report;
+                        return rest;
+                    }
+                    return report;
+                })
+            );
+        }, 600);
+
+        return () => clearTimeout(timer);
+    }, [recentReports]);
 
     // Get user's profile picture or fallback to generated avatar
     const getUserAvatar = (user) => {
@@ -715,8 +774,18 @@ function ReportProblem() {
                                 ) : (
                                 <div className="reports-list">
                                          {formattedReports.length > 0 ? (
-                                             formattedReports.map((report) => (
-                                        <div key={report.id} className="report-item" style={{
+                                             formattedReports.map((report) => {
+                                                // Find the original report to check if it's new
+                                                const originalReport = recentReports.find(r => 
+                                                    (r.id || r.report_id || r.transaction_id) === report.id
+                                                );
+                                                const isNew = originalReport?._isNew || false;
+                                                
+                                                return (
+                                        <div 
+                                            key={report.id} 
+                                            className={`report-item ${isNew ? 'slide-in-new' : ''}`}
+                                            style={{
                                             backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
                                             border: isDarkMode ? '1px solid #1e2633' : '1px solid #d1d5db'
                                         }}>
@@ -770,7 +839,8 @@ function ReportProblem() {
                                                  </div>
                                              )}
                                         </div>
-                                             ))
+                                                );
+                                             })
                                          ) : (
                                              <div className="no-reports">
                                                  <p style={{color: isDarkMode ? '#9aa3b2' : '#6b7280'}}>No recent reports found.</p>
