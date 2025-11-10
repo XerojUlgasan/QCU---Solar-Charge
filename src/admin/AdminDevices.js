@@ -874,12 +874,20 @@ const AdminDevices = () => {
                 <div className="last-updated" style={{color: isDarkMode ? undefined : '#1f2937'}}>
                   Last updated: {device.lastUpdate}
                 </div>
-                <div className="date-added" style={{color: isDarkMode ? undefined : '#1f2937', fontSize: '12px', marginTop: '2px'}}>
+                <div
+                  className="last-updated"
+                  style={{
+                    color: isDarkMode ? undefined : '#1f2937',
+                    borderTop: 'none',
+                    paddingTop: '0.25rem',
+                    marginTop: '0.15rem'
+                  }}
+                >
                   {(() => {
                     try {
-                      const ts = device?._dateAddedSeconds ? { seconds: device._dateAddedSeconds } : null;
-                      const d = ts?.seconds ? new Date(ts.seconds * 1000) : null;
-                      return `Date added: ${d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown'}`;
+                      const tsSeconds = device?._dateAddedSeconds;
+                      const d = tsSeconds ? new Date(tsSeconds * 1000) : null;
+                      return `Date added: ${d && !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}`;
                     } catch {
                       return 'Date added: Unknown';
                     }

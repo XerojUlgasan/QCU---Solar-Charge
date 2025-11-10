@@ -119,15 +119,28 @@ const AdminHeader = ({ title, navigate }) => {
                 color: isDarkMode ? '#9aa3b2' : '#1f2937',
                 backgroundColor: 'transparent',
                 border: 'none',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                outline: 'none',
+                WebkitTapHighlightColor: 'transparent',
+                borderRadius: '6px',
+                padding: '6px 10px'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
-                e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+                e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#d1d5db';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+              onMouseUp={(e) => {
+                // Return to hover state if still hovered; otherwise default
+                e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
               }}
             >
               {item.icon}
@@ -149,12 +162,20 @@ const AdminHeader = ({ title, navigate }) => {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
-              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#d1d5db';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
           >
             {isDarkMode ? (
@@ -176,12 +197,20 @@ const AdminHeader = ({ title, navigate }) => {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
-              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#d1d5db';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
           >
             <Settings className="h-5 w-5" />
@@ -198,12 +227,20 @@ const AdminHeader = ({ title, navigate }) => {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
-              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#d1d5db';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
           >
             <LogOut className="h-5 w-5" />
@@ -220,12 +257,20 @@ const AdminHeader = ({ title, navigate }) => {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#f3f4f6';
-              e.target.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = isDarkMode ? '#9aa3b2' : '#1f2937';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#d1d5db';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
             }}
           >
             {isMobileMenuOpen ? (

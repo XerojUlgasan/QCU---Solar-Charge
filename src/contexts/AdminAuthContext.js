@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '../utils/api';
+import { useNotification } from './NotificationContext';
 
 const AdminAuthContext = createContext();
 
@@ -15,31 +16,64 @@ export const AdminAuthProvider = ({ children }) => {
     const [admin, setAdmin] = useState(null);
     const [loading, setLoading] = useState(true);
     const [adminToken, setAdminToken] = useState(null);
+    const { showError } = useNotification();
+
+    const syncAdminState = useCallback(() => {
+        const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+        const adminData = localStorage.getItem('adminData');
+        const token = localStorage.getItem('adminToken');
+
+        if (adminLoggedIn && adminData && token) {
+            try {
+                const parsedAdminData = JSON.parse(adminData);
+                setAdmin(parsedAdminData);
+                setAdminToken(token);
+            } catch (error) {
+                console.error('Error parsing admin data:', error);
+                localStorage.removeItem('adminLoggedIn');
+                localStorage.removeItem('adminData');
+                localStorage.removeItem('adminToken');
+                setAdmin(null);
+                setAdminToken(null);
+            }
+        } else {
+            setAdmin(null);
+            setAdminToken(null);
+        }
+    }, []);
 
     // Check for existing admin session on mount
     useEffect(() => {
-        const checkAdminSession = () => {
-            const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-            const adminData = localStorage.getItem('adminData');
-            const token = localStorage.getItem('adminToken');
-            
-            if (adminLoggedIn && adminData && token) {
-                try {
-                    const parsedAdminData = JSON.parse(adminData);
-                    setAdmin(parsedAdminData);
-                    setAdminToken(token);
-                } catch (error) {
-                    console.error('Error parsing admin data:', error);
-                    // Clear invalid data
-                    localStorage.removeItem('adminLoggedIn');
-                    localStorage.removeItem('adminData');
-                    localStorage.removeItem('adminToken');
-                }
+        syncAdminState();
+        setLoading(false);
+    }, [syncAdminState]);
+
+    useEffect(() => {
+        const handleStorageChange = (event) => {
+            if (!event.key || ['adminLoggedIn', 'adminData', 'adminToken'].includes(event.key)) {
+                syncAdminState();
             }
-            setLoading(false);
         };
 
-        checkAdminSession();
+        const handleAdminLoggedOut = () => {
+            syncAdminState();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('adminLoggedOut', handleAdminLoggedOut);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('adminLoggedOut', handleAdminLoggedOut);
+        };
+    }, [syncAdminState]);
+
+    const clearAdminSession = useCallback(() => {
+        setAdmin(null);
+        setAdminToken(null);
+        localStorage.removeItem('adminLoggedIn');
+        localStorage.removeItem('adminData');
+        localStorage.removeItem('adminToken');
     }, []);
 
     // Admin login
@@ -192,16 +226,24 @@ export const AdminAuthProvider = ({ children }) => {
     };
 
     // Admin logout
-    const adminLogout = () => {
-        setAdmin(null);
-        setAdminToken(null);
-        localStorage.removeItem('adminLoggedIn');
-        localStorage.removeItem('adminData');
-        localStorage.removeItem('adminToken');
-        
-        // Dispatch custom event to notify all components
+    const adminLogout = useCallback(() => {
+        clearAdminSession();
         window.dispatchEvent(new CustomEvent('adminLoggedOut'));
-    };
+    }, [clearAdminSession]);
+
+    const handleUnauthorized = useCallback((status) => {
+        if (status === 403) {
+            showError('Your admin session has expired. Please sign in again.');
+        }
+        if (status === 401) {
+            // Optional: show info? We'll keep quiet to avoid duplicates
+        }
+        clearAdminSession();
+        window.dispatchEvent(new CustomEvent('adminLoggedOut'));
+        if (typeof window !== 'undefined') {
+            window.location.replace('/admin');
+        }
+    }, [clearAdminSession, showError]);
 
     // Make authenticated admin API calls
     const authenticatedAdminFetch = async (url, options = {}) => {
@@ -218,10 +260,16 @@ export const AdminAuthProvider = ({ children }) => {
         console.log('Making admin request to:', url);
         console.log('Admin token available:', !!adminToken);
         
-        return fetch(url, {
+        const response = await fetch(url, {
             ...options,
             headers
         });
+
+        if (response.status === 401 || response.status === 403) {
+            handleUnauthorized(response.status);
+        }
+
+        return response;
     };
 
     const value = {

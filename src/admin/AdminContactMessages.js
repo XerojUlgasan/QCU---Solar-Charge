@@ -517,8 +517,19 @@ const AdminContactMessages = () => {
       
       <div className="contact-content">
         {/* Header Section */}
-        <div className="contact-header">
-          <h2 className="contact-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Contact Messages</h2>
+        <div className="contact-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+          <h2 
+            className="contact-title" 
+            style={{
+              color: isDarkMode ? '#ffffff' : '#1f2937',
+              fontWeight: 700,
+              fontSize: '28px',
+              textAlign: 'center',
+              margin: 0
+            }}
+          >
+            Contact Messages
+          </h2>
         </div>
 
         {/* Summary Stats */}
