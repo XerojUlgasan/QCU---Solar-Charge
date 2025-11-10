@@ -796,8 +796,8 @@
 
 /* Edit Button Styles */
 #admin-devices .edit-section {
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
     border-top: 1px solid #1e2633;
 }
 
@@ -863,6 +863,8 @@
 
 /* Light mode styles for edit button */
 .light #admin-devices .edit-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
     border-top-color: #000000;
 }
 

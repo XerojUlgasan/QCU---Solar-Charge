@@ -16,6 +16,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useLogout } from '../contexts/LogoutContext';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import AdminSettingsModal from '../components/AdminSettingsModal';
 import logo from '../logo.svg';
 import '../styles/AdminHeader.css';
@@ -23,6 +24,7 @@ import '../styles/AdminHeader.css';
 const AdminHeader = ({ title, navigate }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { showSuccess } = useNotification();
+  const { adminLogout } = useAdminAuth();
   const { openModal: openLogoutModal } = useLogout();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,11 +44,10 @@ const AdminHeader = ({ title, navigate }) => {
   const handleLogout = () => {
     openLogoutModal(() => {
       // Clear admin login state
-      localStorage.removeItem('adminLoggedIn');
+      adminLogout();
       // Show success notification
       showSuccess('Successfully logged out!');
-      // Navigate to admin login page
-      navigateToRoute('/admin');
+      // AdminAuthContext will handle redirect after logout
     });
   };
 

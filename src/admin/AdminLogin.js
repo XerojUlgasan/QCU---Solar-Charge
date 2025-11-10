@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap, Mail, Lock, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
@@ -11,7 +11,12 @@ import '../styles/AdminLogin.css';
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
-  const { adminLogin, loading } = useAdminAuth();
+  const { adminLogin, loading, isAdminAuthenticated } = useAdminAuth();
+  useEffect(() => {
+    if (!loading && isAdminAuthenticated) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [loading, isAdminAuthenticated, navigate]);
   const { isDarkMode } = useTheme();
 
   // State declarations

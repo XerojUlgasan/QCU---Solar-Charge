@@ -871,7 +871,14 @@ const AdminDevices = () => {
                   </button>
                 </div>
 
-                <div className="last-updated" style={{color: isDarkMode ? undefined : '#1f2937'}}>
+                <div
+                  className="last-updated"
+                  style={{
+                    color: isDarkMode ? undefined : '#1f2937',
+                    paddingTop: '0.25rem',
+                    marginTop: '0.25rem'
+                  }}
+                >
                   Last updated: {device.lastUpdate}
                 </div>
                 <div
@@ -879,7 +886,7 @@ const AdminDevices = () => {
                   style={{
                     color: isDarkMode ? undefined : '#1f2937',
                     borderTop: 'none',
-                    paddingTop: '0.25rem',
+                    paddingTop: '0.15rem',
                     marginTop: '0.15rem'
                   }}
                 >

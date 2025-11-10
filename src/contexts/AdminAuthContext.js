@@ -229,6 +229,9 @@ export const AdminAuthProvider = ({ children }) => {
     const adminLogout = useCallback(() => {
         clearAdminSession();
         window.dispatchEvent(new CustomEvent('adminLoggedOut'));
+        if (typeof window !== 'undefined') {
+            window.location.replace('/admin');
+        }
     }, [clearAdminSession]);
 
     const handleUnauthorized = useCallback((status) => {
