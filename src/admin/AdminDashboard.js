@@ -593,7 +593,14 @@ const AdminDashboard = () => {
 
   // Use devices from API data, with fallback to mock data
   const deviceStatus = overviewData.devices && overviewData.devices.length > 0 
-    ? overviewData.devices.map(device => {
+    ? [...overviewData.devices]
+      // Sort newest to oldest by last_updated timestamp
+      .sort((a, b) => {
+        const aTime = a?.last_updated?.seconds ? a.last_updated.seconds : 0;
+        const bTime = b?.last_updated?.seconds ? b.last_updated.seconds : 0;
+        return bTime - aTime;
+      })
+      .map(device => {
         // Try to find the actual device ID field (same logic as AdminDevices)
         const actualDeviceId = device.id || device.device_id || device.deviceId || device._id;
         
@@ -1882,9 +1889,10 @@ const AdminDashboard = () => {
               {recentTransactions.map((transaction, index) => (
                 <div 
                   key={transaction.id} 
-                  className="transaction-item fade-in"
+                  className="transaction-item fade-in-top"
                   style={{
-                    animationDelay: `${index * 0.1}s`
+                    // Ensure new items at the top don't appear to animate from the bottom
+                    animationDelay: '0s'
                   }}
                 >
                   <div className="transaction-info">

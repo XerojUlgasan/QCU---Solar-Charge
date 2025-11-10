@@ -768,12 +768,30 @@ function RateUs() {
         
         try {
             // Prepare rating data for update using the correct API structure
+            // Parse "location • building" if present to avoid duplication
+            let parsedLocation = editData.location;
+            let parsedBuilding = '';
+            if (typeof editData.location === 'string' && editData.location.includes('•')) {
+                const parts = editData.location.split('•').map(s => s.trim());
+                parsedLocation = parts[0] || editData.location;
+                parsedBuilding = parts[1] || '';
+            } else {
+                // Try to resolve from stationLocations
+                const match = stationLocations.find(st => st.location === editData.location || st.building === editData.location);
+                if (match) {
+                    parsedLocation = match.location || editData.location;
+                    parsedBuilding = match.building || '';
+                } else {
+                    parsedBuilding = editData.location;
+                }
+            }
+
             const ratingData = {
                 rate_id: userExistingRating.id || userExistingRating.rate_id || userExistingRating._id, // Required: the ID of the rating to update
                 rate: editData.rating, // Required: the new rating value
                 comment: editData.comment || '', // Optional: the new comment
-                location: editData.location, // Required: the location field
-                building: editData.location // Required: the building field (same as location)
+                location: parsedLocation, // Correct location value
+                building: parsedBuilding // Separate building value
             };
             
             // Validate that we have a rate_id
@@ -863,13 +881,32 @@ function RateUs() {
         setSubmittingRating(true);
         
         try {
+            // Parse "location • building" if present to avoid duplication
+            let parsedLocation = selectedLocation;
+            let parsedBuilding = '';
+            if (typeof selectedLocation === 'string' && selectedLocation.includes('•')) {
+                const parts = selectedLocation.split('•').map(s => s.trim());
+                parsedLocation = parts[0] || selectedLocation;
+                parsedBuilding = parts[1] || '';
+            } else {
+                // Try to resolve from stationLocations
+                const match = stationLocations.find(st => st.location === selectedLocation || st.building === selectedLocation);
+                if (match) {
+                    parsedLocation = match.location || selectedLocation;
+                    parsedBuilding = match.building || '';
+                } else {
+                    parsedBuilding = selectedLocation;
+                }
+            }
+
             // Prepare rating data (excluding dateTime as API handles it)
             const ratingData = {
                 name: user?.displayName || 'Anonymous',
                 email: user?.email || '',
                 rate: selectedRating,
                 comment: feedback || '',
-                location: selectedLocation,
+                location: parsedLocation,
+                building: parsedBuilding,
                 photo_url: user?.photoURL || null
             };
             
@@ -1385,7 +1422,13 @@ function RateUs() {
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
                                             </svg>
-                                            <span>{review.building && review.location ? `${review.location} • ${review.building}` : review.station}</span>
+                                            <span>
+                                                {review.building && review.location
+                                                    ? (review.location.trim().toLowerCase() === review.building.trim().toLowerCase()
+                                                        ? review.location
+                                                        : `${review.location} • ${review.building}`)
+                                                    : review.station}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -1516,7 +1559,13 @@ function RateUs() {
                                                 <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
                                                 <circle cx="12" cy="10" r="3"/>
                                             </svg>
-                                            <span>{review.building && review.location ? `${review.location} • ${review.building}` : review.station}</span>
+                                            <span>
+                                                {review.building && review.location
+                                                    ? (review.location.trim().toLowerCase() === review.building.trim().toLowerCase()
+                                                        ? review.location
+                                                        : `${review.location} • ${review.building}`)
+                                                    : review.station}
+                                            </span>
                         </div>
                             </div>
                         </div>

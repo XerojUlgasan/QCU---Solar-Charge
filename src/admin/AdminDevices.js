@@ -140,6 +140,12 @@ const AdminDevices = () => {
           const actualDeviceId = device.id || device.device_id || device.deviceId || device._id;
           console.log('🔍 Using device ID:', actualDeviceId);
           
+          // Resolve date added for sorting (fallback to last_updated)
+          const dateAdded = device.date_added || device.created_at || device.added_at || device.timestamp || device.last_updated;
+          const dateAddedSeconds = dateAdded?.seconds 
+            ? dateAdded.seconds 
+            : (dateAdded ? Math.floor(new Date(dateAdded).getTime() / 1000) : 0);
+          
           // Calculate individual device revenue from actual transactions
           const deviceRevenue = calculateDeviceRevenue(actualDeviceId, data.transactions);
           
@@ -158,10 +164,15 @@ const AdminDevices = () => {
             temperature: `${device.temperature || 0}°C`,
             batteryLevel: device.percentage || 0,
             lastUpdate: formatLastUpdated(device.last_updated),
+            // Keep raw date for sorting
+            _dateAddedSeconds: dateAddedSeconds,
             // Add API revenue data for total calculation
             apiRevenue: data.revenue ? data.revenue.total || 0 : 0
           };
         });
+        
+        // Sort newest to oldest by date_added (fallback handled above)
+        mappedDevices.sort((a, b) => (b._dateAddedSeconds || 0) - (a._dateAddedSeconds || 0));
         
         // Calculate total power from mapped devices
         const calculatedTotalPower = mappedDevices.reduce((sum, d) => {

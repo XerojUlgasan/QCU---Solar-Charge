@@ -62,7 +62,8 @@ function Overview() {
                         console.log('➕ Adding new device to overview:', deviceId);
                         return {
                             ...prevData,
-                            devices: [...prevData.devices, deviceData],
+                            // Prepend so newest appears on top
+                            devices: [deviceData, ...prevData.devices],
                             active: prevData.active + 1
                         };
                     }
@@ -374,7 +375,20 @@ function Overview() {
                         </div>
                     ) : (
                     <div className="stations-grid">
-                        {overviewData.devices.slice(0, 3).map((device, index) => (
+                        {[...overviewData.devices]
+                          // Newest to oldest by date_added (fallback to last_updated)
+                          .sort((a, b) => {
+                              const aAdded = a?.date_added?.seconds 
+                                ? a.date_added.seconds 
+                                : (a?.date_added ? Math.floor(new Date(a.date_added).getTime() / 1000) : 0);
+                              const bAdded = b?.date_added?.seconds 
+                                ? b.date_added.seconds 
+                                : (b?.date_added ? Math.floor(new Date(b.date_added).getTime() / 1000) : 0);
+                              const aTime = aAdded || (a?.last_updated?.seconds ? a.last_updated.seconds : 0);
+                              const bTime = bAdded || (b?.last_updated?.seconds ? b.last_updated.seconds : 0);
+                              return bTime - aTime;
+                          })
+                          .slice(0, 3).map((device, index) => (
                             <div 
                                 key={index} 
                                 className={`station-card fade-in ${isDarkMode ? '' : 'light'}`} 
@@ -709,7 +723,19 @@ function Overview() {
                                     maxWidth: '100%'
                                 }}
                             >
-                                {getFilteredDevices().map((device, index) => (
+                                {[...getFilteredDevices()]
+                                  .sort((a, b) => {
+                                      const aAdded = a?.date_added?.seconds 
+                                        ? a.date_added.seconds 
+                                        : (a?.date_added ? Math.floor(new Date(a.date_added).getTime() / 1000) : 0);
+                                      const bAdded = b?.date_added?.seconds 
+                                        ? b.date_added.seconds 
+                                        : (b?.date_added ? Math.floor(new Date(b.date_added).getTime() / 1000) : 0);
+                                      const aTime = aAdded || (a?.last_updated?.seconds ? a.last_updated.seconds : 0);
+                                      const bTime = bAdded || (b?.last_updated?.seconds ? b.last_updated.seconds : 0);
+                                      return bTime - aTime;
+                                  })
+                                  .map((device, index) => (
                                     <div 
                                         key={index} 
                                         className={`station-card-new ${isDarkMode ? '' : 'light'}`} 
