@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff, Zap, Mail, Lock, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
@@ -12,8 +12,10 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const { adminLogin, loading, isAdminAuthenticated } = useAdminAuth();
+  const hasRedirectedRef = useRef(false);
   useEffect(() => {
-    if (!loading && isAdminAuthenticated) {
+    if (!loading && isAdminAuthenticated && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
       navigate('/admin/dashboard', { replace: true });
     }
   }, [loading, isAdminAuthenticated, navigate]);
@@ -75,39 +77,6 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Debug: Let's see what the API actually returns
-    console.log('=== DEBUG: Testing API Response ===');
-    try {
-      const debugResponse = await fetch(API_BASE_URL + '/login/postLogin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        })
-      });
-      
-      console.log('Debug - Response status:', debugResponse.status);
-      console.log('Debug - Response ok:', debugResponse.ok);
-      console.log('Debug - Response headers:', Object.fromEntries(debugResponse.headers.entries()));
-      
-      const debugData = await debugResponse.text();
-      console.log('Debug - Raw response:', debugData);
-      
-      try {
-        const parsedData = JSON.parse(debugData);
-        console.log('Debug - Parsed response:', parsedData);
-        console.log('Debug - Response keys:', Object.keys(parsedData || {}));
-      } catch (parseError) {
-        console.log('Debug - Could not parse as JSON:', parseError);
-      }
-    } catch (debugError) {
-      console.log('Debug - API call failed:', debugError);
-    }
-    console.log('=== END DEBUG ===');
-
     try {
       const result = await adminLogin({
         username: formData.username,
@@ -116,9 +85,18 @@ const AdminLogin = () => {
 
       if (result.success) {
         showSuccess('Welcome to EcoCharge Admin Panel!');
-        navigate('/admin/dashboard');
+        if (!hasRedirectedRef.current) {
+          hasRedirectedRef.current = true;
+          navigate('/admin/dashboard', { replace: true });
+        }
       } else {
-        showError(`Login failed: ${result.error}`);
+        const msg = (result.error || '').toString();
+        const isInvalid = /invalid credentials/i.test(msg) || /^HTTP\s*401/i.test(msg) || /401/.test(msg);
+        if (isInvalid) {
+          showError('Invalid credentials');
+        } else {
+          showError('Login failed. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -1,7 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import Contact from './pages/Contact';
-import Navbar from './components/Navbar';
 import About from './pages/About';
 import Overview from './pages/Overview';
 import RateUs from './pages/RateUs';
@@ -23,8 +22,24 @@ import { SocketProvider } from './contexts/SocketContext';
 import GoogleLoginModal from './components/GoogleLoginModal';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 import RequireAdminAuth from './admin/RequireAdminAuth';
+import Navbar from './components/Navbar';
 
 function App() {
+  const MainLayout = () => (
+    <>
+      <Navbar />
+      <main className="pt-16">
+        <Outlet />
+      </main>
+    </>
+  );
+
+  const AdminLayout = () => (
+    <AdminAuthProvider>
+      <Outlet />
+    </AdminAuthProvider>
+  );
+
   return (
     <ThemeProvider>
       <NotificationProvider>
@@ -32,76 +47,71 @@ function App() {
           <AuthProvider>
             <GoogleLoginProvider>
               <LogoutProvider>
-              <Routes>
-        {/* Admin routes without navbar */}
-        <Route path='/admin' element={
-          <AdminAuthProvider>
-            <AdminLogin />
-          </AdminAuthProvider>
-        }/>
-        <Route path='/admin/dashboard' element={
-          <AdminAuthProvider>
-            <RequireAdminAuth>
-              <AdminDashboard />
-            </RequireAdminAuth>
-          </AdminAuthProvider>
-        }/>
-        <Route path='/admin/devices' element={
-          <AdminAuthProvider>
-            <RequireAdminAuth>
-              <AdminDevices />
-            </RequireAdminAuth>
-          </AdminAuthProvider>
-        }/>
-        <Route path='/admin/problems' element={
-          <AdminAuthProvider>
-            <RequireAdminAuth>
-              <AdminProblems />
-            </RequireAdminAuth>
-          </AdminAuthProvider>
-        }/>
-        <Route path='/admin/contact' element={
-          <AdminAuthProvider>
-            <RequireAdminAuth>
-              <AdminContactMessages />
-            </RequireAdminAuth>
-          </AdminAuthProvider>
-        }/>
-        <Route path='/admin/device/:deviceId' element={
-          <AdminAuthProvider>
-            <RequireAdminAuth>
-              <DeviceDetail />
-            </RequireAdminAuth>
-          </AdminAuthProvider>
-        }/>
-        
-        {/* Regular routes with navbar */}
-        <Route path='/*' element={
-          <>
-            <Navbar/>
-            <main className="pt-16">
-              <Routes>
-                <Route path='/' element={<Homepage/>}/>
-                <Route path='/about' element={<About/>}/>
-                <Route path='/contact' element={<Contact/>}/>
-                <Route path='/overview' element={<Overview/>}/>
-                <Route path='/rate-us' element={<RateUs/>}/>
-                <Route path='/report-problem' element={<ReportProblem/>}/>
-                <Route path='*' element={<NotFound/>}/>
-              </Routes>
-            </main>
-          </>
-        }/>
-        </Routes>
-        <GoogleLoginModal />
-        <LogoutConfirmationModal />
-            </LogoutProvider>
-          </GoogleLoginProvider>
-        </AuthProvider>
+                <Routes>
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminLogin />} />
+                    <Route
+                      path="dashboard"
+                      element={
+                        <RequireAdminAuth>
+                          <AdminDashboard />
+                        </RequireAdminAuth>
+                      }
+                    />
+                    <Route
+                      path="devices"
+                      element={
+                        <RequireAdminAuth>
+                          <AdminDevices />
+                        </RequireAdminAuth>
+                      }
+                    />
+                    <Route
+                      path="problems"
+                      element={
+                        <RequireAdminAuth>
+                          <AdminProblems />
+                        </RequireAdminAuth>
+                      }
+                    />
+                    <Route
+                      path="contact"
+                      element={
+                        <RequireAdminAuth>
+                          <AdminContactMessages />
+                        </RequireAdminAuth>
+                      }
+                    />
+                    <Route
+                      path="device/:deviceId"
+                      element={
+                        <RequireAdminAuth>
+                          <DeviceDetail />
+                        </RequireAdminAuth>
+                      }
+                    />
+                  </Route>
+
+                  <Route element={<MainLayout />}>
+                    <Route path="/" element={<Homepage />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/overview" element={<Overview />} />
+                    <Route path="/rate-us" element={<RateUs />} />
+                    <Route path="/report-problem" element={<ReportProblem />} />
+                  </Route>
+
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <GoogleLoginModal />
+                <LogoutConfirmationModal />
+              </LogoutProvider>
+            </GoogleLoginProvider>
+          </AuthProvider>
         </SocketProvider>
       </NotificationProvider>
     </ThemeProvider>
-    );
-  }
+  );
+}
 
 export default App;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, 
@@ -27,7 +27,7 @@ import { API_BASE_URL } from '../utils/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { authenticatedAdminFetch } = useAdminAuth();
+  const { authenticatedAdminFetch, adminToken } = useAdminAuth();
   const { isDarkMode } = useTheme();
   const { onCollectionChange, isConnected } = useSocket();
   
@@ -81,43 +81,24 @@ const AdminDashboard = () => {
   const [transactionsFilter, setTransactionsFilter] = useState('newest');
   const [previousPeriodData, setPreviousPeriodData] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState('all');
-
-  // Test API endpoint availability
-  const testAPIEndpoint = async () => {
-    try {
-      console.log('=== TESTING API ENDPOINTS ===');
-      
-      // Test 1: Check if /admin/dashboard exists
-      console.log('Test 1: Checking /admin/dashboard endpoint...');
-      const dashboardResponse = await fetch(API_BASE_URL + '/admin/dashboard');
-      console.log('Dashboard endpoint status:', dashboardResponse.status);
-      console.log('Dashboard endpoint headers:', Object.fromEntries(dashboardResponse.headers.entries()));
-      
-      // Test 2: Check if /overview/getoverview works (as comparison)
-      console.log('Test 2: Checking /overview/getoverview endpoint...');
-      const overviewResponse = await fetch(API_BASE_URL + '/overview/getoverview');
-      console.log('Overview endpoint status:', overviewResponse.status);
-      
-      // Test 3: Check authentication
-      console.log('Test 3: Checking authenticatedAdminFetch function...');
-      console.log('authenticatedAdminFetch type:', typeof authenticatedAdminFetch);
-      
-      console.log('=== API TEST COMPLETE ===');
-    } catch (error) {
-      console.error('API Test Error:', error);
-    }
-  };
+  const hasFetchedOnceRef = useRef(false);
+  const mountTimeRef = useRef(Date.now());
 
   // Fetch dashboard data from API
   const fetchOverviewData = useCallback(async () => {
+    // Avoid firing requests until the token is ready
+    if (!adminToken && !localStorage.getItem('adminToken')) {
+      console.log('Skipping dashboard fetch until admin token is ready.');
+      return;
+    }
+
     try {
+      if (hasFetchedOnceRef.current) {
+        console.log('Skipping duplicate initial fetch (already fetched once).');
+        return;
+      }
       console.log('=== FETCHING DASHBOARD DATA ===');
       console.log('Using authenticatedAdminFetch:', typeof authenticatedAdminFetch);
-      
-      // First test the endpoint
-      await testAPIEndpoint();
-      
-      console.log('Fetching dashboard data from /admin/dashboard...');
       
       // Add timeout to prevent infinite loading
       const controller = new AbortController();
@@ -207,6 +188,7 @@ const AdminDashboard = () => {
         
         setOverviewData(mappedData);
         setConnectionStatus('connected');
+        hasFetchedOnceRef.current = true;
         console.log('✅ Dashboard data mapped and set successfully:', mappedData);
         console.log('📊 Device Summary:', {
           total: mappedData.total_devices,
@@ -265,7 +247,7 @@ const AdminDashboard = () => {
       });
       setError(`Failed to load dashboard data: ${error.message}`);
     }
-  }, [authenticatedAdminFetch]);
+  }, [authenticatedAdminFetch, adminToken]);
 
   // Fetch recent reports from API
   const fetchRecentReports = useCallback(async () => {
@@ -292,24 +274,33 @@ const AdminDashboard = () => {
     // Listen to device changes - refresh dashboard for complex calculations
     const cleanupDevices = onCollectionChange('devices', (data) => {
       console.log('📡 Device change detected, refreshing dashboard...', data);
+      // Throttle immediate re-fetches right after mount to avoid double load post-login
+      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
+      hasFetchedOnceRef.current = false; // allow one refetch after socket change
       fetchOverviewData();
     });
 
     // Listen to transaction changes - refresh dashboard for revenue calculations
     const cleanupTransactions = onCollectionChange('transactions', (data) => {
       console.log('📡 Transaction change detected, refreshing dashboard...', data);
+      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
+      hasFetchedOnceRef.current = false;
       fetchOverviewData();
     });
 
     // Listen to energy history changes - refresh dashboard for energy calculations
     const cleanupEnergy = onCollectionChange('energyHistory', (data) => {
       console.log('📡 Energy history change detected, refreshing dashboard...', data);
+      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
+      hasFetchedOnceRef.current = false;
       fetchOverviewData();
     });
 
     // Listen to device config changes - refresh dashboard
     const cleanupDeviceConfig = onCollectionChange('deviceConfig', (data) => {
       console.log('📡 Device config change detected, refreshing dashboard...', data);
+      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
+      hasFetchedOnceRef.current = false;
       fetchOverviewData();
     });
 
@@ -355,6 +346,10 @@ const AdminDashboard = () => {
   // Fetch all data when component mounts
   useEffect(() => {
     const fetchAllData = async () => {
+      if (!adminToken && !localStorage.getItem('adminToken')) {
+        return;
+      }
+      mountTimeRef.current = Date.now();
       setLoading(true);
       setError(null);
       
@@ -371,7 +366,7 @@ const AdminDashboard = () => {
     };
 
     fetchAllData();
-  }, [fetchOverviewData, fetchRecentReports]);
+  }, [fetchOverviewData, fetchRecentReports, adminToken]);
 
   const handleNavigation = (route, deviceId) => {
     switch (route) {

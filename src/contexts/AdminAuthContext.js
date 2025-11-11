@@ -255,20 +255,24 @@ export const AdminAuthProvider = ({ children }) => {
             ...options.headers
         };
         
-        // Add admin token if available
-        if (adminToken) {
-            headers['Authorization'] = `Bearer ${adminToken}`;
+        // Prefer the in-memory token, but fall back to localStorage so freshly
+        // authenticated tabs can immediately make requests before the context updates.
+        const tokenFromStorage = adminToken || localStorage.getItem('adminToken');
+        const hadToken = !!tokenFromStorage;
+        
+        if (tokenFromStorage) {
+            headers['Authorization'] = `Bearer ${tokenFromStorage}`;
         }
         
         console.log('Making admin request to:', url);
-        console.log('Admin token available:', !!adminToken);
+        console.log('Admin token available:', hadToken);
         
         const response = await fetch(url, {
             ...options,
             headers
         });
 
-        if (response.status === 401 || response.status === 403) {
+        if (hadToken && (response.status === 401 || response.status === 403)) {
             handleUnauthorized(response.status);
         }
 

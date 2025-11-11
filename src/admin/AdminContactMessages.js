@@ -523,7 +523,7 @@ const AdminContactMessages = () => {
             style={{
               color: isDarkMode ? '#ffffff' : '#1f2937',
               fontWeight: 700,
-              fontSize: '28px',
+              fontSize: '25px',
               textAlign: 'center',
               margin: 0
             }}
