@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { API_BASE_URL } from '../utils/api';
 import { useNotification } from './NotificationContext';
 
@@ -17,6 +17,7 @@ export const AdminAuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [adminToken, setAdminToken] = useState(null);
     const { showError } = useNotification();
+    const isHandlingUnauthorizedRef = useRef(false);
 
     const syncAdminState = useCallback(() => {
         const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
@@ -235,21 +236,26 @@ export const AdminAuthProvider = ({ children }) => {
     }, [clearAdminSession]);
 
     const handleUnauthorized = useCallback((status) => {
+        if (isHandlingUnauthorizedRef.current) {
+            return;
+        }
+        isHandlingUnauthorizedRef.current = true;
         if (status === 403) {
             showError('Your admin session has expired. Please sign in again.');
-        }
-        if (status === 401) {
-            // Optional: show info? We'll keep quiet to avoid duplicates
         }
         clearAdminSession();
         window.dispatchEvent(new CustomEvent('adminLoggedOut'));
         if (typeof window !== 'undefined') {
             window.location.replace('/admin');
         }
+        // allow future handling after navigation if needed
+        setTimeout(() => {
+            isHandlingUnauthorizedRef.current = false;
+        }, 3000);
     }, [clearAdminSession, showError]);
 
     // Make authenticated admin API calls
-    const authenticatedAdminFetch = async (url, options = {}) => {
+    const authenticatedAdminFetch = useCallback(async (url, options = {}) => {
         const headers = {
             'Content-Type': 'application/json',
             ...options.headers
@@ -266,18 +272,24 @@ export const AdminAuthProvider = ({ children }) => {
         
         console.log('Making admin request to:', url);
         console.log('Admin token available:', hadToken);
-        
-        const response = await fetch(url, {
-            ...options,
-            headers
-        });
-
-        if (hadToken && (response.status === 401 || response.status === 403)) {
-            handleUnauthorized(response.status);
-        }
-
-        return response;
-    };
+        // Internal retry helper (one attempt) to avoid false 401/403 cascades
+        const doFetch = async (attempt = 0) => {
+            const resp = await fetch(url, {
+                ...options,
+                headers
+            });
+            if (hadToken && (resp.status === 401 || resp.status === 403)) {
+                // Retry once to avoid redirecting on transient auth hiccups (e.g., race/CORS quirk)
+                if (attempt === 0) {
+                    console.warn('Admin request unauthorized, retrying once...');
+                    return doFetch(1);
+                }
+                handleUnauthorized(resp.status);
+            }
+            return resp;
+        };
+        return doFetch(0);
+    }, [adminToken, handleUnauthorized]);
 
     const value = {
         admin,
