@@ -72,12 +72,16 @@ function Overview() {
                         };
                         const deduped = prevData.devices.filter(dev => (dev.id || dev.device_id) !== normalized.id && (dev.device_id || dev.id) !== normalized.device_id);
                         const updatedList = [normalized, ...deduped];
-                        return {
+                return {
                             ...prevData,
                             devices: updatedList,
-                            active: updatedList.filter(dev => 
+                  active: updatedList.filter(dev => 
                                 (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
-                            ).length
+                  ).length,
+                  total_power: updatedList.reduce((sum, dev) => {
+                    const p = Number(dev.power);
+                    return sum + (isNaN(p) ? 0 : p);
+                  }, 0)
                         };
                     }
                 } else if (type === 'modified') {
@@ -97,20 +101,28 @@ function Overview() {
                     const activeCount = updatedDevices.filter(dev => 
                         dev.status?.toLowerCase() === 'active' || dev.status?.toLowerCase() === 'online'
                     ).length;
-                    return {
+              return {
                         ...prevData,
                         devices: updatedDevices,
-                        active: activeCount
+                active: activeCount,
+                total_power: updatedDevices.reduce((sum, dev) => {
+                  const p = Number(dev.power);
+                  return sum + (isNaN(p) ? 0 : p);
+                }, 0)
                     };
                 } else if (type === 'removed') {
                     console.log('➖ Removing device from overview:', deviceId);
                     const filteredDevices = prevData.devices.filter(dev => 
                         dev.id !== deviceId && dev.device_id !== deviceId
                     );
-                    return {
+              return {
                         ...prevData,
                         devices: filteredDevices,
-                        active: Math.max(0, prevData.active - 1)
+                active: Math.max(0, prevData.active - 1),
+                total_power: filteredDevices.reduce((sum, dev) => {
+                  const p = Number(dev.power);
+                  return sum + (isNaN(p) ? 0 : p);
+                }, 0)
                     };
                 }
                 

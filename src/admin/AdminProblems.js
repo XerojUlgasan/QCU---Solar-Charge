@@ -39,6 +39,7 @@ const AdminProblems = () => {
   const [error, setError] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState([]); // Store device info from dashboard
+  const [sendingResponse, setSendingResponse] = useState(false);
 
   // Helper function to safely convert to string and lowercase
   const safeToLowerCase = (value) => {
@@ -299,7 +300,7 @@ const AdminProblems = () => {
       return date.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       });
     } catch (error) {
       console.error('Time formatting error:', error, dateTime);
@@ -505,6 +506,7 @@ const AdminProblems = () => {
     }
     
     try {
+      setSendingResponse(true);
       console.log('=== SENDING RESPONSE TO REPORT ===');
       console.log('Selected report:', selectedReport);
       
@@ -574,15 +576,13 @@ const AdminProblems = () => {
           return;
         }
         
-    showSuccess('Response sent to user successfully!');
-    setResponseText('');
-    setIsDialogOpen(false);
-    setPopupReport(null);
+        showSuccess('Response sent to user successfully!');
+        setResponseText('');
+        setIsDialogOpen(false);
+        setPopupReport(null);
         
         // Optionally refresh reports to show any updates
-        setTimeout(() => {
-          fetchReports();
-        }, 1000);
+        // rely on socket updates; no manual refresh to avoid flicker
       } else {
         const errorText = await response.text();
         console.log('Error response:', errorText);
@@ -598,6 +598,11 @@ const AdminProblems = () => {
     } catch (error) {
       console.error('Error sending response:', error);
       showError(`Failed to send response: ${error.message}`);
+    } finally {
+      setSendingResponse(false);
+      // Close popup after result to avoid multiple clicks as requested
+      setIsDialogOpen(false);
+      setPopupReport(null);
     }
   };
 
@@ -645,16 +650,14 @@ const AdminProblems = () => {
         const responseData = await response.json();
         console.log('Status update response:', responseData);
         
-    showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+        showSuccess(`Report ${reportId} status updated to ${newStatus}`);
         
         // Close the popup
         setIsDialogOpen(false);
         setPopupReport(null);
         
         // Refresh reports to show updated status
-        setTimeout(() => {
-          fetchReports();
-        }, 1000);
+        // Do not refresh; rely on socket updates to reflect latest status
       } else {
         const errorText = await response.text();
         console.log(`Error response:`, errorText);
@@ -1039,13 +1042,14 @@ const AdminProblems = () => {
                   <button 
                     className="send-response-button"
                     onClick={handleSendResponse}
+                    disabled={sendingResponse}
                     style={{
                       backgroundColor: isDarkMode ? undefined : '#2563eb',
                       border: isDarkMode ? undefined : '2px solid #1d4ed8',
                       color: '#ffffff'
                     }}
                   >
-                    Send Response
+                    {sendingResponse ? 'Sending Response...' : 'Send Response'}
                   </button>
                 </div>
 
