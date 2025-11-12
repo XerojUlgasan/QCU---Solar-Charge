@@ -43,6 +43,35 @@ function Overview() {
         return null;
     };
 
+    const resolveTimestampSeconds = (value) => {
+        if (!value) return 0;
+        if (typeof value === 'object' && typeof value.seconds === 'number') {
+            return value.seconds;
+        }
+        if (typeof value === 'object' && typeof value._seconds === 'number') {
+            return value._seconds;
+        }
+        if (typeof value === 'string' || typeof value === 'number') {
+            const parsed = new Date(value);
+            return isNaN(parsed.getTime()) ? 0 : Math.floor(parsed.getTime() / 1000);
+        }
+        if (value instanceof Date) {
+            return Math.floor(value.getTime() / 1000);
+        }
+        return 0;
+    };
+
+    const getDeviceTimestamp = (device) => {
+        if (!device) return 0;
+        const added = resolveTimestampSeconds(device?.date_added);
+        const updated = resolveTimestampSeconds(device?.last_updated);
+        return Math.max(added, updated, 0);
+    };
+
+    const sortDevicesByNewest = (devices = []) => {
+        return [...devices].sort((a, b) => getDeviceTimestamp(b) - getDeviceTimestamp(a));
+    };
+
     const fetchOverviewData = async () => {
         try {
             setLoading(true);
@@ -55,7 +84,25 @@ function Overview() {
             const data = await response.json();
             
             if (data.success && data.overview) {
-                setOverviewData(data.overview);
+                const overview = data.overview;
+                const sortedDevices = sortDevicesByNewest(overview.devices || []);
+
+                const activeCount = overview.active ?? sortedDevices.filter(dev => {
+                    const status = (dev.status || '').toLowerCase();
+                    return status === 'active' || status === 'online';
+                }).length;
+
+                const totalPower = overview.total_power ?? sortedDevices.reduce((sum, dev) => {
+                    const p = Number(dev.power);
+                    return sum + (isNaN(p) ? 0 : p);
+                }, 0);
+
+                setOverviewData({
+                    ...overview,
+                    devices: sortedDevices,
+                    active: activeCount,
+                    total_power: totalPower
+                });
             } else {
                 throw new Error('Invalid response format');
             }
@@ -81,14 +128,6 @@ function Overview() {
                 
                 if (!prevData.devices) return prevData;
                 
-                const getDeviceTime = (dev) => {
-                    const added = dev?.date_added?.seconds 
-                        ? dev.date_added.seconds 
-                        : (dev?.date_added ? Math.floor(new Date(dev.date_added).getTime() / 1000) : 0);
-                    const updated = dev?.last_updated?.seconds ? dev.last_updated.seconds : 0;
-                    return added || updated || 0;
-                };
-
                 if (type === 'added') {
                     const deviceExists = prevData.devices.some(dev => dev.id === deviceId || dev.device_id === deviceId);
                     if (!deviceExists) {
@@ -105,7 +144,7 @@ function Overview() {
                         };
                         const deduped = prevData.devices.filter(dev => (dev.id || dev.device_id) !== normalized.id && (dev.device_id || dev.id) !== normalized.device_id);
                         // Insert then sort newest-first
-                        const updatedList = [normalized, ...deduped].sort((a, b) => getDeviceTime(b) - getDeviceTime(a));
+                        const updatedList = sortDevicesByNewest([normalized, ...deduped]);
                         return {
                             ...prevData,
                             devices: updatedList,
@@ -134,7 +173,7 @@ function Overview() {
                           : dev
                     );
                     // Sort newest-first after modification
-                    updatedDevices = updatedDevices.sort((a, b) => getDeviceTime(b) - getDeviceTime(a));
+                    updatedDevices = sortDevicesByNewest(updatedDevices);
                     // Recalculate active devices and total power
                     const activeCount = updatedDevices.filter(dev => 
                         dev.status?.toLowerCase() === 'active' || dev.status?.toLowerCase() === 'online'
@@ -150,9 +189,9 @@ function Overview() {
                     };
                 } else if (type === 'removed') {
                     console.log('➖ Removing device from overview:', deviceId);
-                    const filteredDevices = prevData.devices.filter(dev => 
+                    const filteredDevices = sortDevicesByNewest(prevData.devices.filter(dev => 
                         dev.id !== deviceId && dev.device_id !== deviceId
-                    );
+                    ));
                     return {
                         ...prevData,
                         devices: filteredDevices,

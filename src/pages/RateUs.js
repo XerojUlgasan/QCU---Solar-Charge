@@ -36,11 +36,48 @@ function RateUs() {
         location: ''
     });
 
+    const hydrateRatingMetadata = (incoming = {}, fallback = {}, locationsOverride = null) => {
+        const merged = { ...fallback, ...incoming };
+
+        let location = merged.location || merged.station || fallback.location || '';
+        let building = merged.building || fallback.building || '';
+        const deviceCandidates = locationsOverride || stationLocations || [];
+
+        const deviceMatch = deviceCandidates.find(device => {
+            if (!device) return false;
+            const deviceId = device.device_id || device.id;
+            const matchId = merged.device_id || merged.id || merged.station_id;
+            const mergedLocation = merged.location || merged.station || '';
+            const mergedBuilding = merged.building || '';
+            return (
+                (deviceId && matchId && deviceId === matchId) ||
+                (device.location && mergedLocation && device.location === mergedLocation) ||
+                (device.building && mergedBuilding && device.building === mergedBuilding)
+            );
+        });
+
+        if (deviceMatch) {
+            if (!location) location = deviceMatch.location || location;
+            if (!building) building = deviceMatch.building || building;
+        }
+
+        if (!building && location) {
+            building = location;
+        }
+
+        return {
+            ...merged,
+            location,
+            building
+        };
+    };
+
     // Fetch reviews from API
     const fetchReviews = async () => {
         try {
             setLoading(true);
             setError(null);
+            let effectiveStationLocations = [];
             
             // Build URL with email query parameter if user is authenticated
             let url = API_BASE_URL + '/rates/getrates';
@@ -81,14 +118,17 @@ function RateUs() {
                         
                         console.log('✅ Updated station locations from dashboard:', updatedStationLocations);
                         setStationLocations(updatedStationLocations);
+                        effectiveStationLocations = updatedStationLocations;
                     } else {
                         // Fallback to original station locations
                         if (Array.isArray(stationLocationsData)) {
                             console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
                             setStationLocations(stationLocationsData);
+                            effectiveStationLocations = stationLocationsData;
                         } else {
                             console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
                             setStationLocations([]);
+                            effectiveStationLocations = [];
                         }
                     }
                 } else {
@@ -96,9 +136,11 @@ function RateUs() {
                     if (Array.isArray(stationLocationsData)) {
                         console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
                         setStationLocations(stationLocationsData);
+                        effectiveStationLocations = stationLocationsData;
                     } else {
                         console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
                         setStationLocations([]);
+                        effectiveStationLocations = [];
                     }
                 }
             } catch (deviceError) {
@@ -107,9 +149,11 @@ function RateUs() {
                 if (Array.isArray(stationLocationsData)) {
                     console.log('✅ Station locations loaded successfully:', stationLocationsData.length, 'locations');
                     setStationLocations(stationLocationsData);
+                    effectiveStationLocations = stationLocationsData;
                 } else {
                     console.warn('⚠️ Station locations data is not an array:', stationLocationsData);
                     setStationLocations([]);
+                    effectiveStationLocations = [];
                 }
             }
             
@@ -120,7 +164,8 @@ function RateUs() {
                     console.log('✅ Found user-specific rating with ID:', userSpecificRating);
                     console.log('📊 User rating ID field:', userSpecificRating.id);
                     console.log('📊 User rating all fields:', Object.keys(userSpecificRating));
-                    setUserRating(userSpecificRating);
+                    const hydratedUser = hydrateRatingMetadata(userSpecificRating, userSpecificRating, effectiveStationLocations);
+                    setUserRating(hydratedUser);
                 } else {
                     console.log('❌ No user-specific rating found');
                     setUserRating(null);
@@ -129,7 +174,11 @@ function RateUs() {
                 setUserRating(null);
             }
             
-            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+            const hydratedReviews = Array.isArray(reviewsData)
+                ? reviewsData.map(review => hydrateRatingMetadata(review, review, effectiveStationLocations))
+                : [];
+
+            setReviews(hydratedReviews);
         } catch (err) {
             console.error('Error fetching reviews:', err);
             setError('Failed to load reviews. Please try again later.');
@@ -181,24 +230,22 @@ function RateUs() {
             
             setReviews(prevReviews => {
                 const { type, id, data: ratingData } = data;
-                
-                // Helper function to check if a review matches the ID
-                const matchesId = (review, checkId) => {
-                    return review.id === checkId || 
-                           review.rating_id === checkId || 
-                           review.rate_id === checkId ||
-                           review._id === checkId ||
-                           (ratingData.email && review.email === ratingData.email && checkId === id);
-                };
-                
+
+                const checkIds = [id, ratingData?.id, ratingData?.rating_id, ratingData?.rate_id, ratingData?._id].filter(Boolean);
+                const matchById = (review, ids) => ids.some(checkId =>
+                    review.id === checkId ||
+                    review.rating_id === checkId ||
+                    review.rate_id === checkId ||
+                    review._id === checkId
+                );
+
+                let nextReviews = prevReviews;
+                let mutated = false;
+
                 if (type === 'added') {
-                    // Add new rating to the array - check all possible ID fields
-                    const ratingExists = prevReviews.some(review => matchesId(review, id));
+                    const ratingExists = prevReviews.some(review => matchById(review, checkIds) || (ratingData?.email && review.email === ratingData.email));
                     if (!ratingExists) {
                         console.log('➕ Adding new rating:', id);
-                        
-                        // Normalize timestamp - for new items, ensure it shows "just now"
-                        // Ensure all possible ID fields are set
                         const normalizedData = {
                             ...ratingData,
                             id: id || ratingData.id || ratingData.rating_id || ratingData.rate_id || ratingData._id,
@@ -206,72 +253,61 @@ function RateUs() {
                             rate_id: ratingData.rate_id || id,
                             dateTime: normalizeTimestamp(
                                 ratingData.dateTime || ratingData.timestamp || ratingData.created_at,
-                                true // isNew = true for new ratings
+                                true
                             ),
-                            _isNew: true // Flag for animation
+                            _isNew: true
                         };
-                        
-                        // Check if this is the user's own rating
-                        if (user?.email && normalizedData.email === user.email) {
-                            setUserRating(normalizedData);
-                        }
-                        return [...prevReviews, normalizedData];
+                        const enrichedData = hydrateRatingMetadata(normalizedData, normalizedData);
+                        nextReviews = [...prevReviews, enrichedData];
+                        mutated = true;
                     }
                 } else if (type === 'modified') {
-                    // Update existing rating - preserve original dateTime
-                    // Check all possible ID fields and email match
                     console.log('🔄 Updating rating:', id);
-                    const updatedReviews = prevReviews.map(review => {
-                        if (matchesId(review, id)) {
-                            // Preserve the original dateTime from the existing review
+                    nextReviews = prevReviews.map(review => {
+                        if (matchById(review, checkIds) || (ratingData?.email && review.email === ratingData.email)) {
                             const existingDateTime = review.dateTime;
                             const newDateTime = ratingData.dateTime || ratingData.timestamp || ratingData.created_at;
-                            
-                            // Use existing dateTime if it exists, otherwise normalize the new one
                             const preservedDateTime = existingDateTime || normalizeTimestamp(newDateTime, false);
-                            
-                            // Ensure all ID fields are preserved
-                            return {
+                            const updatedReview = {
                                 ...review,
                                 ...ratingData,
                                 id: id || ratingData.id || review.id || ratingData.rating_id || ratingData.rate_id,
                                 rating_id: ratingData.rating_id || review.rating_id || id,
                                 rate_id: ratingData.rate_id || review.rate_id || id,
-                                dateTime: preservedDateTime, // Keep original submission time
-                                _isNew: false // Remove animation flag
+                                dateTime: preservedDateTime,
+                                _isNew: false
                             };
+                            return hydrateRatingMetadata(updatedReview, review);
                         }
                         return review;
                     });
-                    
-                    // Update userRating if it's the user's rating
-                    if (user?.email && ratingData.email === user.email) {
-                        const existingReview = prevReviews.find(r => matchesId(r, id));
-                        const updatedUserRating = {
-                            ...ratingData,
-                            id: id || ratingData.id || ratingData.rating_id || ratingData.rate_id,
-                            rating_id: ratingData.rating_id || id,
-                            rate_id: ratingData.rate_id || id,
-                            dateTime: existingReview?.dateTime || normalizeTimestamp(
-                                ratingData.dateTime || ratingData.timestamp || ratingData.created_at,
-                                false
-                            )
-                        };
-                        setUserRating(updatedUserRating);
-                    }
-                    return updatedReviews;
+                    mutated = !nextReviews.every((review, idx) => review === prevReviews[idx]);
                 } else if (type === 'removed') {
-                    // Remove rating from array - check all possible ID fields
                     console.log('➖ Removing rating:', id);
-                    const filteredReviews = prevReviews.filter(review => !matchesId(review, id));
-                    // Clear userRating if it was removed
-                    if (userRating && matchesId(userRating, id)) {
+                    const filtered = prevReviews.filter(review => !matchById(review, checkIds));
+                    mutated = filtered.length !== prevReviews.length;
+                    nextReviews = filtered;
+                }
+
+                if (!mutated) {
+                    return prevReviews;
+                }
+
+                if (user?.email) {
+                    const userMatchByEmail = nextReviews.find(review => review.email === user.email);
+                    const userIds = [userRating?.id, userRating?.rating_id, userRating?.rate_id, userRating?._id].filter(Boolean);
+                    const userMatchById = userIds.length ? nextReviews.find(review => matchById(review, userIds)) : null;
+                    const userMatch = userMatchById || userMatchByEmail;
+
+                    if (userMatch) {
+                        const hydrated = hydrateRatingMetadata(userMatch, userRating || userMatch);
+                        setUserRating(hydrated);
+                    } else if (userRating) {
                         setUserRating(null);
                     }
-                    return filteredReviews;
                 }
-                
-                return prevReviews;
+
+                return nextReviews;
             });
         });
 
@@ -311,7 +347,7 @@ function RateUs() {
             cleanupRatings();
             cleanupDevices();
         };
-    }, [isConnected, onCollectionChange, user?.email, userRating]);
+    }, [isConnected, onCollectionChange, user?.email, userRating, stationLocations]);
 
     // Fetch reviews when component mounts or when authentication state changes
     useEffect(() => {
@@ -581,24 +617,17 @@ function RateUs() {
 
     // Check if current user has already submitted a rating
     const getUserExistingRating = () => {
-        // Use the user's specific rating data (with ID) if available
         if (userRating) {
             console.log('✅ Using user-specific rating:', userRating);
-            
-            // Find matching device info for building
-            const deviceInfo = stationLocations.find(device => 
-                device.device_id === userRating.device_id || 
-                device.location === userRating.location ||
-                device.building === userRating.building
-            );
+            const enrichedRating = hydrateRatingMetadata(userRating);
             
             return {
-                id: userRating.id || userRating.rate_id || userRating._id,
-                rating: userRating.rate || 0,
-                comment: userRating.comment || '',
-                location: deviceInfo?.location || userRating.location || '',
-                building: deviceInfo?.building || userRating.building || '',
-                date: formatDate(userRating.dateTime)
+                id: enrichedRating.id || enrichedRating.rate_id || enrichedRating._id,
+                rating: enrichedRating.rate || 0,
+                comment: enrichedRating.comment || '',
+                location: enrichedRating.location || '',
+                building: enrichedRating.building || enrichedRating.location || '',
+                date: formatDate(enrichedRating.dateTime)
             };
         }
         
@@ -608,13 +637,14 @@ function RateUs() {
         const userReview = allReviews.find(review => review.email === user.email);
         if (userReview) {
             console.log('⚠️ Using general review (no ID available):', userReview);
+            const enrichedReview = hydrateRatingMetadata(userReview, userReview);
             return {
                 id: null, // No ID available in general reviews
-                rating: userReview.rating,
-                comment: userReview.comment,
-                location: userReview.location,
-                building: userReview.building,
-                date: userReview.date
+                rating: enrichedReview.rating,
+                comment: enrichedReview.comment,
+                location: enrichedReview.location,
+                building: enrichedReview.building,
+                date: enrichedReview.date
             };
         }
         

@@ -149,7 +149,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 32px;
+    margin-bottom: -15px;
 }
 
 #overview-page .view-all-button {

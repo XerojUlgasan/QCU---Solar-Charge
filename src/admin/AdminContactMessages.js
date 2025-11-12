@@ -267,6 +267,46 @@ const AdminContactMessages = () => {
 
     if (sendingResponse) return; // Prevent multiple clicks
 
+    const originalMessage = selectedMessage;
+
+    const restoreOriginalState = () => {
+      if (!originalMessage) return;
+
+      setMessages(prevMessages =>
+        prevMessages.map(msg =>
+          msg.id === originalMessage.id
+            ? {
+                ...msg,
+                responded: originalMessage.responded ?? false,
+                hasRead: originalMessage.hasRead ?? false,
+                admin_response: originalMessage.admin_response ?? '',
+                responded_at: originalMessage.responded_at ?? null
+              }
+            : msg
+        )
+      );
+
+      const respondedMessages = JSON.parse(localStorage.getItem('respondedContactMessages') || '{}');
+      if (respondedMessages[originalMessage.id]) {
+        delete respondedMessages[originalMessage.id];
+        localStorage.setItem('respondedContactMessages', JSON.stringify(respondedMessages));
+      }
+
+      authenticatedAdminFetch(API_BASE_URL + '/admin/updateContactStatus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contact_id: originalMessage.id,
+          responded: originalMessage.responded ?? false,
+          hasRead: originalMessage.hasRead ?? false,
+          admin_response: originalMessage.admin_response ?? '',
+          responded_at: originalMessage.responded_at ?? null
+        })
+      }).catch(err => console.log('Failed to restore contact status:', err));
+    };
+
     try {
       setSendingResponse(true);
       console.log('=== SENDING CONTACT RESPONSE ===');
@@ -282,7 +322,7 @@ const AdminContactMessages = () => {
       
       console.log('Response data:', responseData);
       
-      const response = await authenticatedAdminFetch( API_BASE_URL + '/admin/sendResponseContact', {
+      const response = await authenticatedAdminFetch(API_BASE_URL + '/admin/sendResponseContact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -302,12 +342,20 @@ const AdminContactMessages = () => {
         if (responseResult.emailSent === false) {
           console.error('Email was not sent:', responseResult.error);
           showError(`Email sending failed: ${responseResult.error || 'Email service unavailable'}`);
+          restoreOriginalState();
+          setIsDialogOpen(false);
+          setResponseText('');
+          setSelectedMessage(null);
           return;
         }
         
         if (responseResult.success === false) {
           console.error('API returned success=false:', responseResult);
           showError(`Failed to send email: ${responseResult.message || 'Unknown error'}`);
+          restoreOriginalState();
+          setIsDialogOpen(false);
+          setResponseText('');
+          setSelectedMessage(null);
           return;
         }
         
@@ -370,7 +418,7 @@ const AdminContactMessages = () => {
           console.log('⚠️ Could not parse error response');
         }
         
-        // Show error instead of success when email fails
+        restoreOriginalState();
         showError('Failed to send response. Please try again later.');
         setIsDialogOpen(false);
         setResponseText('');
@@ -378,6 +426,7 @@ const AdminContactMessages = () => {
       }
     } catch (error) {
       console.error('Error sending response:', error);
+      restoreOriginalState();
       showError(`Failed to send response: ${error.message}`);
       setIsDialogOpen(false);
       setResponseText('');
