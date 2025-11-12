@@ -161,23 +161,26 @@ const AdminProblems = () => {
           dateTime: normalizeTimestamp(reportData.dateTime || reportData.timestamp || reportData.created_at)
         };
         
-        if (type === 'added') {
+                if (type === 'added') {
           // Add new report to the array (prepend for newest first)
-          const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
+          const reportExists = prevReports.some(report => report.id === id || report.report_id === id || report.transaction_id === id);
           if (!reportExists) {
             console.log('➕ Adding new report:', id);
-            return [{ ...normalizedData, _isNew: true }, ...prevReports];
+            // Ensure status is included from reportData if present
+            return [{ ...normalizedData, status: reportData.status || normalizedData.status || 'For Review', _isNew: true }, ...prevReports];
           }
         } else if (type === 'modified') {
-          // Update existing report
+          // Update existing report - ensure status is updated
           console.log('🔄 Updating report:', id);
           return prevReports.map(report => 
-            (report.id === id || report.report_id === id) ? { ...report, ...normalizedData } : report
+            (report.id === id || report.report_id === id || report.transaction_id === id) 
+              ? { ...report, ...normalizedData, status: reportData.status || normalizedData.status || report.status } 
+              : report
           );
         } else if (type === 'removed') {
           // Remove report from array
           console.log('➖ Removing report:', id);
-          return prevReports.filter(report => report.id !== id && report.report_id !== id);
+          return prevReports.filter(report => report.id !== id && report.report_id !== id && report.transaction_id !== id);
         }
         
         return prevReports;
@@ -566,6 +569,8 @@ const AdminProblems = () => {
         if (responseResult.success === false) {
           console.error('API returned success=false:', responseResult);
           showError(`Failed to send email: ${responseResult.message || 'Unknown error'}`);
+          setIsDialogOpen(false);
+          setPopupReport(null);
           return;
         }
         
@@ -573,6 +578,8 @@ const AdminProblems = () => {
         if (responseResult.emailSent === false) {
           console.error('Email was not sent:', responseResult);
           showError(`Email sending failed: ${responseResult.error || 'Email service unavailable'}`);
+          setIsDialogOpen(false);
+          setPopupReport(null);
           return;
         }
         
@@ -594,15 +601,16 @@ const AdminProblems = () => {
         } catch {
           showError(`Failed to send response: HTTP ${response.status} - ${errorText}`);
         }
+        setIsDialogOpen(false);
+        setPopupReport(null);
       }
     } catch (error) {
       console.error('Error sending response:', error);
       showError(`Failed to send response: ${error.message}`);
-    } finally {
-      setSendingResponse(false);
-      // Close popup after result to avoid multiple clicks as requested
       setIsDialogOpen(false);
       setPopupReport(null);
+    } finally {
+      setSendingResponse(false);
     }
   };
 
@@ -1046,10 +1054,18 @@ const AdminProblems = () => {
                     style={{
                       backgroundColor: isDarkMode ? undefined : '#2563eb',
                       border: isDarkMode ? undefined : '2px solid #1d4ed8',
-                      color: '#ffffff'
+                      color: '#ffffff',
+                      cursor: sendingResponse ? 'not-allowed' : 'pointer',
+                      opacity: sendingResponse ? 0.6 : 1,
+                      pointerEvents: sendingResponse ? 'none' : 'auto'
                     }}
                   >
-                    {sendingResponse ? 'Sending Response...' : 'Send Response'}
+                    {sendingResponse ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" style={{ display: 'inline-block' }}></div>
+                        Sending Response...
+                      </>
+                    ) : 'Send Response'}
                   </button>
                 </div>
 

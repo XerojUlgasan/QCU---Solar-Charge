@@ -18,6 +18,31 @@ function Overview() {
     const [showAllStations, setShowAllStations] = useState(false);
     const [statusFilter, setStatusFilter] = useState('all');
 
+    const isSameDay = (dateA, dateB) => {
+        return dateA.getFullYear() === dateB.getFullYear() &&
+               dateA.getMonth() === dateB.getMonth() &&
+               dateA.getDate() === dateB.getDate();
+    };
+
+    const timestampToDate = (timestamp) => {
+        if (!timestamp) return null;
+
+        if (typeof timestamp === 'object' && typeof timestamp.seconds === 'number') {
+            return new Date(timestamp.seconds * 1000);
+        }
+
+        if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+            const parsed = new Date(timestamp);
+            return isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        if (timestamp instanceof Date) {
+            return timestamp;
+        }
+
+        return null;
+    };
+
     const fetchOverviewData = async () => {
         try {
             setLoading(true);
@@ -56,6 +81,14 @@ function Overview() {
                 
                 if (!prevData.devices) return prevData;
                 
+                const getDeviceTime = (dev) => {
+                    const added = dev?.date_added?.seconds 
+                        ? dev.date_added.seconds 
+                        : (dev?.date_added ? Math.floor(new Date(dev.date_added).getTime() / 1000) : 0);
+                    const updated = dev?.last_updated?.seconds ? dev.last_updated.seconds : 0;
+                    return added || updated || 0;
+                };
+
                 if (type === 'added') {
                     const deviceExists = prevData.devices.some(dev => dev.id === deviceId || dev.device_id === deviceId);
                     if (!deviceExists) {
@@ -71,58 +104,65 @@ function Overview() {
                             last_updated: deviceData?.last_updated || deviceData?.updated_at || nowTs
                         };
                         const deduped = prevData.devices.filter(dev => (dev.id || dev.device_id) !== normalized.id && (dev.device_id || dev.id) !== normalized.device_id);
-                        const updatedList = [normalized, ...deduped];
-                return {
+                        // Insert then sort newest-first
+                        const updatedList = [normalized, ...deduped].sort((a, b) => getDeviceTime(b) - getDeviceTime(a));
+                        return {
                             ...prevData,
                             devices: updatedList,
-                  active: updatedList.filter(dev => 
+                            active: updatedList.filter(dev => 
                                 (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
-                  ).length,
-                  total_power: updatedList.reduce((sum, dev) => {
-                    const p = Number(dev.power);
-                    return sum + (isNaN(p) ? 0 : p);
-                  }, 0)
+                            ).length,
+                            total_power: updatedList.reduce((sum, dev) => {
+                                const p = Number(dev.power);
+                                return sum + (isNaN(p) ? 0 : p);
+                            }, 0)
                         };
                     }
                 } else if (type === 'modified') {
                     console.log('🔄 Updating device in overview:', deviceId);
-                    const updatedDevices = prevData.devices.map(dev => 
+                    let updatedDevices = prevData.devices.map(dev => 
                         (dev.id === deviceId || dev.device_id === deviceId) 
                           ? { 
                               ...dev, 
                               ...deviceData,
                               id: dev.id || deviceId,
                               device_id: dev.device_id || deviceId,
-                              last_updated: deviceData?.last_updated || dev.last_updated
+                              last_updated: deviceData?.last_updated || dev.last_updated,
+                              // Preserve date_added for sorting
+                              date_added: dev.date_added || deviceData?.date_added
                             } 
                           : dev
                     );
-                    // Recalculate active devices
+                    // Sort newest-first after modification
+                    updatedDevices = updatedDevices.sort((a, b) => getDeviceTime(b) - getDeviceTime(a));
+                    // Recalculate active devices and total power
                     const activeCount = updatedDevices.filter(dev => 
                         dev.status?.toLowerCase() === 'active' || dev.status?.toLowerCase() === 'online'
                     ).length;
-              return {
+                    return {
                         ...prevData,
                         devices: updatedDevices,
-                active: activeCount,
-                total_power: updatedDevices.reduce((sum, dev) => {
-                  const p = Number(dev.power);
-                  return sum + (isNaN(p) ? 0 : p);
-                }, 0)
+                        active: activeCount,
+                        total_power: updatedDevices.reduce((sum, dev) => {
+                            const p = Number(dev.power);
+                            return sum + (isNaN(p) ? 0 : p);
+                        }, 0)
                     };
                 } else if (type === 'removed') {
                     console.log('➖ Removing device from overview:', deviceId);
                     const filteredDevices = prevData.devices.filter(dev => 
                         dev.id !== deviceId && dev.device_id !== deviceId
                     );
-              return {
+                    return {
                         ...prevData,
                         devices: filteredDevices,
-                active: Math.max(0, prevData.active - 1),
-                total_power: filteredDevices.reduce((sum, dev) => {
-                  const p = Number(dev.power);
-                  return sum + (isNaN(p) ? 0 : p);
-                }, 0)
+                        active: filteredDevices.filter(dev => 
+                            (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
+                        ).length,
+                        total_power: filteredDevices.reduce((sum, dev) => {
+                            const p = Number(dev.power);
+                            return sum + (isNaN(p) ? 0 : p);
+                        }, 0)
                     };
                 }
                 
@@ -135,9 +175,18 @@ function Overview() {
             console.log('📡 Transaction change detected in Overview:', data);
             
             if (data.type === 'added') {
+                const txData = data.data || {};
+                const timestamp = txData.timestamp || txData.dateTime || txData.created_at || txData.createdAt;
+                const txDate = timestampToDate(timestamp) || new Date();
+                const today = new Date();
+
+                if (!isSameDay(txDate, today)) {
+                    return;
+                }
+
                 setOverviewData(prevData => ({
                     ...prevData,
-                    transactions_today: prevData.transactions_today + 1
+                    transactions_today: (prevData.transactions_today || 0) + 1
                 }));
             }
         });

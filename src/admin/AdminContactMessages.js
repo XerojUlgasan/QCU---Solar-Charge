@@ -36,6 +36,7 @@ const AdminContactMessages = () => {
   const [dateFilter, setDateFilter] = useState('newest');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [sendingResponse, setSendingResponse] = useState(false);
 
   // Mock data for demonstration
   const mockMessages = [
@@ -264,7 +265,10 @@ const AdminContactMessages = () => {
       return;
     }
 
+    if (sendingResponse) return; // Prevent multiple clicks
+
     try {
+      setSendingResponse(true);
       console.log('=== SENDING CONTACT RESPONSE ===');
       console.log('Selected message:', selectedMessage);
       console.log('Response text:', responseText);
@@ -366,57 +370,20 @@ const AdminContactMessages = () => {
           console.log('⚠️ Could not parse error response');
         }
         
-        // Update the message status locally for demo mode
-        setMessages(prevMessages => 
-          prevMessages.map(msg => 
-            msg.id === selectedMessage.id 
-              ? { ...msg, responded: true, hasRead: true, admin_response: responseText.trim(), responded_at: new Date().toISOString() }
-              : msg
-          )
-        );
-        
-        // Store the responded status in localStorage for demo mode
-        const respondedMessages = JSON.parse(localStorage.getItem('respondedContactMessages') || '{}');
-        respondedMessages[selectedMessage.id] = {
-          responded: true,
-          hasRead: true,
-          admin_response: responseText.trim(),
-          responded_at: new Date().toISOString()
-        };
-        localStorage.setItem('respondedContactMessages', JSON.stringify(respondedMessages));
-        
-        showSuccess('Response saved locally! (Email sending may have failed)');
+        // Show error instead of success when email fails
+        showError('Failed to send response. Please try again later.');
         setIsDialogOpen(false);
         setResponseText('');
         setSelectedMessage(null);
       }
     } catch (error) {
       console.error('Error sending response:', error);
-      // Simulate success with mock data
-      
-      // Update the message status locally for demo mode
-      setMessages(prevMessages => 
-        prevMessages.map(msg => 
-          msg.id === selectedMessage.id 
-            ? { ...msg, responded: true, hasRead: true, admin_response: responseText.trim(), responded_at: new Date().toISOString() }
-            : msg
-        )
-      );
-      
-      // Store the responded status in localStorage for demo mode
-      const respondedMessages = JSON.parse(localStorage.getItem('respondedContactMessages') || '{}');
-      respondedMessages[selectedMessage.id] = {
-        responded: true,
-        hasRead: true,
-        admin_response: responseText.trim(),
-        responded_at: new Date().toISOString()
-      };
-      localStorage.setItem('respondedContactMessages', JSON.stringify(respondedMessages));
-      
-      showSuccess('Response sent successfully! (Demo mode)');
+      showError(`Failed to send response: ${error.message}`);
       setIsDialogOpen(false);
       setResponseText('');
       setSelectedMessage(null);
+    } finally {
+      setSendingResponse(false);
     }
   };
 
@@ -860,13 +827,22 @@ const AdminContactMessages = () => {
                   <button 
                     className="send-response-button"
                     onClick={handleSendResponse}
+                    disabled={sendingResponse}
                     style={{
                       backgroundColor: isDarkMode ? '#3b82f6' : '#3b82f6',
                       border: isDarkMode ? '1px solid #3b82f6' : '2px solid #2563eb',
-                      color: '#ffffff'
+                      color: '#ffffff',
+                      cursor: sendingResponse ? 'not-allowed' : 'pointer',
+                      opacity: sendingResponse ? 0.6 : 1,
+                      pointerEvents: sendingResponse ? 'none' : 'auto'
                     }}
                   >
-                    Send Response
+                    {sendingResponse ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" style={{ display: 'inline-block' }}></div>
+                        Sending Response...
+                      </>
+                    ) : 'Send Response'}
                   </button>
                 </div>
               </div>

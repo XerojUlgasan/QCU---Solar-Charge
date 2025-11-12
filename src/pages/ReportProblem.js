@@ -126,10 +126,17 @@ function ReportProblem() {
                 
                 if (type === 'added') {
                     // Add new report to the array (prepend for newest first)
-                    const reportExists = prevReports.some(report => report.id === id || report.report_id === id);
+                    const reportExists = prevReports.some(report => 
+                        report.id === id || report.report_id === id || report.transaction_id === id
+                    );
                     if (!reportExists) {
                         console.log('➕ Adding new report:', id);
-                        return [{ ...normalizedData, _isNew: true }, ...prevReports];
+                        // Ensure status is included from reportData if present (for investigating/resolved)
+                        return [{ 
+                            ...normalizedData, 
+                            status: reportData.status || normalizedData.status || 'For Review',
+                            _isNew: true 
+                        }, ...prevReports];
                     }
                 } else if (type === 'modified') {
                     // Update existing report - ensure all fields including status are updated
@@ -140,7 +147,7 @@ function ReportProblem() {
                             return { 
                                 ...report, 
                                 ...normalizedData,
-                                status: reportData.status || report.status, // Ensure status is updated
+                                status: reportData.status || normalizedData.status || report.status, // Ensure status is updated
                                 _isNew: false // Remove animation flag
                             };
                         }
@@ -149,7 +156,9 @@ function ReportProblem() {
                 } else if (type === 'removed') {
                     // Remove report from array
                     console.log('➖ Removing report:', id);
-                    return prevReports.filter(report => report.id !== id && report.report_id !== id);
+                    return prevReports.filter(report => 
+                        report.id !== id && report.report_id !== id && report.transaction_id !== id
+                    );
                 }
                 
                 return prevReports;
@@ -184,6 +193,16 @@ function ReportProblem() {
                         return [...prevStations, newStation];
                     }
                 } else if (type === 'removed') {
+                    // When device is removed, also remove reports that reference this device
+                    const removedDeviceId = deviceId;
+                    setRecentReports(prevReports => 
+                        prevReports.filter(report => 
+                            report.location !== removedDeviceId && 
+                            report.device_id !== removedDeviceId &&
+                            (report.id !== removedDeviceId && report.report_id !== removedDeviceId && report.transaction_id !== removedDeviceId)
+                        )
+                    );
+                    
                     return prevStations.filter(station => 
                         station.device_id !== deviceId && station.id !== deviceId
                     );
