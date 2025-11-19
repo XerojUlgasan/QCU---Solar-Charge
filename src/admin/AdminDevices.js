@@ -44,6 +44,7 @@ const AdminDevices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('testing');
+  const [deviceEnabledMap, setDeviceEnabledMap] = useState({});
 
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
@@ -230,6 +231,36 @@ const AdminDevices = () => {
     }
   }, [authenticatedAdminFetch]);
 
+  const fetchDeviceConfigs = useCallback(async (deviceIds = []) => {
+    const uniqueIds = Array.from(new Set(deviceIds.filter(Boolean)));
+    if (uniqueIds.length === 0) return;
+
+    const results = await Promise.all(uniqueIds.map(async (deviceId) => {
+      const url = `${API_BASE_URL}/admin/getDeviceConfig?device_id=${deviceId}&t=${Date.now()}`;
+      try {
+        const response = await authenticatedAdminFetch(url);
+        if (!response.ok) {
+          throw new Error(`Device config endpoint failed with status: ${response.status}`);
+        }
+        const config = await response.json();
+        return [deviceId, Boolean(config?.device_enabled)];
+      } catch (error) {
+        console.error(`Error fetching device config for ${deviceId}:`, error);
+        return [deviceId, null];
+      }
+    }));
+
+    setDeviceEnabledMap(prev => {
+      const updated = { ...prev };
+      results.forEach(([deviceId, enabled]) => {
+        if (deviceId) {
+          updated[deviceId] = enabled;
+        }
+      });
+      return updated;
+    });
+  }, [authenticatedAdminFetch]);
+
   // Utility functions
   const formatPower = (power) => {
     if (power >= 1000) {
@@ -306,11 +337,38 @@ const AdminDevices = () => {
       fetchDevicesData();
     });
 
+    // Listen to device config changes (for enabled/disabled indicator)
+    const cleanupDeviceConfigs = onCollectionChange('deviceConfig', (data) => {
+      console.log('📡 Device config change detected in AdminDevices:', data);
+      const configData = data?.data;
+      const deviceId = data?.id || configData?.device_id;
+      if (!deviceId) return;
+
+      if (data?.type === 'removed') {
+        setDeviceEnabledMap(prev => ({
+          ...prev,
+          [deviceId]: null
+        }));
+        return;
+      }
+
+      if (configData && Object.prototype.hasOwnProperty.call(configData, 'device_enabled')) {
+        setDeviceEnabledMap(prev => ({
+          ...prev,
+          [deviceId]: configData.device_enabled == null ? null : Boolean(configData.device_enabled)
+        }));
+      } else {
+        // If change payload doesn't include the flag, refetch configs for that device
+        fetchDeviceConfigs([deviceId]);
+      }
+    });
+
     return () => {
       cleanupDevices();
       cleanupTransactions();
+      cleanupDeviceConfigs();
     };
-  }, [isConnected, onCollectionChange, fetchDevicesData]);
+  }, [isConnected, onCollectionChange, fetchDevicesData, fetchDeviceConfigs]);
 
   // Fetch data when component mounts
   useEffect(() => {
@@ -329,6 +387,15 @@ const AdminDevices = () => {
 
     fetchData();
   }, [fetchDevicesData]);
+
+  useEffect(() => {
+    if (!devices.length) {
+      return;
+    }
+
+    const deviceIds = devices.map(device => device.id).filter(Boolean);
+    fetchDeviceConfigs(deviceIds);
+  }, [devices, fetchDeviceConfigs]);
 
   const getStatusColor = (status) => {
     // Normalize status to lowercase for comparison
@@ -367,9 +434,13 @@ const AdminDevices = () => {
   };
 
   const handleConfigureDevice = (device) => {
+    const hasEnabledState = Object.prototype.hasOwnProperty.call(deviceEnabledMap, device.id);
+    const enabledState = hasEnabledState ? deviceEnabledMap[device.id] : null;
+    const fallbackStatus = device.status?.toLowerCase() === 'active' || device.status?.toLowerCase() === 'online';
+
     setConfiguringDevice({
       ...device,
-      isEnabled: device.status?.toLowerCase() === 'active' || device.status?.toLowerCase() === 'online'
+      isEnabled: typeof enabledState === 'boolean' ? enabledState : fallbackStatus
     });
     setIsConfigModalOpen(true);
   };
@@ -761,7 +832,11 @@ const AdminDevices = () => {
 
         {/* Device Grid */}
         <div className="devices-grid">
-          {filteredDevices.map((device, index) => (
+          {filteredDevices.map((device, index) => {
+            const hasEnabledState = Object.prototype.hasOwnProperty.call(deviceEnabledMap, device.id);
+            const enabledState = hasEnabledState ? deviceEnabledMap[device.id] : null;
+
+            return (
             <div 
               key={device.id} 
               className="device-card fade-in"
@@ -785,6 +860,9 @@ const AdminDevices = () => {
                   <div className={`status-badge ${getStatusColor(device.status)}`}>
                     {device.status}
                   </div>
+                  <span className={`device-enabled-badge ${enabledState === null ? 'checking' : enabledState ? 'enabled' : 'disabled'}`}>
+                    {enabledState === null ? 'Checking...' : enabledState ? 'Enabled' : 'Disabled'}
+                  </span>
                   <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.id}</div>
                 </div>
               </div>
@@ -902,7 +980,8 @@ const AdminDevices = () => {
                 </div>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
 
         {filteredDevices.length === 0 && (

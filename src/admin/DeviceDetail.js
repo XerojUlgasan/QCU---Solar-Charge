@@ -51,6 +51,7 @@ const DeviceDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [deviceEnabled, setDeviceEnabled] = useState(null);
 
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
@@ -211,6 +212,26 @@ const DeviceDetail = () => {
     }
   }, [deviceId, authenticatedAdminFetch, showError]);
 
+  const fetchDeviceConfig = useCallback(async () => {
+    if (!deviceId) return;
+
+    const url = `${API_BASE_URL}/admin/getDeviceConfig?device_id=${deviceId}&t=${Date.now()}`;
+
+    try {
+      const response = await authenticatedAdminFetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Device config endpoint failed with status: ${response.status}`);
+      }
+
+      const configData = await response.json();
+      setDeviceEnabled(Boolean(configData?.device_enabled));
+    } catch (err) {
+      console.error('Error fetching device config:', err);
+      setDeviceEnabled(null);
+    }
+  }, [deviceId, authenticatedAdminFetch]);
+
   // Listen to socket changes for this specific device and update data directly
   useEffect(() => {
     if (!isConnected || !deviceId) return;
@@ -244,9 +265,13 @@ const DeviceDetail = () => {
     // Listen to device config changes for this device
     const cleanupDeviceConfig = onDocumentChange('deviceConfig', deviceId, (data) => {
       console.log('📡 Device config change detected for device', deviceId, ':', data);
-      // Config changes might affect multiple fields, so we can update deviceData
-      // but for now, refetch to ensure all config is properly reflected
-      fetchDeviceData();
+      
+      if (data?.data && Object.prototype.hasOwnProperty.call(data.data, 'device_enabled')) {
+        setDeviceEnabled(Boolean(data.data.device_enabled));
+      } else {
+        // Fallback to refetch when payload is incomplete
+        fetchDeviceConfig();
+      }
     });
 
     // Listen to energy history changes (affects this device's energy data)
@@ -275,7 +300,7 @@ const DeviceDetail = () => {
       cleanupEnergy();
       cleanupTransactions();
     };
-  }, [isConnected, deviceId, onCollectionChange, onDocumentChange, fetchDeviceData]);
+  }, [isConnected, deviceId, onCollectionChange, onDocumentChange, fetchDeviceData, fetchDeviceConfig]);
 
   // Helper function to format Firestore timestamps
   const formatFirestoreTimestamp = (timestamp) => {
@@ -1205,6 +1230,10 @@ const DeviceDetail = () => {
     fetchDeviceData();
   }, [fetchDeviceData]);
 
+  useEffect(() => {
+    fetchDeviceConfig();
+  }, [fetchDeviceConfig]);
+
   // Fetch device information from API or use a more comprehensive mapping
   const getDeviceInfo = (deviceId) => {
     // Try to get device info from device data first (from dashboard API)
@@ -1505,7 +1534,7 @@ const DeviceDetail = () => {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchDeviceData().finally(() => {
+    Promise.all([fetchDeviceData(), fetchDeviceConfig()]).finally(() => {
       setIsRefreshing(false);
     });
   };
@@ -1514,7 +1543,14 @@ const DeviceDetail = () => {
     // Get device info from the formatted data
     const formattedData = getFormattedDeviceData();
     if (formattedData) {
-      setDeviceInfo(formattedData);
+      const enabledStatus = typeof deviceEnabled === 'boolean'
+        ? deviceEnabled
+        : (formattedData.status?.toLowerCase() === 'active' || formattedData.status?.toLowerCase() === 'online');
+
+      setDeviceInfo({
+        ...formattedData,
+        isEnabled: enabledStatus
+      });
       setIsConfigModalOpen(true);
     }
   };
@@ -1652,6 +1688,9 @@ const DeviceDetail = () => {
                 <div className={`status-badge ${getStatusColor(device.status)}`}>
                 {getStatusText(device.status)}
                 </div>
+                <span className={`device-enabled-badge ${deviceEnabled === null ? 'checking' : deviceEnabled ? 'enabled' : 'disabled'}`}>
+                  {deviceEnabled === null ? 'Checking...' : deviceEnabled ? 'Enabled' : 'Disabled'}
+                </span>
                 <span className="device-id-badge">
                   {device.id}
                 </span>
@@ -2974,7 +3013,10 @@ const DeviceDetail = () => {
         device={deviceInfo || getFormattedDeviceData() ? {
           ...(deviceInfo || getFormattedDeviceData()),
           id: deviceId,
-          isEnabled: (deviceInfo || getFormattedDeviceData())?.status?.toLowerCase() === 'active' || (deviceInfo || getFormattedDeviceData())?.status?.toLowerCase() === 'online'
+          isEnabled: typeof deviceEnabled === 'boolean'
+            ? deviceEnabled
+            : ((deviceInfo || getFormattedDeviceData())?.status?.toLowerCase() === 'active' ||
+               (deviceInfo || getFormattedDeviceData())?.status?.toLowerCase() === 'online')
         } : null}
         onSave={handleSaveConfiguration}
         onEnableDisable={handleEnableDisableDevice}

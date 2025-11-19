@@ -246,6 +246,38 @@
     color: #9ca3af;
 }
 
+#device-detail .device-enabled-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: #1f2937;
+    border: 1px solid #374151;
+    color: #d1d5db;
+    text-transform: capitalize;
+}
+
+#device-detail .device-enabled-badge.enabled {
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.5);
+    background-color: rgba(16, 185, 129, 0.12);
+}
+
+#device-detail .device-enabled-badge.disabled {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.5);
+    background-color: rgba(239, 68, 68, 0.12);
+}
+
+#device-detail .device-enabled-badge.checking {
+    color: #9ca3af;
+    border-color: rgba(156, 163, 175, 0.4);
+    background-color: rgba(156, 163, 175, 0.12);
+}
+
 #device-detail .device-id-badge {
     display: inline-flex;
     align-items: center;
