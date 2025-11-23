@@ -860,13 +860,13 @@ const AdminDevices = () => {
                   </div>
                 </div>
                 <div className="device-status-group">
-                  <span className={`device-enabled-badge ${enabledState === null ? 'checking' : enabledState ? 'enabled' : 'disabled'}`}>
-                    {enabledState === null ? 'Checking...' : enabledState ? 'Enabled' : 'Disabled'}
+                  <span className={`device-enabled-badge ${enabledState === null ? 'enabled' : enabledState ? 'enabled' : 'disabled'}`}>
+                    {enabledState === null ? 'Enabled' : enabledState ? 'Enabled' : 'Disabled'}
                   </span>
                   <div className={`status-badge ${getStatusColor(device.status)}`}>
                     {device.status}
                   </div>
-                  <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.id}</div>
+                  <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>ID: {device.id}</div>
                 </div>
               </div>
               

@@ -1690,11 +1690,11 @@ const DeviceDetail = () => {
               </div>
             </div>
             <div className="device-badges">
-                <span className={`device-enabled-badge ${deviceEnabled === null ? 'checking' : deviceEnabled ? 'enabled' : 'disabled'}`}>
-                  {deviceEnabled === null ? 'Checking...' : deviceEnabled ? 'Enabled' : 'Disabled'}
+                <span className={`device-enabled-badge ${deviceEnabled === null ? 'enabled' : deviceEnabled ? 'enabled' : 'disabled'}`}>
+                  {deviceEnabled === null ? 'Enabled' : deviceEnabled ? 'Enabled' : 'Disabled'}
                 </span>
                 <span className="device-id-badge">
-                  {device.id}
+                  ID: {device.id}
                 </span>
               </div>
             </div>
