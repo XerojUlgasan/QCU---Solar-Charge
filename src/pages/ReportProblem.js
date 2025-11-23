@@ -126,39 +126,55 @@ function ReportProblem() {
                 
                 if (type === 'added') {
                     // Add new report to the array (prepend for newest first)
-                    const reportExists = prevReports.some(report => 
-                        report.id === id || report.report_id === id || report.transaction_id === id
-                    );
+                    // Check all possible ID fields for matching
+                    const changeId = id || reportData.id || reportData.report_id || reportData.transaction_id;
+                    const reportExists = prevReports.some(report => {
+                        const reportId = report.id || report.report_id || report.transaction_id;
+                        return String(reportId) === String(changeId);
+                    });
                     if (!reportExists) {
-                        console.log('➕ Adding new report:', id);
+                        console.log('➕ Adding new report:', changeId);
                         // Ensure status is included from reportData if present (for investigating/resolved)
                         return [{ 
-                            ...normalizedData, 
-                            status: reportData.status || normalizedData.status || 'For Review',
+                            ...normalizedData,
+                            id: changeId || normalizedData.id || normalizedData.report_id || normalizedData.transaction_id,
+                            status: reportData.status !== undefined ? reportData.status : (normalizedData.status || 'For Review'),
                             _isNew: true 
                         }, ...prevReports];
                     }
                 } else if (type === 'modified') {
                     // Update existing report - ensure all fields including status are updated
                     console.log('🔄 Updating report:', id);
+                    console.log('🔄 Report data received:', reportData);
+                    console.log('🔄 Status in reportData:', reportData.status);
                     return prevReports.map(report => {
-                        if (report.id === id || report.report_id === id || report.transaction_id === id) {
+                        // Check all possible ID fields for matching
+                        const reportId = report.id || report.report_id || report.transaction_id;
+                        const changeId = id || reportData.id || reportData.report_id || reportData.transaction_id;
+                        
+                        if (reportId === changeId || String(reportId) === String(changeId)) {
                             // Merge all fields from reportData, ensuring status is updated
-                            return { 
+                            const updatedReport = { 
                                 ...report, 
                                 ...normalizedData,
-                                status: reportData.status || normalizedData.status || report.status, // Ensure status is updated
+                                // Prioritize status from reportData, then normalizedData, then keep existing
+                                status: reportData.status !== undefined ? reportData.status : (normalizedData.status !== undefined ? normalizedData.status : report.status),
                                 _isNew: false // Remove animation flag
                             };
+                            console.log('🔄 Updated report:', updatedReport);
+                            console.log('🔄 Final status:', updatedReport.status);
+                            return updatedReport;
                         }
                         return report;
                     });
                 } else if (type === 'removed') {
                     // Remove report from array
-                    console.log('➖ Removing report:', id);
-                    return prevReports.filter(report => 
-                        report.id !== id && report.report_id !== id && report.transaction_id !== id
-                    );
+                    const changeId = id || reportData?.id || reportData?.report_id || reportData?.transaction_id;
+                    console.log('➖ Removing report:', changeId);
+                    return prevReports.filter(report => {
+                        const reportId = report.id || report.report_id || report.transaction_id;
+                        return String(reportId) !== String(changeId);
+                    });
                 }
                 
                 return prevReports;
@@ -195,13 +211,28 @@ function ReportProblem() {
                 } else if (type === 'removed') {
                     // When device is removed, also remove reports that reference this device
                     const removedDeviceId = deviceId;
-                    setRecentReports(prevReports => 
-                        prevReports.filter(report => 
-                            report.location !== removedDeviceId && 
-                            report.device_id !== removedDeviceId &&
-                            (report.id !== removedDeviceId && report.report_id !== removedDeviceId && report.transaction_id !== removedDeviceId)
-                        )
-                    );
+                    console.log('🗑️ Device removed, filtering reports for device:', removedDeviceId);
+                    
+                    setRecentReports(prevReports => {
+                        const filtered = prevReports.filter(report => {
+                            // Check all possible fields where device ID might be stored
+                            const reportLocation = report.location || report.device_id || report.station_id;
+                            const reportId = report.id || report.report_id || report.transaction_id;
+                            
+                            // Keep report if it doesn't match the removed device ID in any field
+                            const locationMatches = String(reportLocation) === String(removedDeviceId);
+                            const idMatches = String(reportId) === String(removedDeviceId);
+                            
+                            if (locationMatches || idMatches) {
+                                console.log('🗑️ Removing report:', reportId, 'because device', removedDeviceId, 'was deleted');
+                                return false;
+                            }
+                            return true;
+                        });
+                        
+                        console.log('🗑️ Reports after device removal:', filtered.length, 'remaining out of', prevReports.length);
+                        return filtered;
+                    });
                     
                     return prevStations.filter(station => 
                         station.device_id !== deviceId && station.id !== deviceId
