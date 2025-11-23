@@ -751,6 +751,7 @@ const AdminDevices = () => {
                     placeholder="e.g., Main Library"
                     value={deviceForm.name}
                     onChange={(e) => setDeviceForm({ ...deviceForm, name: e.target.value })}
+                    maxLength={40}
                     required
                     className="form-input"
                     style={{
@@ -768,6 +769,7 @@ const AdminDevices = () => {
                     placeholder="e.g., 1st Floor, Main Entrance"
                     value={deviceForm.location}
                     onChange={(e) => setDeviceForm({ ...deviceForm, location: e.target.value })}
+                    maxLength={40}
                     required
                     className="form-input"
                     style={{
@@ -785,6 +787,7 @@ const AdminDevices = () => {
                     placeholder="e.g., Library Building"
                     value={deviceForm.building}
                     onChange={(e) => setDeviceForm({ ...deviceForm, building: e.target.value })}
+                    maxLength={40}
                     required
                     className="form-input"
                     style={{
@@ -857,12 +860,12 @@ const AdminDevices = () => {
                   </div>
                 </div>
                 <div className="device-status-group">
-                  <div className={`status-badge ${getStatusColor(device.status)}`}>
-                    {device.status}
-                  </div>
                   <span className={`device-enabled-badge ${enabledState === null ? 'checking' : enabledState ? 'enabled' : 'disabled'}`}>
                     {enabledState === null ? 'Checking...' : enabledState ? 'Enabled' : 'Disabled'}
                   </span>
+                  <div className={`status-badge ${getStatusColor(device.status)}`}>
+                    {device.status}
+                  </div>
                   <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>{device.id}</div>
                 </div>
               </div>

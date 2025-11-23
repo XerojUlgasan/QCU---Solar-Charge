@@ -1678,16 +1678,18 @@ const DeviceDetail = () => {
           <div className="device-overview-header">
             <div className="device-overview-title">
             <div className="device-info">
-                <h2 className="device-name">{device.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <h2 className="device-name">{device.name}</h2>
+                  <div className={`status-badge ${getStatusColor(device.status)}`}>
+                    {getStatusText(device.status)}
+                  </div>
+                </div>
                 <div className="device-location">
                   <MapPin className="w-4 h-4" />
                   <span>{device.location} • {device.building}</span>
               </div>
             </div>
             <div className="device-badges">
-                <div className={`status-badge ${getStatusColor(device.status)}`}>
-                {getStatusText(device.status)}
-                </div>
                 <span className={`device-enabled-badge ${deviceEnabled === null ? 'checking' : deviceEnabled ? 'enabled' : 'disabled'}`}>
                   {deviceEnabled === null ? 'Checking...' : deviceEnabled ? 'Enabled' : 'Disabled'}
                 </span>
