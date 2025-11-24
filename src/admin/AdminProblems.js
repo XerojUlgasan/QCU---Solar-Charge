@@ -47,6 +47,20 @@ const AdminProblems = () => {
     return String(value).toLowerCase();
   };
 
+  const resolveReportId = (incomingId, data = {}) => {
+    const candidates = [
+      incomingId,
+      data.reportId,
+      data.report_id,
+      data.transaction_id,
+      data.transactionId,
+      data.problem_id,
+      data.problemId,
+      data.id,
+    ];
+    return candidates.find((val) => val !== undefined && val !== null) || null;
+  };
+
   // Fetch reports from API
   const fetchReports = useCallback(async () => {
     try {
@@ -152,39 +166,58 @@ const AdminProblems = () => {
     const cleanupReports = onCollectionChange('reports', (data) => {
       console.log('📡 Report change detected:', data);
       
+      let shouldRefetchAfterAdd = false;
       setReports(prevReports => {
         const { type, id, data: reportData } = data;
+        const changeId = resolveReportId(id, reportData);
         
         // Normalize timestamp to ensure it's in the correct format
         const normalizedData = {
           ...reportData,
+          id: changeId,
+          report_id: resolveReportId(reportData?.report_id, { reportId: changeId }),
+          transaction_id: resolveReportId(reportData?.transaction_id, { reportId: changeId }),
           dateTime: normalizeTimestamp(reportData.dateTime || reportData.timestamp || reportData.created_at)
         };
         
                 if (type === 'added') {
           // Add new report to the array (prepend for newest first)
-          const reportExists = prevReports.some(report => report.id === id || report.report_id === id || report.transaction_id === id);
+          const reportExists = prevReports.some(report => {
+            const existingId = report.id || report.report_id || report.transaction_id;
+            return String(existingId) === String(changeId);
+          });
           if (!reportExists) {
             console.log('➕ Adding new report:', id);
             // Ensure status is included from reportData if present
+            shouldRefetchAfterAdd = true;
             return [{ ...normalizedData, status: reportData.status || normalizedData.status || 'For Review', _isNew: true }, ...prevReports];
           }
         } else if (type === 'modified') {
           // Update existing report - ensure status is updated
           console.log('🔄 Updating report:', id);
           return prevReports.map(report => 
-            (report.id === id || report.report_id === id || report.transaction_id === id) 
+            ((report.id && String(report.id) === String(changeId)) ||
+             (report.report_id && String(report.report_id) === String(changeId)) ||
+             (report.transaction_id && String(report.transaction_id) === String(changeId)))
               ? { ...report, ...normalizedData, status: reportData.status || normalizedData.status || report.status } 
               : report
           );
         } else if (type === 'removed') {
           // Remove report from array
           console.log('➖ Removing report:', id);
-          return prevReports.filter(report => report.id !== id && report.report_id !== id && report.transaction_id !== id);
+          return prevReports.filter(report => {
+            const existingId = report.id || report.report_id || report.transaction_id;
+            return String(existingId) !== String(changeId);
+          });
         }
         
         return prevReports;
       });
+
+      if (shouldRefetchAfterAdd) {
+        console.log('🔄 Rehydrating reports after realtime add');
+        fetchReports();
+      }
     });
 
     // Listen to device changes (affects device info dropdown)
@@ -215,7 +248,7 @@ const AdminProblems = () => {
       cleanupReports();
       cleanupDevices();
     };
-  }, [isConnected, onCollectionChange]);
+  }, [fetchReports, isConnected, onCollectionChange]);
 
   // Fetch reports when component mounts
   useEffect(() => {
@@ -583,10 +616,10 @@ const AdminProblems = () => {
           return;
         }
         
-        showSuccess('Response sent to user successfully!');
-        setResponseText('');
-        setIsDialogOpen(false);
-        setPopupReport(null);
+    showSuccess('Response sent to user successfully!');
+    setResponseText('');
+    setIsDialogOpen(false);
+    setPopupReport(null);
         
         // Optionally refresh reports to show any updates
         // rely on socket updates; no manual refresh to avoid flicker
@@ -623,7 +656,10 @@ const AdminProblems = () => {
       console.log('New Status:', newStatus);
       
       // Find the original report data
-      const originalReport = reports.find(r => (r.transaction_id || r.id) === reportId);
+      const originalReport = reports.find(r => {
+        const candidateId = r.transaction_id || r.report_id || r.id;
+        return String(candidateId) === String(reportId);
+      });
       if (!originalReport) {
         showError('Report not found');
         return;
@@ -631,9 +667,15 @@ const AdminProblems = () => {
       
       console.log('Original report:', originalReport);
       
+      const resolvedReportId = resolveReportId(reportId, originalReport);
+      if (!resolvedReportId) {
+        showError('Unable to resolve report ID');
+        return;
+      }
+
       // Prepare the update data according to the API specification
       const updateData = {
-        problem_id: reportId,
+        problem_id: resolvedReportId,
         status_update: newStatus
       };
       
@@ -658,7 +700,10 @@ const AdminProblems = () => {
         const responseData = await response.json();
         console.log('Status update response:', responseData);
         
-        showSuccess(`Report ${reportId} status updated to ${newStatus}`);
+      showSuccess(`Report ${resolvedReportId} status updated to ${newStatus}`);
+
+        // Refresh list to ensure we mirror a manual reload without page refresh
+        await fetchReports();
         
         // Close the popup
         setIsDialogOpen(false);

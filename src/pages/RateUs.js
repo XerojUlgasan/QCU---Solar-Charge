@@ -277,7 +277,8 @@ function RateUs() {
                                 dateTime: preservedDateTime,
                                 _isNew: false
                             };
-                            return hydrateRatingMetadata(updatedReview, review);
+                            // Always pass stationLocations to ensure latest device data is used
+                            return hydrateRatingMetadata(updatedReview, review, stationLocations);
                         }
                         return review;
                     });
@@ -300,7 +301,8 @@ function RateUs() {
                     const userMatch = userMatchById || userMatchByEmail;
 
                     if (userMatch) {
-                        const hydrated = hydrateRatingMetadata(userMatch, userRating || userMatch);
+                        // Always pass stationLocations to ensure latest device data is used
+                        const hydrated = hydrateRatingMetadata(userMatch, userRating || userMatch, stationLocations);
                         setUserRating(hydrated);
                     } else if (userRating) {
                         setUserRating(null);
@@ -347,12 +349,27 @@ function RateUs() {
             cleanupRatings();
             cleanupDevices();
         };
-    }, [isConnected, onCollectionChange, user?.email, userRating, stationLocations]);
+    }, [isConnected, onCollectionChange, user?.email, userRating]);
 
     // Fetch reviews when component mounts or when authentication state changes
     useEffect(() => {
         fetchReviews();
     }, [idToken]); // Refetch when token changes
+
+    // Re-hydrate userRating when stationLocations change (for updated device data)
+    useEffect(() => {
+        if (userRating && stationLocations.length > 0) {
+            const rehydrated = hydrateRatingMetadata(userRating, userRating, stationLocations);
+            // Only update if location or building actually changed
+            if (rehydrated.location !== userRating.location || rehydrated.building !== userRating.building) {
+                console.log('🔄 Re-hydrating userRating with updated station locations:', {
+                    old: { location: userRating.location, building: userRating.building },
+                    new: { location: rehydrated.location, building: rehydrated.building }
+                });
+                setUserRating(rehydrated);
+            }
+        }
+    }, [stationLocations]); // Re-hydrate when station locations change
 
     // Remove _isNew flag after animation completes
     useEffect(() => {
@@ -619,7 +636,8 @@ function RateUs() {
     const getUserExistingRating = () => {
         if (userRating) {
             console.log('✅ Using user-specific rating:', userRating);
-            const enrichedRating = hydrateRatingMetadata(userRating);
+            // Always hydrate with latest stationLocations to ensure location/building are up-to-date
+            const enrichedRating = hydrateRatingMetadata(userRating, userRating, stationLocations);
             
             return {
                 id: enrichedRating.id || enrichedRating.rate_id || enrichedRating._id,
