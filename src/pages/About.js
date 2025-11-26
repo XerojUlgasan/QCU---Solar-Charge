@@ -55,63 +55,63 @@ function About() {
       role: "Project Manager/Programmer",
       description: "Leading sustainable technology initiatives at QCU",
       initials: "XU",
-      image: "/images/team/maria-santos.png"
+      image: "/images/team/ulgasan.png"
     },
     {
       name: "Ernesto C. Agustin III",
       role: "Programmer",
       description: "Expert in solar energy systems and IoT integration",
       initials: "EA",
-      image: "/images/team/ErnestoAgustin.png"
+      image: "/images/team/agustin.png"
     },
     {
       name: "John Kenneth Ramos",
       role: "System Analyst/Quality Assurance",
       description: "Designing user-friendly interfaces for charging stations",
       initials: "KR",
-      image: "/images/team/sarah-kim.png"
+      image: "/images/team/ramos.png"
     },
     {
       name: "Ace Jester Almase",
       role: "Technical Writer",
       description: "Managing station deployment and user support",
       initials: "AA",
-      image: "/images/team/alex-rodriguez.png"
+      image: "/images/team/almase.png"
     },
     {
       name: "Karl Dominique Sarcia",
       role: "Researcher",
       description: "Building the backend systems and mobile applications",
       initials: "KS",
-      image: "/images/team/emily-watson.png"
+      image: "/images/team/sarcia.png"
     },
     {
       name: "John Rod Chester Orogo",
       role: "Technical Writer",
       description: "Analyzing usage patterns and optimizing system performance",
       initials: "JO",
-      image: "/images/team/lisa-park.png"
+      image: "/images/team/orogo.png"
     },
     {
       name: "Carl Jeus S. Cacho",
       role: "UI/UX Designer",
       description: "Ensuring optimal performance and reliability of stations",
       initials: "CC",
-      image: "/images/team/david-johnson.png"
+      image: "/images/team/cacho.png"
     },
     {
       name: "Antonio Delas Eras",
       role: "UI/UX Designer",
       description: "Promoting sustainable charging solutions across campus",
       initials: "AE",
-      image: "/images/team/rachel-green.png"
+      image: "/images/team/Delaseras.png"
     },
     {
       name: "Karl Vergara",
       role: "Researcher",
       description: "Supporting research and development of new features",
       initials: "KV",
-      image: "/images/team/james-wilson.png"
+      image: "/images/team/vergara.png"
     }
   ];
 
