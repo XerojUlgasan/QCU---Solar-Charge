@@ -289,9 +289,7 @@ function ReportProblem() {
     const problemTypes = [
         'Charging port not working',
         'Payment system error',
-        'RFID reader not responding',
         'Physical damage to station',
-        'Screen/display issues',
         'Overheating problems',
         'Station completely offline',
         'Other technical issue'
