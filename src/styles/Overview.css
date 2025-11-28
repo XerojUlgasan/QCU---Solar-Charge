@@ -147,9 +147,9 @@
 
 #overview-page .section-header-container {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    margin-bottom: -15px;
+    margin-bottom: -16px;
 }
 
 #overview-page .view-all-button {

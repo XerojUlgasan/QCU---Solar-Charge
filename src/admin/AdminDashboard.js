@@ -166,6 +166,43 @@ const AdminDashboard = () => {
           }
         }
         
+        // Check if devices have energy_history, if not, try to fetch it from devices endpoint
+        let devicesWithHistory = data.devices || [];
+        
+        // If devices don't have energy_history, try to fetch it for each device
+        if (devicesWithHistory.length > 0 && !devicesWithHistory.some(d => d.energy_history)) {
+          console.log('⚠️ Devices in dashboard response do not have energy_history, attempting to fetch...');
+          try {
+            // Try to fetch energy_history for all devices
+            const devicesResponse = await authenticatedAdminFetch(API_BASE_URL + '/admin/devices');
+            if (devicesResponse.ok) {
+              const devicesData = await devicesResponse.json();
+              console.log('✅ Fetched devices with energy_history:', devicesData);
+              
+              // Merge energy_history into devices
+              if (Array.isArray(devicesData)) {
+                devicesWithHistory = devicesWithHistory.map(device => {
+                  const deviceWithHistory = devicesData.find(d => 
+                    (d.device_id || d.id) === (device.device_id || device.id)
+                  );
+                  return deviceWithHistory ? { ...device, ...deviceWithHistory } : device;
+                });
+              } else if (devicesData.device_id || devicesData.id) {
+                // Single device response
+                const deviceId = devicesData.device_id || devicesData.id;
+                devicesWithHistory = devicesWithHistory.map(device => {
+                  if ((device.device_id || device.id) === deviceId) {
+                    return { ...device, ...devicesData };
+                  }
+                  return device;
+                });
+              }
+            }
+          } catch (err) {
+            console.warn('⚠️ Could not fetch energy_history from devices endpoint:', err.message);
+          }
+        }
+        
         // Map the API data to our expected format
         const mappedData = {
           revenue: data.revenue || { daily: 0, weekly: 0, monthly: 0, total: 0 },
@@ -179,11 +216,13 @@ const AdminDashboard = () => {
           power: aggregatePower,
           temperature: aggregateTemperature,
           percentage: aggregatePercentage,
-          // Additional data from API
-          devices: data.devices || [],
+          // Additional data from API - use devices with energy_history if available
+          devices: devicesWithHistory,
           active_devices: data.active_devices || activeDevices,
-          total_devices: data.total_devices || (data.devices ? data.devices.length : 0),
-          power_output: aggregatePower
+          total_devices: data.total_devices || (devicesWithHistory ? devicesWithHistory.length : 0),
+          power_output: aggregatePower,
+          // Include energy_history from API if available at root level
+          energy_history: data.energy_history || []
         };
         
         setOverviewData(mappedData);
@@ -868,14 +907,42 @@ const AdminDashboard = () => {
 
     // Collect all energy_history data from all devices
     const allEnergyData = [];
+    
+    // First, try to get energy_history from root level (if API provides it aggregated)
+    if (overviewData.energy_history && Array.isArray(overviewData.energy_history)) {
+      if (overviewData.energy_history.length > 0 && Array.isArray(overviewData.energy_history[0])) {
+        allEnergyData.push(...overviewData.energy_history.flat());
+      } else {
+        allEnergyData.push(...overviewData.energy_history);
+      }
+    }
+    
+    // Then, collect from individual devices
     overviewData.devices.forEach(device => {
-      if (device.energy_history && Array.isArray(device.energy_history)) {
-        const deviceEnergyData = device.energy_history.flat();
-        allEnergyData.push(...deviceEnergyData);
+      if (device.energy_history) {
+        // Handle both array of arrays and flat array
+        if (Array.isArray(device.energy_history)) {
+          // Check if it's an array of arrays (nested) or flat array
+          if (device.energy_history.length > 0 && Array.isArray(device.energy_history[0])) {
+            // Nested array - flatten it
+            const deviceEnergyData = device.energy_history.flat();
+            allEnergyData.push(...deviceEnergyData);
+          } else {
+            // Flat array - use directly
+            allEnergyData.push(...device.energy_history);
+          }
+        }
       }
     });
 
+    console.log('Dashboard getAllMetricsData - Total energy entries collected:', allEnergyData.length);
+    console.log('Dashboard getAllMetricsData - Sample entry:', allEnergyData[0]);
+    console.log('Dashboard getAllMetricsData - Devices checked:', overviewData.devices.length);
+    console.log('Dashboard getAllMetricsData - Devices with energy_history:', 
+      overviewData.devices.filter(d => d.energy_history).length);
+
     if (allEnergyData.length === 0) {
+      console.warn('Dashboard getAllMetricsData - No energy_history data found in devices');
       return [{ period: 'No Data', temperature: 0, voltage: 0, energy: 0, current: 0 }];
     }
 
@@ -1133,14 +1200,39 @@ const AdminDashboard = () => {
 
     // Collect all energy_history data from all devices
     const allEnergyData = [];
+    
+    // First, try to get energy_history from root level (if API provides it aggregated)
+    if (overviewData.energy_history && Array.isArray(overviewData.energy_history)) {
+      if (overviewData.energy_history.length > 0 && Array.isArray(overviewData.energy_history[0])) {
+        allEnergyData.push(...overviewData.energy_history.flat());
+      } else {
+        allEnergyData.push(...overviewData.energy_history);
+      }
+    }
+    
+    // Then, collect from individual devices
     overviewData.devices.forEach(device => {
-      if (device.energy_history && Array.isArray(device.energy_history)) {
-        const deviceEnergyData = device.energy_history.flat();
-        allEnergyData.push(...deviceEnergyData);
+      if (device.energy_history) {
+        // Handle both array of arrays and flat array
+        if (Array.isArray(device.energy_history)) {
+          // Check if it's an array of arrays (nested) or flat array
+          if (device.energy_history.length > 0 && Array.isArray(device.energy_history[0])) {
+            // Nested array - flatten it
+            const deviceEnergyData = device.energy_history.flat();
+            allEnergyData.push(...deviceEnergyData);
+          } else {
+            // Flat array - use directly
+            allEnergyData.push(...device.energy_history);
+          }
+        }
       }
     });
 
+    console.log('Dashboard getTechnicalMetrics - Metric:', metricType, 'Total entries:', allEnergyData.length);
+    console.log('Dashboard getTechnicalMetrics - Devices checked:', overviewData.devices.length);
+
     if (allEnergyData.length === 0) {
+      console.warn('Dashboard getTechnicalMetrics - No energy_history data found for metric:', metricType);
       return [{ period: 'No Data', value: 0 }];
     }
 

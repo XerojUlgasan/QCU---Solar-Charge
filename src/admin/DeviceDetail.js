@@ -2674,7 +2674,7 @@ const DeviceDetail = () => {
                     <div style={{ 
                       height: '400px', 
                       width: '100%', 
-                      padding: '16px',
+                      padding: '8px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -2682,7 +2682,7 @@ const DeviceDetail = () => {
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart 
                           data={getTechnicalMetrics(timeFilter, selectedMetric)}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                          margin={{ top: 10, right: 5, left: 5, bottom: 10 }}
                         >
                           <CartesianGrid 
                             strokeDasharray="3 3" 
@@ -2879,7 +2879,7 @@ const DeviceDetail = () => {
                     <div style={{ 
                       height: '400px', 
                       width: '100%', 
-                      padding: '16px',
+                      padding: '8px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -2887,7 +2887,7 @@ const DeviceDetail = () => {
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart 
                           data={getTransactionData(timeFilter)}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                          margin={{ top: 10, right: 5, left: 5, bottom: 10 }}
                         >
                           <CartesianGrid 
                             strokeDasharray="3 3" 

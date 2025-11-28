@@ -40,6 +40,62 @@ const AdminLogin = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sentOtp, setSentOtp] = useState(''); // Store the generated OTP for verification
   const [resendTimer, setResendTimer] = useState(0); // Timer for resend functionality
+  const [loginAttempts, setLoginAttempts] = useState(0); // Track login attempts
+  const [cooldownEndTime, setCooldownEndTime] = useState(null); // Track cooldown end time
+  const [cooldownTimer, setCooldownTimer] = useState(0); // Timer for cooldown display
+
+  // Load login attempts and cooldown from localStorage on mount
+  useEffect(() => {
+    const storedAttempts = localStorage.getItem('adminLoginAttempts');
+    const storedCooldown = localStorage.getItem('adminLoginCooldown');
+    
+    if (storedAttempts) {
+      setLoginAttempts(parseInt(storedAttempts, 10));
+    }
+    
+    if (storedCooldown) {
+      const cooldownEnd = parseInt(storedCooldown, 10);
+      const now = Date.now();
+      
+      if (cooldownEnd > now) {
+        setCooldownEndTime(cooldownEnd);
+        const remaining = Math.ceil((cooldownEnd - now) / 1000);
+        setCooldownTimer(remaining);
+      } else {
+        // Cooldown expired, clear it
+        localStorage.removeItem('adminLoginCooldown');
+        localStorage.removeItem('adminLoginAttempts');
+        setLoginAttempts(0);
+        setCooldownEndTime(null);
+      }
+    }
+  }, []);
+
+  // Handle cooldown timer countdown
+  useEffect(() => {
+    let interval;
+    if (cooldownEndTime) {
+      interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.ceil((cooldownEndTime - now) / 1000);
+        
+        if (remaining > 0) {
+          setCooldownTimer(remaining);
+        } else {
+          // Cooldown expired
+          setCooldownTimer(0);
+          setCooldownEndTime(null);
+          setLoginAttempts(0);
+          localStorage.removeItem('adminLoginCooldown');
+          localStorage.removeItem('adminLoginAttempts');
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [cooldownEndTime]);
 
   // Handle browser extension errors
   React.useEffect(() => {
@@ -77,6 +133,13 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Check if user is in cooldown
+    if (cooldownEndTime && Date.now() < cooldownEndTime) {
+      const remainingMinutes = Math.ceil((cooldownEndTime - Date.now()) / 60000);
+      showError(`Too many failed login attempts. Please wait ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''} before trying again.`);
+      return;
+    }
+
     try {
       const result = await adminLogin({
         username: formData.username,
@@ -84,23 +147,64 @@ const AdminLogin = () => {
       });
 
       if (result.success) {
+        // Reset attempts on successful login
+        setLoginAttempts(0);
+        localStorage.removeItem('adminLoginAttempts');
+        localStorage.removeItem('adminLoginCooldown');
+        
         showSuccess('Welcome to EcoCharge Admin Panel!');
         if (!hasRedirectedRef.current) {
           hasRedirectedRef.current = true;
           navigate('/admin/dashboard', { replace: true });
         }
       } else {
+        // Increment failed attempts
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        localStorage.setItem('adminLoginAttempts', newAttempts.toString());
+        
         const msg = (result.error || '').toString();
         const isInvalid = /invalid credentials/i.test(msg) || /^HTTP\s*401/i.test(msg) || /401/.test(msg);
-        if (isInvalid) {
-          showError('Invalid credentials');
+        
+        if (newAttempts >= 5) {
+          // Start 3-minute cooldown
+          const cooldownEnd = Date.now() + (3 * 60 * 1000); // 3 minutes
+          setCooldownEndTime(cooldownEnd);
+          setCooldownTimer(180); // 3 minutes in seconds
+          localStorage.setItem('adminLoginCooldown', cooldownEnd.toString());
+          localStorage.setItem('adminLoginAttempts', '0'); // Reset attempts after cooldown starts
+          
+          showError('Too many failed login attempts. Please wait 3 minutes before trying again.');
         } else {
-          showError('Login failed. Please try again.');
+          const remainingAttempts = 5 - newAttempts;
+          if (isInvalid) {
+            showError(`Invalid credentials. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
+          } else {
+            showError(`Login failed. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
+          }
         }
       }
     } catch (error) {
       console.error('Login error:', error);
-      showError('An unexpected error occurred during login');
+      
+      // Increment failed attempts on error too
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      localStorage.setItem('adminLoginAttempts', newAttempts.toString());
+      
+      if (newAttempts >= 5) {
+        // Start 3-minute cooldown
+        const cooldownEnd = Date.now() + (3 * 60 * 1000); // 3 minutes
+        setCooldownEndTime(cooldownEnd);
+        setCooldownTimer(180); // 3 minutes in seconds
+        localStorage.setItem('adminLoginCooldown', cooldownEnd.toString());
+        localStorage.setItem('adminLoginAttempts', '0'); // Reset attempts after cooldown starts
+        
+        showError('Too many failed login attempts. Please wait 3 minutes before trying again.');
+      } else {
+        const remainingAttempts = 5 - newAttempts;
+        showError(`An unexpected error occurred. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
+      }
     }
   };
 
@@ -462,16 +566,21 @@ const AdminLogin = () => {
                 <button 
                   type="submit" 
                   className="submit-button"
-                  disabled={loading}
+                  disabled={loading || (cooldownEndTime && Date.now() < cooldownEndTime)}
                   style={{
                     backgroundColor: isDarkMode ? '#ffffff' : '#000000',
-                    color: isDarkMode ? '#000000' : '#ffffff'
+                    color: isDarkMode ? '#000000' : '#ffffff',
+                    opacity: (cooldownEndTime && Date.now() < cooldownEndTime) ? 0.5 : 1
                   }}
                 >
                   {loading ? (
                     <>
                       <div className="loading-spinner"></div>
                       <span>Signing in...</span>
+                    </>
+                  ) : (cooldownEndTime && Date.now() < cooldownEndTime) ? (
+                    <>
+                      <span>Cooldown: {Math.floor(cooldownTimer / 60)}:{(cooldownTimer % 60).toString().padStart(2, '0')}</span>
                     </>
                   ) : (
                     <>
@@ -480,6 +589,22 @@ const AdminLogin = () => {
                     </>
                   )}
                 </button>
+                
+                {/* Login attempts warning */}
+                {loginAttempts > 0 && loginAttempts < 5 && !cooldownEndTime && (
+                  <div className="login-attempts-warning" style={{
+                    marginTop: '0.75rem',
+                    padding: '0.5rem',
+                    backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                    border: isDarkMode ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.75rem',
+                    color: isDarkMode ? '#f59e0b' : '#d97706',
+                    textAlign: 'center'
+                  }}>
+                    {5 - loginAttempts} attempt{5 - loginAttempts > 1 ? 's' : ''} remaining before cooldown
+                  </div>
+                )}
               </form>
 
               {/* Forgot Password Link */}

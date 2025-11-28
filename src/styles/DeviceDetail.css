@@ -895,7 +895,7 @@
     background-color: #0f141c;
     border: 1px solid #1e2633;
     border-radius: 12px;
-    padding: 1rem;
+    padding: 0.75rem;
     transition: none;
     position: relative;
     overflow: hidden;
@@ -923,6 +923,18 @@
     align-items: center;
     justify-content: space-between;
     padding: 0;
+}
+
+/* Make graphs stretch more on the sides - reduce left/right margins */
+#device-detail .analytics-content .recharts-wrapper {
+    margin-left: -5px !important;
+    margin-right: -5px !important;
+}
+
+/* Ensure chart container uses full width */
+#device-detail .analytics-content > div {
+    width: 100%;
+    overflow: visible;
 }
 
 #device-detail .analytics-metric {
@@ -1192,8 +1204,23 @@
     
     /* Charts area - optimize for mobile */
     #device-detail .chart-container {
-        padding: 0.75rem;
+        padding: 0.5rem;
         border-radius: 0.5rem;
+    }
+    
+    /* Make graphs wider on mobile by reducing padding */
+    #device-detail .analytics-content > div {
+        padding: 4px !important;
+    }
+    
+    #device-detail .analytics-card {
+        padding: 0.5rem;
+    }
+    
+    /* Make graphs stretch more on sides - reduce left/right margins */
+    #device-detail .analytics-content .recharts-wrapper {
+        margin-left: -10px !important;
+        margin-right: -10px !important;
     }
     
     #device-detail .chart-container h3 {
