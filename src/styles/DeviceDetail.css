@@ -925,18 +925,6 @@
     padding: 0;
 }
 
-/* Make graphs stretch more on the sides - reduce left/right margins */
-#device-detail .analytics-content .recharts-wrapper {
-    margin-left: -5px !important;
-    margin-right: -5px !important;
-}
-
-/* Ensure chart container uses full width */
-#device-detail .analytics-content > div {
-    width: 100%;
-    overflow: visible;
-}
-
 #device-detail .analytics-metric {
     display: flex;
     flex-direction: column;
@@ -1215,12 +1203,6 @@
     
     #device-detail .analytics-card {
         padding: 0.5rem;
-    }
-    
-    /* Make graphs stretch more on sides - reduce left/right margins */
-    #device-detail .analytics-content .recharts-wrapper {
-        margin-left: -10px !important;
-        margin-right: -10px !important;
     }
     
     #device-detail .chart-container h3 {

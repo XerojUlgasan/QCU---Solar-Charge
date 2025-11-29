@@ -2682,7 +2682,7 @@ const DeviceDetail = () => {
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart 
                           data={getTechnicalMetrics(timeFilter, selectedMetric)}
-                          margin={{ top: 10, right: 5, left: 5, bottom: 10 }}
+                          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
                         >
                           <CartesianGrid 
                             strokeDasharray="3 3" 
@@ -2887,7 +2887,7 @@ const DeviceDetail = () => {
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart 
                           data={getTransactionData(timeFilter)}
-                          margin={{ top: 10, right: 5, left: 5, bottom: 10 }}
+                          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
                         >
                           <CartesianGrid 
                             strokeDasharray="3 3" 
