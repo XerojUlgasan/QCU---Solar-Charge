@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
@@ -65,13 +64,16 @@ function Navbar() {
             if (profileDropdownOpen && !event.target.closest('.profile-dropdown')) {
                 setProfileDropdownOpen(false);
             }
+            if (mobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
+                setMobileMenuOpen(false);
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [profileDropdownOpen]);
+    }, [profileDropdownOpen, mobileMenuOpen]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -252,7 +254,7 @@ function Navbar() {
 
                 {/* Mobile menu */}
                 <div className={`md:hidden pb-4 ${mobileMenuOpen ? 'block' : 'hidden'}`}>
-                    <div className="flex flex-col space-y-2">
+                    <div className="flex flex-col space-y-2 mobile-menu-container">
                         {navItems.map((item) => (
                             <Link
                                 key={item.route}

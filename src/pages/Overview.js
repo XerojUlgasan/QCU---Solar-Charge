@@ -683,7 +683,18 @@ function Overview() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 animation: 'slideInModal 0.3s ease-out',
-                                boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)'
+                                boxShadow: isDarkMode ? '0 20px 40px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.15)',
+                                '@media (max-width: 768px)': {
+                                    maxWidth: '95vw',
+                                    maxHeight: '85vh'
+                                },
+                                '@media (max-width: 640px)': {
+                                    maxWidth: '100vw',
+                                    maxHeight: '80vh',
+                                    borderRadius: '12px',
+                                    width: '100vw',
+                                    margin: '0 -20px'
+                                }
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -691,7 +702,7 @@ function Overview() {
                         <div 
                             className="stations-modal-top-header" 
                             style={{
-                                padding: '12px 20px',
+                                padding: '16px 20px',
                                 borderBottom: isDarkMode ? '1px solid #1e2633' : '1px solid #e5e7eb',
                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
                                 display: 'flex',
@@ -699,7 +710,11 @@ function Overview() {
                                 justifyContent: 'space-between',
                                 flexWrap: 'wrap',
                                 gap: '12px',
-                                minHeight: '50px'
+                                minHeight: 'auto',
+                                background: isDarkMode 
+                                  ? 'linear-gradient(135deg, #0f141c 0%, #1a1f2e 100%)' 
+                                  : 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)',
+                                borderBottom: isDarkMode ? '2px solid #1e2633' : '2px solid #e5e7eb'
                             }}
                         >
                             {/* Left Section - Title */}
@@ -707,20 +722,29 @@ function Overview() {
                                 <h2 style={{
                                     margin: 0,
                                     fontSize: '18px',
-                                    fontWeight: '600',
+                                    fontWeight: '700',
                                     color: isDarkMode ? '#eaecef' : '#1f2937',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '6px'
+                                    gap: '8px',
+                                    letterSpacing: '-0.5px'
                                 }}>
+                                    <span style={{
+                                        display: 'inline-block',
+                                        width: '4px',
+                                        height: '24px',
+                                        borderRadius: '2px',
+                                        background: 'linear-gradient(180deg, #3b82f6 0%, #06b6d4 100%)'
+                                    }}></span>
                                     All Stations
                                     <span style={{
                                         fontSize: '12px',
                                         color: isDarkMode ? '#9aa3b2' : '#6b7280',
-                                        fontWeight: '500',
+                                        fontWeight: '600',
                                         backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
-                                        padding: '2px 6px',
-                                        borderRadius: '8px'
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        marginLeft: 'auto'
                                     }}>
                                         ({getFilteredDevices().length})
                                     </span>
@@ -732,30 +756,32 @@ function Overview() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                flexWrap: 'wrap'
+                                flexWrap: 'wrap',
+                                justifyContent: 'flex-end'
                             }}>
                                 {/* Filter Dropdown */}
                                 <select 
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                     style={{
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
-                                        border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                                        padding: '8px 12px',
+                                        borderRadius: '8px',
+                                        border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
                                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
                                         color: isDarkMode ? '#eaecef' : '#1f2937',
                                         fontSize: '13px',
+                                        fontWeight: '500',
                                         cursor: 'pointer',
                                         outline: 'none',
                                         transition: 'all 0.2s ease',
-                                        minWidth: '100px'
+                                        minWidth: '110px'
                                     }}
                                     onFocus={(e) => {
                                         e.target.style.borderColor = '#3b82f6';
-                                        e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)';
+                                        e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                                     }}
                                     onBlur={(e) => {
-                                        e.target.style.borderColor = isDarkMode ? '#1e2633' : '#d1d5db';
+                                        e.target.style.borderColor = isDarkMode ? '#374151' : '#d1d5db';
                                         e.target.style.boxShadow = 'none';
                                     }}
                                 >
@@ -771,15 +797,15 @@ function Overview() {
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '4px',
-                                        padding: '6px 10px',
+                                        gap: '6px',
+                                        padding: '8px 14px',
                                         backgroundColor: isDarkMode ? '#1e2633' : '#f3f4f6',
-                                        border: isDarkMode ? '1px solid #374151' : '1px solid #d1d5db',
-                                        borderRadius: '6px',
+                                        border: isDarkMode ? '1px solid #374151' : '2px solid #d1d5db',
+                                        borderRadius: '8px',
                                         color: isDarkMode ? '#9aa3b2' : '#6b7280',
                                         cursor: 'pointer',
                                         fontSize: '13px',
-                                        fontWeight: '500',
+                                        fontWeight: '600',
                                         transition: 'all 0.2s ease',
                                         outline: 'none',
                                         userSelect: 'none',
@@ -793,10 +819,10 @@ function Overview() {
                                         button.style.backgroundColor = isDarkMode ? '#374151' : '#e5e7eb';
                                         button.style.color = isDarkMode ? '#eaecef' : '#1f2937';
                                         button.style.borderColor = isDarkMode ? '#4b5563' : '#9ca3af';
-                                        button.style.transform = 'translateY(-1px)';
+                                        button.style.transform = 'translateY(-2px)';
                                         button.style.boxShadow = isDarkMode 
-                                            ? '0 2px 8px rgba(0, 0, 0, 0.2)' 
-                                            : '0 2px 8px rgba(0, 0, 0, 0.1)';
+                                            ? '0 4px 12px rgba(0, 0, 0, 0.3)' 
+                                            : '0 4px 12px rgba(0, 0, 0, 0.1)';
                                     }}
                                     onMouseLeave={(e) => {
                                         const button = e.currentTarget;
@@ -808,14 +834,14 @@ function Overview() {
                                     }}
                                     onMouseDown={(e) => {
                                         const button = e.currentTarget;
-                                        button.style.transform = 'translateY(0) scale(0.98)';
+                                        button.style.transform = 'translateY(0) scale(0.96)';
                                     }}
                                     onMouseUp={(e) => {
                                         const button = e.currentTarget;
-                                        button.style.transform = 'translateY(-1px) scale(1)';
+                                        button.style.transform = 'translateY(-2px) scale(1)';
                                     }}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                         <line x1="18" y1="6" x2="6" y2="18"></line>
                                         <line x1="6" y1="6" x2="18" y2="18"></line>
                                     </svg>
@@ -841,7 +867,15 @@ function Overview() {
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(3, 1fr)',
                                     gap: '16px',
-                                    maxWidth: '100%'
+                                    maxWidth: '100%',
+                                    '@media (max-width: 1024px)': {
+                                        gridTemplateColumns: 'repeat(2, 1fr)',
+                                        gap: '12px'
+                                    },
+                                    '@media (max-width: 640px)': {
+                                        gridTemplateColumns: '1fr',
+                                        gap: '10px'
+                                    }
                                 }}
                             >
                                 {[...getFilteredDevices()]

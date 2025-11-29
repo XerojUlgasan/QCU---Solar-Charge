@@ -41,6 +41,20 @@ const AdminHeader = ({ title, navigate }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('.mobile-menu-toggle') && !event.target.closest('.mobile-menu')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
   const handleLogout = () => {
     openLogoutModal(() => {
       // Clear admin login state
@@ -94,9 +108,21 @@ const AdminHeader = ({ title, navigate }) => {
               alt="QCU EcoCharge Logo" 
               className="logo-icon"
               onClick={handleLogoClick}
+              style={{
+                width: '48px',
+                height: '48px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
             />
-            <span className="logo-text" onClick={handleLogoClick} style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>QCU EcoCharge</span>
-            <div className="admin-badge" style={{
+            <span className="logo-text hidden sm:inline" onClick={handleLogoClick} style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>QCU EcoCharge</span>
+            <div className="admin-badge hidden sm:flex" style={{
               backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.1)' : 'rgba(251, 146, 60, 0.1)',
               color: isDarkMode ? '#fb923c' : '#d97706',
               border: isDarkMode ? 'none' : '1px solid #f59e0b',
@@ -105,8 +131,8 @@ const AdminHeader = ({ title, navigate }) => {
               Admin
             </div>
           </div>
-          <div className="divider" style={{backgroundColor: isDarkMode ? '#9aa3b2' : '#d1d5db'}}></div>
-          <h1 className="page-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{title}</h1>
+          <div className="divider hidden sm:block" style={{backgroundColor: isDarkMode ? '#9aa3b2' : '#d1d5db'}}></div>
+          <h1 className="page-title hidden sm:block" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{title}</h1>
         </div>
 
         {/* Desktop Navigation */}
