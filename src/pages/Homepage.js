@@ -102,13 +102,6 @@ function Homepage() {
                                 alt="Solar charging station"
                                 className="rounded-2xl shadow-2xl w-full"
                             />
-                            <div className={`absolute -bottom-6 -left-6 p-6 rounded-xl shadow-lg ${isDarkMode ? 'bg-white text-gray-900' : 'bg-white text-gray-900 shadow-xl border-2 border-gray-200'}`}>
-                                <div className="flex items-center space-x-3">
-                                    <div className={`w-3 h-3 rounded-full animate-pulse ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 10px rgba(16, 185, 129, 0.6)'}}></div>
-                                    <span className="font-semibold" style={{color: isDarkMode ? '#1f2937' : '#1f2937'}}>Live Charging</span>
-                                </div>
-                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Stations are active.</p>
-                            </div>
                         </div>
                     </div>
                 </div>
