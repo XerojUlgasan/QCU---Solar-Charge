@@ -1,6 +1,11 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Image configuration - easily update paths to use local images
+const IMAGES = {
+    ecoTechnology: "/images/others/qcu.jpg"
+};
+
 function About() {
   const { isDarkMode } = useTheme();
   
@@ -52,14 +57,14 @@ function About() {
   const team = [
     {
       name: "Xeroj N. Ulgasan",
-      role: "Project Manager/Programmer",
+      role: "Project Manager/Hardware Engineer",
       description: "Leading sustainable technology initiatives at QCU",
       initials: "XU",
       image: "/images/team/ulgasan.jpg"
     },
     {
       name: "Ernesto C. Agustin III",
-      role: "Programmer",
+      role: "Frontend Developer",
       description: "Expert in solar energy systems and IoT integration",
       initials: "EA",
       image: "/images/team/agustin.png"
@@ -76,21 +81,21 @@ function About() {
       role: "Technical Writer",
       description: "Managing station deployment and user support",
       initials: "AA",
-      image: "/images/team/almase.png"
+      image: "/images/team/almase.jpeg"
     },
     {
       name: "Karl Dominique Sarcia",
       role: "Researcher",
       description: "Building the backend systems and mobile applications",
       initials: "KS",
-      image: "/images/team/sarcia.png"
+      image: "/images/team/sarcia.jpg"
     },
     {
       name: "John Rod Chester Orogo",
       role: "Technical Writer",
       description: "Analyzing usage patterns and optimizing system performance",
       initials: "JO",
-      image: "/images/team/orogo.png"
+      image: "/images/team/orogo.jpg"
     },
     {
       name: "Carl Jeus S. Cacho",
@@ -111,7 +116,7 @@ function About() {
       role: "Researcher",
       description: "Supporting research and development of new features",
       initials: "KV",
-      image: "/images/team/vergara.png"
+      image: "/images/team/vergara.jpg"
     }
   ];
 
@@ -165,7 +170,7 @@ function About() {
           </div>
           <div>
             <img
-              src="https://images.unsplash.com/photo-1678898629065-2e542be3b903?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBlY28lMjB0ZWNobm9sb2d5fGVufDF8fHx8MTc1Nzg1ODg0Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              src={IMAGES.ecoTechnology}
               alt="Eco technology"
               className="rounded-xl shadow-lg w-full"
             />

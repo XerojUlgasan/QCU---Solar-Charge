@@ -2,6 +2,11 @@ import React from "react";
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Image configuration - easily update paths to use local images
+const IMAGES = {
+    solarStation: "/images/others/ecocharge.png"
+};
+
 function Homepage() {
     const { isDarkMode } = useTheme();
     
@@ -93,7 +98,7 @@ function Homepage() {
                         </div>
                         <div className="relative">
                             <img 
-                                src="https://images.unsplash.com/photo-1652252421025-0392a97129a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2xhciUyMHBhbmVsJTIwY2hhcmdpbmclMjBzdGF0aW9ufGVufDF8fHx8MTc1Nzg1ODg0MHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                                src={IMAGES.solarStation}
                                 alt="Solar charging station"
                                 className="rounded-2xl shadow-2xl w-full"
                             />
@@ -102,7 +107,7 @@ function Homepage() {
                                     <div className={`w-3 h-3 rounded-full animate-pulse ${isDarkMode ? 'bg-green-500' : 'bg-emerald-500'}`} style={{boxShadow: isDarkMode ? 'none' : '0 0 10px rgba(16, 185, 129, 0.6)'}}></div>
                                     <span className="font-semibold" style={{color: isDarkMode ? '#1f2937' : '#1f2937'}}>Live Charging</span>
                                 </div>
-                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Station ID: QCU-001</p>
+                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Stations are active.</p>
                             </div>
                         </div>
                     </div>

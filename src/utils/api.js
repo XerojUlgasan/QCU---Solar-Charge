@@ -1,7 +1,7 @@
 import { auth } from '../firebase';
 
 // Centralized API Base URL
-export const API_BASE_URL = 'https://my-node-api-j9ua.onrender.com';
+export const API_BASE_URL = 'http://localhost:3000/';
 
 /**
  * Make an authenticated API call with JWT token
