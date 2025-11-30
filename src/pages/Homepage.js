@@ -38,19 +38,15 @@ function Homepage() {
         {
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                    <circle cx="12" cy="12" r="1"></circle>
+                    <path d="M12 6v6"></path>
+                    <path d="M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0"></path>
+                    <circle cx="12" cy="19" r="1"></circle>
                 </svg>
             ),
-            title: "RFID Access",
-            description: "Secure RFID technology with 1 hour free charging weekly"
+            title: "Real-time Monitoring",
+            description: "Live tracking of station status, power levels, and charging activity"
         }
-    ];
-
-    const stats = [
-        { label: "Active Stations", value: "25+" },
-        { label: "Monthly Users", value: "1,200+" },
-        { label: "CO₂ Saved", value: "500kg" },
-        { label: "Energy Generated", value: "2.5MWh" }
     ];
 
     return (
@@ -109,20 +105,6 @@ function Homepage() {
                                 <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Station ID: QCU-001</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Stats Section */}
-            <section className="py-12" style={{backgroundColor: isDarkMode ? '#0f141c' : '#f8fafc'}}>
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        {stats.map((stat, index) => (
-                            <div key={index} className="text-center">
-                                <div className={`font-bold mb-2 ${isDarkMode ? 'text-green-500' : 'text-emerald-600'}`} style={{fontSize: '28px', textShadow: isDarkMode ? 'none' : '0 0 10px rgba(16, 185, 129, 0.3)'}}>{stat.value}</div>
-                                <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>{stat.label}</div>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </section>

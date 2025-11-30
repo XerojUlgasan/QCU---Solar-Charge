@@ -55,7 +55,7 @@ function About() {
       role: "Project Manager/Programmer",
       description: "Leading sustainable technology initiatives at QCU",
       initials: "XU",
-      image: "/images/team/ulgasan.png"
+      image: "/images/team/ulgasan.jpg"
     },
     {
       name: "Ernesto C. Agustin III",
@@ -243,29 +243,9 @@ function About() {
         </div>
 
         {/* Impact Section */}
-        <div className={`rounded-2xl p-8 text-center ${isDarkMode ? 'hover:shadow-xl' : 'hover:shadow-2xl'} transition-all duration-300`} style={{
-          backgroundColor: isDarkMode ? '#0f141c' : '#ffffff', 
-          border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
-          boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-        }}>
-          <h2 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{fontSize: '32px'}}>Our Environmental Impact</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <div className={`font-bold mb-2 ${isDarkMode ? 'text-green-600' : 'text-emerald-600'}`} style={{fontSize: '28px'}}>500kg</div>
-              <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>CO₂ Emissions Saved</div>
-            </div>
-            <div>
-              <div className={`font-bold mb-2 ${isDarkMode ? 'text-blue-600' : 'text-blue-500'}`} style={{fontSize: '28px'}}>2.5MWh</div>
-              <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>Clean Energy Generated</div>
-            </div>
-            <div>
-              <div className={`font-bold mb-2 ${isDarkMode ? 'text-purple-600' : 'text-purple-500'}`} style={{fontSize: '28px'}}>1,200+</div>
-              <div style={{color: isDarkMode ? '#9aa3b2' : '#1f2937', fontSize: '16px'}}>Students Served</div>
-            </div>
+       
           </div>
         </div>
-      </div>
-    </div>
   );
 }
 
