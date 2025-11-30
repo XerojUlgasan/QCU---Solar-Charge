@@ -74,7 +74,7 @@ function About() {
       role: "System Analyst/Quality Assurance",
       description: "Designing user-friendly interfaces for charging stations",
       initials: "KR",
-      image: "/images/team/ramos.png"
+      image: "/images/team/ramos.jpg"
     },
     {
       name: "Ace Jester Almase",
