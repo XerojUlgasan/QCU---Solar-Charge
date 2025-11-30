@@ -97,7 +97,7 @@ function About() {
       role: "UI/UX Designer",
       description: "Ensuring optimal performance and reliability of stations",
       initials: "CC",
-      image: "/images/team/cacho.png"
+      image: "/images/team/cacho.jpg"
     },
     {
       name: "Antonio Delas Eras",
