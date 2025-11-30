@@ -998,7 +998,7 @@ function ReportProblem() {
                             <div className="card-content">
                                 <div className="emergency-info">
                                     <p className="emergency-text" style={{color: isDarkMode ? '#eaecef' : '#374151'}}>
-                                        Campus Security: <span className="emergency-number" style={{color: isDarkMode ? '#ef4444' : '#dc2626'}}>+63 (2) 8806-3549</span>
+                                        Campus Security: <span className="emergency-number" style={{color: isDarkMode ? '#ef4444' : '#dc2626'}}>(02) 8806 3049</span>
                                     </p>
                                     <p className="emergency-note" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Available 24/7 for emergency situations</p>
                                 </div>

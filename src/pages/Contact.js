@@ -408,7 +408,7 @@ function Contact() {
 								</div>
 								<div>
 									<h4 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Phone Support</h4>
-									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>+63 (2) 8806-3549</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>(02) 8806 3049</p>
 									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Mon-Fri: 8:00 AM - 5:00 PM</p>
 									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Emergency: 24/7</p>
 								</div>
@@ -431,7 +431,7 @@ function Contact() {
 								</div>
 								<div>
 									<h4 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Email Support</h4>
-									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>ecocharge@qcu.edu.ph</p>
+									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>qcuecocharge@gmail.com</p>
 									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>support@qcu.edu.ph</p>
 									<p className="muted" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Response time: 2-4 hours</p>
 								</div>
