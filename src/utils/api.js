@@ -343,3 +343,85 @@ export const recordUserLogout = async ({ user_id }) => {
     const data = { user_id };
     return authenticatedPost(url, data);
 };
+
+// Rate limiting utilities
+const SUBMISSION_LIMITS = {
+  REPORTS: 5,
+  CONTACT_MESSAGES: 5
+};
+
+const STORAGE_KEYS = {
+  REPORTS: 'ecocharge_reports_submissions',
+  CONTACT: 'ecocharge_contact_submissions'
+};
+
+export const checkSubmissionLimit = (type) => {
+  const key = type === 'report' ? STORAGE_KEYS.REPORTS : STORAGE_KEYS.CONTACT;
+  const limit = type === 'report' ? SUBMISSION_LIMITS.REPORTS : SUBMISSION_LIMITS.CONTACT;
+  
+  const data = localStorage.getItem(key);
+  const today = new Date().toDateString();
+  
+  if (!data) {
+    return { allowed: true, remaining: limit, nextResetTime: getNextMidnight() };
+  }
+  
+  const parsed = JSON.parse(data);
+  
+  // Check if data is from today
+  if (parsed.date !== today) {
+    // Reset for new day
+    localStorage.setItem(key, JSON.stringify({
+      date: today,
+      count: 0
+    }));
+    return { allowed: true, remaining: limit, nextResetTime: getNextMidnight() };
+  }
+  
+  const remaining = limit - parsed.count;
+  const allowed = remaining > 0;
+  
+  return { allowed, remaining: Math.max(0, remaining), nextResetTime: getNextMidnight() };
+};
+
+export const recordSubmission = (type) => {
+  const key = type === 'report' ? STORAGE_KEYS.REPORTS : STORAGE_KEYS.CONTACT;
+  const limit = type === 'report' ? SUBMISSION_LIMITS.REPORTS : SUBMISSION_LIMITS.CONTACT;
+  
+  const data = localStorage.getItem(key);
+  const today = new Date().toDateString();
+  
+  let parsed = { date: today, count: 0 };
+  
+  if (data) {
+    parsed = JSON.parse(data);
+    if (parsed.date === today) {
+      parsed.count += 1;
+    } else {
+      parsed = { date: today, count: 1 };
+    }
+  } else {
+    parsed = { date: today, count: 1 };
+  }
+  
+  localStorage.setItem(key, JSON.stringify(parsed));
+};
+
+const getNextMidnight = () => {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  return tomorrow.getTime();
+};
+
+export const getTimeUntilReset = () => {
+  const nextReset = getNextMidnight();
+  const now = Date.now();
+  const diff = nextReset - now;
+  
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  return { hours, minutes, totalMs: diff };
+};

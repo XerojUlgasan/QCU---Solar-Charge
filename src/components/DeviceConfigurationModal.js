@@ -336,9 +336,7 @@ const DeviceConfigurationModal = ({
     
     // Show immediate feedback notification
     const newState = !deviceEnabled;
-    showSuccess(
-      `Device ${newState ? 'enabled' : 'disabled'} successfully!`
-    );
+    
   };
 
   const handleResetToDefault = () => {
@@ -393,8 +391,7 @@ const DeviceConfigurationModal = ({
         const result = await response.json();
         console.log('Delete device result:', result);
         
-        // Show success notification
-        showSuccess('Device deleted successfully!');
+        
         
         // Call the onDelete callback if provided
         if (onDelete) {

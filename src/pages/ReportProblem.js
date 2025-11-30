@@ -4,7 +4,7 @@ import { useGoogleLogin } from '../contexts/GoogleLoginContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSocket } from '../contexts/SocketContext';
-import { authenticatedGet, authenticatedPost, API_BASE_URL } from '../utils/api';
+import { authenticatedGet, authenticatedPost, API_BASE_URL, checkSubmissionLimit, recordSubmission, getTimeUntilReset } from '../utils/api';
 import "../styles/ReportProblem.css";
 
 function ReportProblem() {
@@ -24,6 +24,8 @@ function ReportProblem() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const [submissionLimit, setSubmissionLimit] = useState(null);
+    const [limitError, setLimitError] = useState(null);
 
     // Fetch reports from API
     const fetchReports = async () => {
@@ -306,8 +308,38 @@ function ReportProblem() {
         openModal();
     };
 
+    // Check submission limit on component mount and when user changes
+    useEffect(() => {
+        const updateLimit = () => {
+            const limit = checkSubmissionLimit('report');
+            setSubmissionLimit(limit);
+            
+            if (!limit.allowed) {
+                const timeLeft = getTimeUntilReset();
+                setLimitError(`Daily limit reached (5 reports). Try again in ${timeLeft.hours}h ${timeLeft.minutes}m.`);
+            } else {
+                setLimitError(null);
+            }
+        };
+
+        updateLimit();
+
+        // Update the timer every minute to refresh the time remaining
+        const interval = setInterval(updateLimit, 60000);
+        return () => clearInterval(interval);
+    }, [user]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Check limit before proceeding
+        const limit = checkSubmissionLimit('report');
+        if (!limit.allowed) {
+            const timeLeft = getTimeUntilReset();
+            showError(`Daily report limit reached (5 max). Please try again tomorrow at midnight. Time remaining: ${timeLeft.hours}h ${timeLeft.minutes}m`);
+            return;
+        }
+        
         if (!isAuthenticated) {
             showError('Please log in to report a problem');
             return;
@@ -344,10 +376,20 @@ function ReportProblem() {
                     throw new Error(responseData.message || 'Server returned error');
                 }
                 
-                showSuccess(`Problem report submitted successfully! We'll investigate this issue promptly.`);
-        setFormData({ station: '', problemType: '', description: '', urgency: '' });
+                // Record the successful submission
+                recordSubmission('report');
+                const updatedLimit = checkSubmissionLimit('report');
+                setSubmissionLimit(updatedLimit);
                 
-                // Socket will handle the update, no need to refetch
+                if (updatedLimit.allowed) {
+                    showSuccess(`Problem report submitted successfully!`);
+                } else {
+                    const timeLeft = getTimeUntilReset();
+                    showSuccess(`Problem report submitted successfully! Daily limit reached.`);
+                    setLimitError(`Daily limit reached (5 reports). Try again in ${timeLeft.hours}h ${timeLeft.minutes}m.`);
+                }
+                setFormData({ station: '', problemType: '', description: '', urgency: '' });
+                
             } else {
                 const errorText = await response.text();
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
@@ -585,6 +627,30 @@ function ReportProblem() {
                         Encountered an issue with one of our EcoCharge stations? Let us know so we can 
                         fix it quickly and keep our network running smoothly for everyone.
                     </p>
+                    {submissionLimit && !submissionLimit.allowed && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '12px 16px',
+                            backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                            border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(239, 68, 68, 0.5)',
+                            borderRadius: '8px',
+                            color: isDarkMode ? '#fca5a5' : '#dc2626'
+                        }}>
+                            ⚠️ {limitError}
+                        </div>
+                    )}
+                    {submissionLimit && submissionLimit.allowed && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '12px 16px',
+                            backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                            border: isDarkMode ? '1px solid rgba(34, 197, 94, 0.5)' : '1px solid rgba(34, 197, 94, 0.5)',
+                            borderRadius: '8px',
+                            color: isDarkMode ? '#86efac' : '#16a34a'
+                        }}>
+                            ✓ Reports remaining today: {submissionLimit.remaining}/5
+                        </div>
+                    )}
                 </div>
 
                 <div className="main-grid">
@@ -593,7 +659,9 @@ function ReportProblem() {
                         <div className="card" style={{
                             backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
                             border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
-                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                            boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                            opacity: submissionLimit && !submissionLimit.allowed ? 0.6 : 1,
+                            pointerEvents: submissionLimit && !submissionLimit.allowed ? 'none' : 'auto'
                         }}>
                             <div className="card-header">
                                 <h3 className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
@@ -744,21 +812,30 @@ function ReportProblem() {
                                             <button 
                                                 type="submit" 
                                                 className="submit-button"
-                                                disabled={submitting}
+                                                disabled={submitting || (submissionLimit && !submissionLimit.allowed)}
                                             >
                                                 {submitting ? (
                                                     <>
                                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                                                         Submitting...
                                                     </>
+                                                ) : submissionLimit && !submissionLimit.allowed ? (
+                                                    <>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                                            <circle cx="12" cy="12" r="10"></circle>
+                                                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                                                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                                                        </svg>
+                                                        Daily Limit Reached
+                                                    </>
                                                 ) : (
                                                     <>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                                </svg>
-                                                Submit Problem Report
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                        </svg>
+                                                        Submit Problem Report
                                                     </>
                                                 )}
                                             </button>

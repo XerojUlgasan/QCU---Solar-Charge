@@ -333,8 +333,8 @@ function Overview() {
                     <path d="M2 10h20"></path>
                 </svg>
             ),
-            title: "Flexible Payment",
-            description: "Pay per use or enjoy free RFID hours"
+            title: "Payment",
+            description: "Pay using ₱1, ₱5, or ₱10 coins"
         },
         {
             icon: (
@@ -617,18 +617,18 @@ function Overview() {
                     <div className="specs-grid">
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Solar Panel Capacity</h3>
-                            <p className={`spec-value ${isDarkMode ? 'green' : 'green'}`} style={{color: isDarkMode ? '#22c55e' : '#22c55e'}}>400W</p>
+                            <p className={`spec-value ${isDarkMode ? 'green' : 'green'}`} style={{color: isDarkMode ? '#22c55e' : '#22c55e'}}>60W</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Per station</p>
                         </div>
                         <div className="spec-item">
-                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Battery Storage</h3>
-                            <p className={`spec-value ${isDarkMode ? 'blue' : 'blue'}`} style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>2.5kWh</p>
+                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Charging Speed</h3>
+                            <p className={`spec-value ${isDarkMode ? 'blue' : 'blue'}`} style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>20 Watts</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Lithium-ion</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Charging Ports</h3>
-                            <p className={`spec-value ${isDarkMode ? 'purple' : 'purple'}`} style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>6</p>
-                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>USB-A, USB-C, Wireless</p>
+                            <p className={`spec-value ${isDarkMode ? 'purple' : 'purple'}`} style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>2</p>
+                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Micro-USB, USB-C</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Operating Hours</h3>
@@ -637,12 +637,12 @@ function Overview() {
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Connectivity</h3>
-                            <p className={`spec-value ${isDarkMode ? 'red' : 'red'}`} style={{color: isDarkMode ? '#ef4444' : '#ef4444'}}>4G/WiFi</p>
+                            <p className={`spec-value ${isDarkMode ? 'red' : 'red'}`} style={{color: isDarkMode ? '#ef4444' : '#ef4444'}}>2G/WiFi</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>IoT monitoring</p>
                         </div>
                         <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Weather Rating</h3>
-                            <p className={`spec-value ${isDarkMode ? 'indigo' : 'indigo'}`} style={{color: isDarkMode ? '#6366f1' : '#6366f1'}}>IP65</p>
+                            <p className={`spec-value ${isDarkMode ? 'indigo' : 'indigo'}`} style={{color: isDarkMode ? '#6366f1' : '#6366f1'}}>IP43</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Weatherproof</p>
                         </div>
                     </div>

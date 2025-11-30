@@ -13,6 +13,8 @@ function Contact() {
 	const { isDarkMode } = useTheme();
 	const [formData, setFormData] = useState({ subject: "", message: "" });
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [submissionLimit, setSubmissionLimit] = useState(null);
+	const [limitError, setLimitError] = useState(null);
 
 	// Get user's profile picture or fallback to generated avatar
 	const getUserAvatar = (user) => {
@@ -33,9 +35,86 @@ function Contact() {
 		openModal();
 	}
 
+	// Helper function to get submission data for today
+	const getSubmissionData = () => {
+		const today = new Date().toDateString();
+		const stored = localStorage.getItem('contact_submissions');
+		
+		if (!stored) {
+			return { date: today, count: 0 };
+		}
+		
+		const data = JSON.parse(stored);
+		
+		// If date is today, return count, otherwise reset
+		if (data.date === today) {
+			return data;
+		}
+		
+		// Reset for new day
+		return { date: today, count: 0 };
+	};
+
+	// Helper function to save submission data
+	const saveSubmissionData = (count) => {
+		const today = new Date().toDateString();
+		localStorage.setItem('contact_submissions', JSON.stringify({ date: today, count }));
+	};
+
+	// Helper function to get time until midnight
+	const getTimeUntilMidnight = () => {
+		const now = new Date();
+		const tomorrow = new Date(now);
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		tomorrow.setHours(0, 0, 0, 0);
+		
+		const diff = tomorrow - now;
+		const hours = Math.floor(diff / (1000 * 60 * 60));
+		const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+		
+		return { hours, minutes };
+	};
+
+	// Check submission limit on component mount and when user changes
+	useEffect(() => {
+		const updateLimit = () => {
+			const submissionData = getSubmissionData();
+			const remaining = 5 - submissionData.count;
+			
+			setSubmissionLimit({
+				allowed: remaining > 0,
+				remaining: Math.max(0, remaining),
+				total: 5,
+				count: submissionData.count
+			});
+			
+			if (remaining <= 0) {
+				const timeLeft = getTimeUntilMidnight();
+				setLimitError(`Daily limit reached (5 messages). Try again in ${timeLeft.hours}h ${timeLeft.minutes}m.`);
+			} else {
+				setLimitError(null);
+			}
+		};
+
+		updateLimit();
+
+		// Update the timer every minute to refresh the time remaining
+		const interval = setInterval(updateLimit, 60000);
+		return () => clearInterval(interval);
+	}, [user]);
 
 	async function handleSubmit(e){
 		e.preventDefault();
+		
+		// Check limit before proceeding
+		const submissionData = getSubmissionData();
+		const remaining = 5 - submissionData.count;
+		
+		if (remaining <= 0) {
+			const timeLeft = getTimeUntilMidnight();
+			showError(`Daily message limit reached (5 max). Please try again tomorrow at midnight. Time remaining: ${timeLeft.hours}h ${timeLeft.minutes}m`);
+			return;
+		}
 		
 		if (!user?.email) {
 			showError('User email not found. Please try logging in again.');
@@ -95,7 +174,25 @@ function Contact() {
 					return;
 				}
 				
-				showSuccess(`Message sent successfully! We'll get back to you soon.`);
+				// Record the successful submission
+				const newCount = submissionData.count + 1;
+				saveSubmissionData(newCount);
+				const newRemaining = 5 - newCount;
+				
+				setSubmissionLimit({
+					allowed: newRemaining > 0,
+					remaining: Math.max(0, newRemaining),
+					total: 5,
+					count: newCount
+				});
+				
+				if (newRemaining > 0) {
+					showSuccess(`Message sent successfully! We'll get back to you soon.`);
+				} else {
+					const timeLeft = getTimeUntilMidnight();
+					showSuccess(`Message sent successfully! Daily limit reached.`);
+					setLimitError(`Daily limit reached (5 messages). Try again in ${timeLeft.hours}h ${timeLeft.minutes}m.`);
+				}
 				setFormData({ subject: "", message: "" });
 			} else {
 				const errorText = await response.text();
@@ -115,7 +212,8 @@ function Contact() {
 			setIsSubmitting(false);
 		}
 	}
-  return (
+	
+	return (
 		<div id="contact-page" className={isDarkMode ? '' : 'light'} style={{
 			backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
 			color: isDarkMode ? '#eaecef' : '#1f2937'
@@ -138,13 +236,39 @@ function Contact() {
 					<p className="subtitle" style={{
 							color: isDarkMode ? '#9aa3b2' : '#374151'
 					}}>Have questions about our EcoCharge stations? Need technical support? We're here to help! Reach out to us through any of the channels below.</p>
+					{submissionLimit && !submissionLimit.allowed && (
+						<div style={{
+							marginTop: '16px',
+							padding: '12px 16px',
+							backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+							border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(239, 68, 68, 0.5)',
+							borderRadius: '8px',
+							color: isDarkMode ? '#fca5a5' : '#dc2626'
+						}}>
+							⚠️ {limitError}
+						</div>
+					)}
+					{submissionLimit && submissionLimit.allowed && (
+						<div style={{
+							marginTop: '16px',
+							padding: '12px 16px',
+							backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+							border: isDarkMode ? '1px solid rgba(34, 197, 94, 0.5)' : '1px solid rgba(34, 197, 94, 0.5)',
+							borderRadius: '8px',
+							color: isDarkMode ? '#86efac' : '#16a34a'
+						}}>
+							✓ Messages remaining today: {submissionLimit.remaining}/{submissionLimit.total}
+						</div>
+					)}
         </div>
 
 				<div className="grid">
 					<div className="card left" style={{
 						backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
 							border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
-						boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+						boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+						opacity: submissionLimit && !submissionLimit.allowed ? 0.6 : 1,
+						pointerEvents: submissionLimit && !submissionLimit.allowed ? 'none' : 'auto'
 					}}>
 						<h3 style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>Send us a Message</h3>
 						<p className="desc" style={{color: isDarkMode ? '#9aa3b2' : '#374151'}}>Fill out the form below and we'll get back to you as soon as possible.</p>
@@ -228,15 +352,16 @@ function Contact() {
 									<button 
 										className="submit-btn" 
 										type="submit" 
-										disabled={isSubmitting}
+										disabled={isSubmitting || (submissionLimit && !submissionLimit.allowed)}
 										style={{
 											backgroundColor: isDarkMode ? '#0f1a28' : '#3b82f6',
 											color: isDarkMode ? '#eaecef' : '#ffffff',
 											border: isDarkMode ? '1px solid #2a3446' : '1px solid #3b82f6',
-											boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+											boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+											opacity: isSubmitting || (submissionLimit && !submissionLimit.allowed) ? 0.6 : 1
 										}}
 									>
-										{isSubmitting ? 'Sending...' : 'Send Message'}
+										{isSubmitting ? 'Sending...' : submissionLimit && !submissionLimit.allowed ? 'Daily Limit Reached' : 'Send Message'}
 									</button>
                     </form>
                   </>
