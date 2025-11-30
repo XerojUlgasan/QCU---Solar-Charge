@@ -418,7 +418,8 @@ const AdminDevices = () => {
   const filteredDevices = devices.filter(device => {
     const matchesSearch = device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          device.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         device.building.toLowerCase().includes(searchTerm.toLowerCase());
+                         device.building.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         device.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || device.status?.toLowerCase() === filterStatus.toLowerCase();
     return matchesSearch && matchesFilter;
   });
