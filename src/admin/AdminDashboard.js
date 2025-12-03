@@ -662,52 +662,7 @@ const AdminDashboard = () => {
           sessions: Math.floor((device.percentage || 0) / 4) // Calculate based on usage
         };
       })
-    : [
-        // Fallback mock data if no devices from API
-    {
-      id: "QCU-001",
-      name: "Main Library",
-      location: "1st Floor, Main Entrance",
-      status: "active",
-      voltage: "24.2V",
-      power: "3.2kW",
-      usage: 85,
-      revenue: "₱2,340",
-          sessions: 45
-    },
-    {
-      id: "QCU-002", 
-      name: "Student Center",
-      location: "Food Court Area",
-      status: "active",
-      voltage: "23.8V",
-      power: "2.9kW",
-      usage: 72,
-      revenue: "₱1,890",
-          sessions: 32
-    },
-    {
-      id: "QCU-003",
-      name: "Engineering Building",
-      location: "Lobby",
-      status: "maintenance",
-      voltage: "0V",
-      power: "0kW",
-      usage: 0,
-      revenue: "₱0",
-          sessions: 0
-    },
-    {
-      id: "QCU-004",
-      name: "Sports Complex",
-      location: "Main Entrance",
-      status: "active",
-      voltage: "24.5V",
-      power: "1.8kW",
-      usage: 45,
-      revenue: "₱1,120",
-          sessions: 28
-        }
+    : [   
       ];
 
   // Helper function to format timestamp
