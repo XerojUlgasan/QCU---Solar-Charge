@@ -598,28 +598,21 @@ const AdminProblems = () => {
         const responseResult = await response.json();
         console.log('Send response result:', responseResult);
         
-        // Check if the API actually indicates email was sent
-        if (responseResult.success === false) {
-          console.error('API returned success=false:', responseResult);
-          showError(`Failed to send email: ${responseResult.message || 'Unknown error'}`);
+        const { success, emailSent, message, error: apiError } = responseResult || {};
+
+        // Treat anything that is not explicitly successful as a failure
+        if (!(success === true || emailSent === true)) {
+          console.error('API did not confirm success:', responseResult);
+          showError(`Failed to send email: ${message || apiError || 'Server did not confirm sending.'}`);
           setIsDialogOpen(false);
           setPopupReport(null);
           return;
         }
         
-        // Check for email-specific success indicators
-        if (responseResult.emailSent === false) {
-          console.error('Email was not sent:', responseResult);
-          showError(`Email sending failed: ${responseResult.error || 'Email service unavailable'}`);
-          setIsDialogOpen(false);
-          setPopupReport(null);
-          return;
-        }
-        
-    showSuccess('Response sent to user successfully!');
-    setResponseText('');
-    setIsDialogOpen(false);
-    setPopupReport(null);
+        showSuccess('Response sent to user successfully!');
+        setResponseText('');
+        setIsDialogOpen(false);
+        setPopupReport(null);
         
         // Optionally refresh reports to show any updates
         // rely on socket updates; no manual refresh to avoid flicker

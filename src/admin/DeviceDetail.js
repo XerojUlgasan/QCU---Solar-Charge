@@ -53,12 +53,20 @@ const DeviceDetail = () => {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [deviceEnabled, setDeviceEnabled] = useState(null);
 
+  // Safely convert values (including Supabase numeric strings) to numbers
+  const toNumber = (value) => {
+    if (value === null || value === undefined) return 0;
+    const num = Number(value);
+    return Number.isNaN(num) ? 0 : num;
+  };
+
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}kWh`;
+    const num = toNumber(value);
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}kWh`;
     }
-    return `${value.toFixed(1)}Wh`;
+    return `${num.toFixed(1)}Wh`;
   };
 
 
@@ -506,10 +514,10 @@ const DeviceDetail = () => {
         groups[periodKey] = [];
       }
       groups[periodKey].push({
-        temperature: entry.temperature || 0,
-        voltage: entry.voltage || 0,
-        energy_accumulated: entry.energy_accumulated || 0,
-        current: entry.current || 0,
+        temperature: toNumber(entry.temperature),
+        voltage: toNumber(entry.voltage),
+        energy_accumulated: toNumber(entry.energy_accumulated),
+        current: toNumber(entry.current),
         fullDate: fullDate,
         date: entryDate
       });
@@ -517,10 +525,10 @@ const DeviceDetail = () => {
 
     // Convert groups to chart data
     const chartData = Object.entries(groups).map(([period, entries]) => {
-      const avgTemperature = entries.reduce((sum, entry) => sum + entry.temperature, 0) / entries.length;
-      const avgVoltage = entries.reduce((sum, entry) => sum + entry.voltage, 0) / entries.length;
-      const totalEnergy = entries.reduce((sum, entry) => sum + entry.energy_accumulated, 0);
-      const avgCurrent = entries.reduce((sum, entry) => sum + entry.current, 0) / entries.length;
+      const avgTemperature = entries.reduce((sum, entry) => sum + toNumber(entry.temperature), 0) / entries.length;
+      const avgVoltage = entries.reduce((sum, entry) => sum + toNumber(entry.voltage), 0) / entries.length;
+      const totalEnergy = entries.reduce((sum, entry) => sum + toNumber(entry.energy_accumulated), 0);
+      const avgCurrent = entries.reduce((sum, entry) => sum + toNumber(entry.current), 0) / entries.length;
       const fullDate = entries[0]?.fullDate || period;
       
       return {
@@ -814,7 +822,7 @@ const DeviceDetail = () => {
         groups[periodKey] = [];
       }
       groups[periodKey].push({
-        value: entry[valueKey] || 0,
+        value: toNumber(entry[valueKey]),
         fullDate: fullDate,
         date: entryDate
       });
@@ -827,11 +835,11 @@ const DeviceDetail = () => {
       
       if (valueKey === 'energy_accumulated') {
         // For energy, sum all values in the time period to get total accumulated energy
-        value = entries.reduce((sum, entry) => sum + entry.value, 0);
+        value = entries.reduce((sum, entry) => sum + toNumber(entry.value), 0);
       } else {
         // For voltage, current, and temperature, use average (instantaneous measurements)
         const values = entries.map(e => e.value);
-        value = values.reduce((sum, val) => sum + val, 0) / values.length;
+        value = values.reduce((sum, val) => sum + toNumber(val), 0) / values.length;
       }
       
       return {
@@ -971,12 +979,13 @@ const DeviceDetail = () => {
               periodKey = transactionDate.toLocaleDateString();
           }
 
-          if (!groups[periodKey]) {
-            groups[periodKey] = { revenue: 0, sessions: 0 };
-          }
-          
-          groups[periodKey].revenue += transaction.amount || 0;
-          groups[periodKey].sessions += 1;
+        if (!groups[periodKey]) {
+          groups[periodKey] = { revenue: 0, sessions: 0 };
+        }
+        
+        // Ensure amount is treated as a number (Supabase/Postgres numeric may be string)
+        groups[periodKey].revenue += toNumber(transaction.amount);
+        groups[periodKey].sessions += 1;
         });
 
         // Convert groups to chart data
@@ -1372,7 +1381,7 @@ const DeviceDetail = () => {
     const getTimeFilteredData = (timeFilter) => {
        // Calculate device-specific revenue from transactions
        const deviceTransactions = deviceData.transactions?.filter(t => t.device_id === deviceId) || [];
-       const deviceRevenue = deviceTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+       const deviceRevenue = deviceTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
        
        // Calculate device-specific uses (number of transactions)
        const deviceUses = deviceTransactions.length;
@@ -1456,8 +1465,8 @@ const DeviceDetail = () => {
         console.warn('No timestamp found for transaction, using generated date:', dateTime);
       }
       
-      // Calculate duration based on amount * 10 minutes
-      const duration = Math.round((transaction.amount || 0) * 10);
+      // Calculate duration based on amount * 10 minutes (ensure numeric)
+      const duration = Math.round(toNumber(transaction.amount) * 10);
       const durationText = duration > 0 ? `${duration} min` : "Free";
 
       return {
@@ -1910,7 +1919,7 @@ const DeviceDetail = () => {
                              return entryDate >= startDate;
                            });
                            
-                           return filteredEnergyData.reduce((sum, entry) => sum + (entry.energy_accumulated || 0), 0);
+                           return filteredEnergyData.reduce((sum, entry) => sum + toNumber(entry.energy_accumulated), 0);
                          }
                          return 0;
                        })())}</div>
@@ -1954,7 +1963,7 @@ const DeviceDetail = () => {
                                 return entryDate >= startDate;
                               });
                               
-                              return filteredEnergyData.reduce((sum, entry) => sum + (entry.energy_accumulated || 0), 0);
+                              return filteredEnergyData.reduce((sum, entry) => sum + toNumber(entry.energy_accumulated), 0);
                             }
                             return 0;
                           })();
@@ -2001,7 +2010,7 @@ const DeviceDetail = () => {
                                 return entryDate >= startDate && entryDate < endDate;
                               });
                               
-                              return filteredEnergyData.reduce((sum, entry) => sum + (entry.energy_accumulated || 0), 0);
+                              return filteredEnergyData.reduce((sum, entry) => sum + toNumber(entry.energy_accumulated), 0);
                             }
                             return 0;
                           })();
@@ -2065,7 +2074,7 @@ const DeviceDetail = () => {
                            return transactionDate >= startDate;
                          });
                          
-                         return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                         return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                        })()}</div>
                       <div className={`analytics-trend ${(() => {
                         const currentRevenue = (() => {
@@ -2101,7 +2110,7 @@ const DeviceDetail = () => {
                             return transactionDate >= startDate;
                           });
                           
-                          return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                          return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                         })();
                         
                         const previousRevenue = (() => {
@@ -2139,7 +2148,7 @@ const DeviceDetail = () => {
                             return transactionDate >= startDate && transactionDate < endDate;
                           });
                           
-                          return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                          return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                         })();
                         
                         if (previousRevenue === 0) {
@@ -2185,7 +2194,7 @@ const DeviceDetail = () => {
                               return transactionDate >= startDate;
                             });
                             
-                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                            return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                           })();
                           
                           const previousRevenue = (() => {
@@ -2223,7 +2232,7 @@ const DeviceDetail = () => {
                               return transactionDate >= startDate && transactionDate < endDate;
                             });
                             
-                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                            return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                           })();
                           
                           if (previousRevenue === 0) {
@@ -2270,7 +2279,7 @@ const DeviceDetail = () => {
                               return transactionDate >= startDate;
                             });
                             
-                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                            return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                           })();
                           
                           const previousRevenue = (() => {
@@ -2308,7 +2317,7 @@ const DeviceDetail = () => {
                               return transactionDate >= startDate && transactionDate < endDate;
                             });
                             
-                            return filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                            return filteredTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
                           })();
                           
                           if (previousRevenue === 0) {

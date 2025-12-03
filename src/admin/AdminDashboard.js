@@ -31,12 +31,20 @@ const AdminDashboard = () => {
   const { isDarkMode } = useTheme();
   const { onCollectionChange, isConnected } = useSocket();
   
+  // Safely convert values (including Supabase/Postgres numeric strings) to numbers
+  const toNumber = (value) => {
+    if (value === null || value === undefined) return 0;
+    const num = Number(value);
+    return Number.isNaN(num) ? 0 : num;
+  };
+  
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}kWh`;
+    const num = toNumber(value);
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}kWh`;
     }
-    return `${value.toFixed(1)}Wh`;
+    return `${num.toFixed(1)}Wh`;
   };
   
   // State management
@@ -158,11 +166,11 @@ const AdminDashboard = () => {
           });
           
           if (activeDevicesList.length > 0) {
-            aggregateVolt = activeDevicesList.reduce((sum, device) => sum + (device.volt || 0), 0) / activeDevicesList.length;
-            aggregateCurrent = activeDevicesList.reduce((sum, device) => sum + (device.current || 0), 0) / activeDevicesList.length;
-            aggregatePower = activeDevicesList.reduce((sum, device) => sum + (device.power || 0), 0) / activeDevicesList.length;
-            aggregateTemperature = activeDevicesList.reduce((sum, device) => sum + (device.temperature || 0), 0) / activeDevicesList.length;
-            aggregatePercentage = activeDevicesList.reduce((sum, device) => sum + (device.percentage || 0), 0) / activeDevicesList.length;
+            aggregateVolt = activeDevicesList.reduce((sum, device) => sum + toNumber(device.volt), 0) / activeDevicesList.length;
+            aggregateCurrent = activeDevicesList.reduce((sum, device) => sum + toNumber(device.current), 0) / activeDevicesList.length;
+            aggregatePower = activeDevicesList.reduce((sum, device) => sum + toNumber(device.power), 0) / activeDevicesList.length;
+            aggregateTemperature = activeDevicesList.reduce((sum, device) => sum + toNumber(device.temperature), 0) / activeDevicesList.length;
+            aggregatePercentage = activeDevicesList.reduce((sum, device) => sum + toNumber(device.percentage), 0) / activeDevicesList.length;
           }
         }
         
@@ -431,10 +439,11 @@ const AdminDashboard = () => {
 
   // Utility functions
   const formatPower = (power) => {
-    if (power >= 1000) {
-      return `${(power / 1000).toFixed(1)}kW`;
+    const num = toNumber(power);
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}kW`;
     }
-    return `${power.toFixed(1)}W`;
+    return `${num.toFixed(1)}W`;
   };
 
   const formatLastUpdated = (timestamp) => {
@@ -490,11 +499,11 @@ const AdminDashboard = () => {
 
   // Calculate overview stats from API data and time filter
   const calculateOverviewStats = () => {
-    // Get current period data
-    const currentEnergy = overviewData.energy[timeFilter] || 0;
-    const currentRevenue = overviewData.revenue[timeFilter] || 0;
-    const currentUses = overviewData.uses[timeFilter] || 0;
-    const currentActiveDevices = overviewData.active_devices || 0;
+    // Get current period data (ensure numeric)
+    const currentEnergy = toNumber(overviewData.energy[timeFilter]);
+    const currentRevenue = toNumber(overviewData.revenue[timeFilter]);
+    const currentUses = toNumber(overviewData.uses[timeFilter]);
+    const currentActiveDevices = toNumber(overviewData.active_devices);
     
     // Calculate deterministic previous period data based on filter
     // Using fixed percentages to ensure consistent results
@@ -595,9 +604,9 @@ const AdminDashboard = () => {
       transaction.device_id === deviceId
     );
     
-    // Sum up the amounts from transactions
+    // Sum up the amounts from transactions (handle numeric strings safely)
     const totalRevenue = deviceTransactions.reduce((sum, transaction) => {
-      const amount = parseFloat(transaction.amount) || parseFloat(transaction.value) || 0;
+      const amount = toNumber(transaction.amount ?? transaction.value);
       return sum + amount;
     }, 0);
     
@@ -1065,10 +1074,10 @@ const AdminDashboard = () => {
         groups[periodKey] = [];
       }
       groups[periodKey].push({
-        temperature: entry.temperature || 0,
-        voltage: entry.voltage || 0,
-        energy_accumulated: entry.energy_accumulated || 0,
-        current: entry.current || 0,
+        temperature: toNumber(entry.temperature),
+        voltage: toNumber(entry.voltage),
+        energy_accumulated: toNumber(entry.energy_accumulated),
+        current: toNumber(entry.current),
         fullDate: fullDate,
         date: entryDate
       });
@@ -1076,10 +1085,10 @@ const AdminDashboard = () => {
 
     // Convert groups to chart data
     const chartData = Object.entries(groups).map(([period, entries]) => {
-      const avgTemperature = entries.reduce((sum, entry) => sum + entry.temperature, 0) / entries.length;
-      const avgVoltage = entries.reduce((sum, entry) => sum + entry.voltage, 0) / entries.length;
-      const totalEnergy = entries.reduce((sum, entry) => sum + entry.energy_accumulated, 0);
-      const avgCurrent = entries.reduce((sum, entry) => sum + entry.current, 0) / entries.length;
+      const avgTemperature = entries.reduce((sum, entry) => sum + toNumber(entry.temperature), 0) / entries.length;
+      const avgVoltage = entries.reduce((sum, entry) => sum + toNumber(entry.voltage), 0) / entries.length;
+      const totalEnergy = entries.reduce((sum, entry) => sum + toNumber(entry.energy_accumulated), 0);
+      const avgCurrent = entries.reduce((sum, entry) => sum + toNumber(entry.current), 0) / entries.length;
       const fullDate = entries[0]?.fullDate || period;
       
       return {
@@ -1423,7 +1432,7 @@ const AdminDashboard = () => {
         groups[periodKey] = { revenue: 0, sessions: 0 };
       }
       
-      groups[periodKey].revenue += transaction.amount || 0;
+      groups[periodKey].revenue += toNumber(transaction.amount);
       groups[periodKey].sessions += 1;
     });
 
@@ -1676,7 +1685,7 @@ const AdminDashboard = () => {
         groups[periodKey] = [];
       }
       groups[periodKey].push({
-        value: entry[valueKey] || 0,
+        value: toNumber(entry[valueKey]),
         fullDate: fullDate,
         date: entryDate
       });
@@ -1689,11 +1698,11 @@ const AdminDashboard = () => {
       
       if (valueKey === 'energy_accumulated') {
         // For energy, sum all values in the time period to get total accumulated energy
-        value = entries.reduce((sum, entry) => sum + entry.value, 0);
+        value = entries.reduce((sum, entry) => sum + toNumber(entry.value), 0);
       } else {
         // For voltage, current, and temperature, use average (instantaneous measurements)
         const values = entries.map(e => e.value);
-        value = values.reduce((sum, val) => sum + val, 0) / values.length;
+        value = values.reduce((sum, val) => sum + toNumber(val), 0) / values.length;
       }
       
       return {

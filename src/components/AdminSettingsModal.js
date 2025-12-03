@@ -20,7 +20,7 @@ import '../styles/AdminSettingsModal.css';
 
 const AdminSettingsModal = ({ isOpen, onClose }) => {
   const { showSuccess } = useNotification();
-  const { admin, authenticatedAdminFetch } = useAdminAuth();
+  const { admin, adminToken, authenticatedAdminFetch } = useAdminAuth();
   const { isDarkMode } = useTheme();
 
   // Handle browser extension errors
@@ -306,8 +306,17 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     
     try {
       const url = API_BASE_URL + '/admin/changeAdminUsername';
-      const response = await authenticatedAdminFetch(url, {
+      // Use direct fetch with token so a wrong password (401/403) does NOT trigger global logout
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      const token = adminToken || localStorage.getItem('adminToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(url, {
         method: 'POST',
+        headers,
         body: JSON.stringify({
           new_username: usernameChangeData.new_username,
           current_password: usernameChangeData.current_password
@@ -326,10 +335,13 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         const errorData = await response.text();
         console.error('Username change failed:', response.status, errorData);
         setUsernameError('Failed to change username. Please check your password.');
+        // Hide confirmation popup on failure; error is shown in settings modal
+        setShowUsernameConfirmation(false);
       }
     } catch (error) {
       console.error('Error changing username:', error);
       setUsernameError('Failed to change username. Please try again.');
+      setShowUsernameConfirmation(false);
     } finally {
       setIsChangingUsername(false);
     }
@@ -391,8 +403,17 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
     
     try {
       const url = API_BASE_URL + '/admin/changeAdminPassword';
-      const response = await authenticatedAdminFetch(url, {
+      // Use direct fetch with token so a wrong password (401/403) does NOT trigger global logout
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      const token = adminToken || localStorage.getItem('adminToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(url, {
         method: 'POST',
+        headers,
         body: JSON.stringify({
           current_password: passwordChangeData.current_password,
           new_password: passwordChangeData.new_password
@@ -412,10 +433,13 @@ const AdminSettingsModal = ({ isOpen, onClose }) => {
         const errorData = await response.text();
         console.error('Password change failed:', response.status, errorData);
         setPasswordError('Failed to change password. Please check your current password.');
+        // Hide confirmation popup on failure; error is shown in settings modal
+        setShowPasswordConfirmation(false);
       }
     } catch (error) {
       console.error('Error changing password:', error);
       setPasswordError('Failed to change password. Please try again.');
+      setShowPasswordConfirmation(false);
     } finally {
       setIsChangingPassword(false);
     }
