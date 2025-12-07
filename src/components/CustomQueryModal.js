@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Play, Loader2, AlertCircle, Database } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { X, Play, Loader2, AlertCircle, Database, ArrowUp, ArrowDown } from 'lucide-react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { API_BASE_URL } from '../utils/api';
@@ -12,6 +12,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   const handleExecuteQuery = async () => {
     if (!query.trim()) {
@@ -86,6 +87,44 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
     return Object.keys(results[0]);
   };
 
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedResults = useMemo(() => {
+    if (!results || !Array.isArray(results) || !sortConfig.key) {
+      return results;
+    }
+
+    return [...results].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+
+      // Handle null/undefined values
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      // Handle different types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      // Convert to string for comparison
+      const aStr = String(aValue).toLowerCase();
+      const bStr = String(bValue).toLowerCase();
+
+      if (sortConfig.direction === 'asc') {
+        return aStr.localeCompare(bStr);
+      } else {
+        return bStr.localeCompare(aStr);
+      }
+    });
+  }, [results, sortConfig]);
+
   if (!isOpen) return null;
 
   return (
@@ -142,81 +181,92 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
 
         {/* Content */}
         <div className="modal-content" style={{ backgroundColor: isDarkMode ? '#0f141c' : '#ffffff' }}>
-          {/* Query Input Section */}
-          <div className="query-input-section">
-            <label 
-              className="query-label" 
-              style={{ color: isDarkMode ? '#9aa3b2' : '#1f2937' }}
-            >
-              Enter SQL Query
-            </label>
-            <textarea
-              className="query-textarea"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="SELECT * FROM tbl_devices LIMIT 10;"
-              style={{
-                backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
-                border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
-                color: isDarkMode ? '#ffffff' : '#1f2937',
-                fontFamily: 'monospace',
-                fontSize: '14px'
-              }}
-              rows={8}
-              disabled={loading}
-            />
-            {error && (
-              <div 
-                className="error-message"
+          {/* Main Container - Side by Side Layout */}
+          <div style={{ display: 'flex', gap: '1.5rem', height: '100%', minHeight: 0 }}>
+            {/* Left Side - Query Input Section */}
+            <div className="query-input-section" style={{ flex: '0 0 45%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <label 
+                className="query-label" 
+                style={{ color: isDarkMode ? '#9aa3b2' : '#1f2937' }}
+              >
+                Enter SQL Query
+              </label>
+              <div style={{ position: 'relative', marginBottom: error ? '0' : '0', flex: '0 0 auto' }}>
+                <textarea
+                  className="query-textarea"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="SELECT * FROM tbl_devices LIMIT 10;"
+                  style={{
+                    backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                    color: isDarkMode ? '#ffffff' : '#1f2937',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    width: '100%',
+                    overflow: 'auto',
+                    boxSizing: 'border-box'
+                  }}
+                  rows={8}
+                  disabled={loading}
+                />
+              </div>
+              {error && (
+                <div 
+                  className="error-message"
+                  style={{
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                    color: isDarkMode ? '#fca5a5' : '#dc2626',
+                    marginTop: '0.75rem',
+                    flex: '0 0 auto'
+                  }}
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {error}
+                </div>
+              )}
+              <button
+                className="execute-button"
+                onClick={handleExecuteQuery}
+                disabled={loading || !query.trim()}
                 style={{
-                  backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
-                  color: isDarkMode ? '#fca5a5' : '#dc2626',
-                  marginTop: '0.75rem'
+                  backgroundColor: loading || !query.trim() 
+                    ? (isDarkMode ? '#1e2633' : '#d1d5db')
+                    : '#3b82f6',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: '500',
+                  marginTop: '1rem',
+                  cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
+                  flex: '0 0 auto'
                 }}
               >
-                <AlertCircle className="w-4 h-4" />
-                {error}
-              </div>
-            )}
-            <button
-              className="execute-button"
-              onClick={handleExecuteQuery}
-              disabled={loading || !query.trim()}
-              style={{
-                backgroundColor: loading || !query.trim() 
-                  ? (isDarkMode ? '#1e2633' : '#d1d5db')
-                  : '#3b82f6',
-                color: '#ffffff',
-                border: 'none',
-                fontWeight: '500',
-                marginTop: '1rem',
-                cursor: loading || !query.trim() ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Executing...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Execute Query
-                </>
-              )}
-            </button>
-          </div>
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Executing...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    Execute Query
+                  </>
+                )}
+              </button>
+            </div>
 
-          {/* Results Section */}
-          {results && (
-            <div className="results-section" style={{ marginTop: '1.5rem' }}>
+            {/* Right Side - Results Section */}
+            <div className="results-section" style={{ flex: '1', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              {results ? (
+                <>
               <div 
                 className="results-header"
                 style={{
                   borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
                   paddingBottom: '0.75rem',
-                  marginBottom: '1rem'
+                  marginBottom: '1rem',
+                  flex: '0 0 auto'
                 }}
               >
                 <h3 style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>
@@ -235,13 +285,14 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
               </div>
 
               {Array.isArray(results) && results.length > 0 ? (
-                <div className="results-table-container" style={{ overflowX: 'auto' }}>
+                <div className="results-table-container">
                   <table 
                     className="results-table"
                     style={{
                       width: '100%',
                       borderCollapse: 'collapse',
-                      backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff'
+                      backgroundColor: isDarkMode ? '#0b0e13' : '#ffffff',
+                      tableLayout: 'auto'
                     }}
                   >
                     <thead>
@@ -252,6 +303,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
                         {getTableHeaders().map((header, index) => (
                           <th
                             key={index}
+                            onClick={() => handleSort(header)}
                             style={{
                               padding: '0.75rem',
                               textAlign: 'left',
@@ -260,16 +312,33 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
                               fontSize: '0.875rem',
                               borderRight: index < getTableHeaders().length - 1
                                 ? (isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb')
-                                : 'none'
+                                : 'none',
+                              cursor: 'pointer',
+                              userSelect: 'none',
+                              transition: 'background-color 0.2s',
+                              position: 'relative'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#e5e7eb';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? '#1e2633' : '#f9fafb';
                             }}
                           >
-                            {header}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span>{header}</span>
+                              {sortConfig.key === header && (
+                                sortConfig.direction === 'asc' 
+                                  ? <ArrowUp className="w-4 h-4" style={{ opacity: 0.7 }} />
+                                  : <ArrowDown className="w-4 h-4" style={{ opacity: 0.7 }} />
+                              )}
+                            </div>
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {results.map((row, rowIndex) => (
+                      {sortedResults.map((row, rowIndex) => (
                         <tr
                           key={rowIndex}
                           style={{
@@ -334,8 +403,21 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
                   </pre>
                 </div>
               )}
+                </>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: isDarkMode ? '#9aa3b2' : '#6b7280',
+                  fontSize: '0.875rem'
+                }}>
+                  Execute a query to see results here
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
