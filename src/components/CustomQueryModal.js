@@ -181,10 +181,10 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
 
         {/* Content */}
         <div className="modal-content" style={{ backgroundColor: isDarkMode ? '#0f141c' : '#ffffff' }}>
-          {/* Main Container - Side by Side Layout */}
-          <div style={{ display: 'flex', gap: '1.5rem', height: '100%', minHeight: 0 }}>
+          {/* Main Container - Side by Side Layout (Desktop) / Stacked (Mobile) */}
+          <div className="query-layout-container">
             {/* Left Side - Query Input Section */}
-            <div className="query-input-section" style={{ flex: '0 0 35%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div className="query-input-section" style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <label 
                 className="query-label" 
                 style={{ color: isDarkMode ? '#9aa3b2' : '#1f2937' }}
@@ -207,7 +207,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
                     overflow: 'auto',
                     boxSizing: 'border-box'
                   }}
-                  rows={8}
+                  rows={12}
                   disabled={loading}
                 />
               </div>
@@ -260,7 +260,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
             </div>
 
             {/* Right Side - Results Section */}
-            <div className="results-section" style={{ flex: '1', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div className="results-section" style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               {results ? (
                 <>
               <div 

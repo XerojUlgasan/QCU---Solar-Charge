@@ -1757,7 +1757,7 @@ const AdminDashboard = () => {
                     e.target.style.backgroundColor = isDarkMode ? '#0f141c' : '#f9fafb';
                   }}
                 >
-                  <Database className="w-4 h-4" />
+                  <Database className="w-4 h-4" style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }} />
                   Custom Query
                 </button>
                 <button 

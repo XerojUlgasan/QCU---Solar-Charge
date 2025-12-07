@@ -14,7 +14,8 @@
 .custom-query-modal {
   width: 90%;
   max-width: 1200px;
-  max-height: 90vh;
+  height: 85vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   border-radius: 0.75rem;
@@ -53,6 +54,7 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 .query-input-section {
@@ -79,6 +81,7 @@
   overflow-y: auto;
   overflow-x: auto;
   min-height: 0;
+  height: 300px;
 }
 
 .query-textarea:focus {
@@ -216,6 +219,61 @@
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* Layout Container - Desktop side-by-side, Mobile stacked */
+.query-layout-container {
+  display: flex;
+  gap: 1.5rem;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Mobile view - stack vertically */
+@media (max-width: 768px) {
+  .query-layout-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .query-input-section {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+  }
+  
+  .results-section {
+    flex: 1;
+    min-height: 300px;
+  }
+  
+  .query-textarea {
+    height: 200px;
+  }
+  
+  .custom-query-modal {
+    height: 90vh;
+    max-height: 90vh;
+  }
+}
+
+/* Desktop view - side by side with fixed heights */
+@media (min-width: 769px) {
+  .query-layout-container {
+    flex-direction: row;
+  }
+  
+  .query-input-section {
+    flex: 0 0 35%;
+  }
+  
+  .results-section {
+    flex: 1;
+    min-height: 0;
+  }
+  
+  .results-table-container {
+    max-height: calc(85vh - 250px);
+  }
 }
 
 
