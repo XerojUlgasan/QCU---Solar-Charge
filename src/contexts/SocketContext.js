@@ -88,13 +88,95 @@ export const SocketProvider = ({ children }) => {
             console.error('❌ Socket.IO reconnection failed - giving up');
         });
 
-        // Listen to "change" events from backend
+        // Listen to "change" events from backend (Supabase format)
         newSocket.on('change', (data) => {
             console.log('📡 Socket.IO change event received:', data);
-            setLastChange(data);
+            
+            // Map Supabase table names to collection names used in components
+            const tableToCollectionMap = {
+                'tbl_devices': 'devices',
+                'tbl_sessions': 'transactions',
+                'tbl_reports': 'reports',
+                'tbl_contacts': 'contactUs',
+                'tbl_deviceconfig': 'deviceConfig',
+                'tbl_energyhistory': 'energyHistory',
+                'tbl_ratings': 'ratings',
+                'tbl_devicesdata': 'devicesData',
+                'tbl_users': 'users',
+                'tbl_admin': 'admin'
+            };
+            
+            // Map Supabase event types to Firebase-like types
+            const eventTypeMap = {
+                'INSERT': 'added',
+                'UPDATE': 'modified',
+                'DELETE': 'removed'
+            };
+            
+            // Transform Supabase event to Firebase-like format for compatibility
+            const collectionName = tableToCollectionMap[data.table_name] || data.table_name;
+            const eventType = eventTypeMap[data.type] || data.type.toLowerCase();
+            
+            // Extract ID from data - try different possible ID fields
+            // For DELETE events, data.data might be null, so we need to handle that
+            let id = null;
+            const recordData = data.data;
+            
+            if (recordData) {
+                // Try common ID field names based on table
+                if (data.table_name === 'tbl_devices') {
+                    id = recordData.device_id;
+                } else if (data.table_name === 'tbl_sessions') {
+                    id = recordData.transaction_id;
+                } else if (data.table_name === 'tbl_reports') {
+                    id = recordData.report_id;
+                } else if (data.table_name === 'tbl_contacts') {
+                    id = recordData.contact_id;
+                } else if (data.table_name === 'tbl_deviceconfig') {
+                    id = recordData.deviceConfig_id || recordData.device_id;
+                } else if (data.table_name === 'tbl_energyhistory') {
+                    id = recordData.energyHistory_id || recordData.device_id;
+                } else if (data.table_name === 'tbl_ratings') {
+                    id = recordData.rating_id;
+                } else if (data.table_name === 'tbl_devicesdata') {
+                    id = recordData.data_id || recordData.device_id;
+                } else if (data.table_name === 'tbl_users') {
+                    id = recordData.user_id;
+                } else if (data.table_name === 'tbl_admin') {
+                    id = recordData.admin_id;
+                } else {
+                    // Generic fallback - try common ID patterns
+                    const tableNameWithoutPrefix = data.table_name.replace('tbl_', '');
+                    id = recordData.id || 
+                         recordData[`${tableNameWithoutPrefix}_id`] ||
+                         recordData[`${collectionName}_id`] ||
+                         (Object.keys(recordData).length > 0 ? Object.values(recordData)[0] : null);
+                }
+            } else if (data.type === 'DELETE') {
+                // For DELETE events, if data is null, try to get ID from old data if available
+                // Note: The server might need to send payload.old for DELETE events
+                console.warn('⚠️ DELETE event received with null data. Server may need to send payload.old for DELETE events.');
+            }
+            
+            // Transform to Firebase-like format
+            const transformedData = {
+                collectionName: collectionName,
+                type: eventType,
+                id: id,
+                data: data.data,
+                // Keep original Supabase data for reference
+                _supabase: {
+                    table_name: data.table_name,
+                    eventType: data.type,
+                    originalData: data.data
+                }
+            };
+            
+            console.log('📡 Transformed event:', transformedData);
+            setLastChange(transformedData);
             
             // Dispatch custom event so components can listen to specific changes
-            window.dispatchEvent(new CustomEvent('socketChange', { detail: data }));
+            window.dispatchEvent(new CustomEvent('socketChange', { detail: transformedData }));
         });
 
         setSocket(newSocket);

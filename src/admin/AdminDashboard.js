@@ -15,10 +15,12 @@ import {
   X,
   ArrowUpDown,
   Coins,
-  RefreshCw
+  RefreshCw,
+  Database
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import AdminHeader from './AdminHeader';
+import CustomQueryModal from '../components/CustomQueryModal';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSocket } from '../contexts/SocketContext';
@@ -89,6 +91,7 @@ const AdminDashboard = () => {
   const [transactionsFilter, setTransactionsFilter] = useState('newest');
   const [previousPeriodData, setPreviousPeriodData] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState('all');
+  const [isCustomQueryModalOpen, setIsCustomQueryModalOpen] = useState(false);
   const hasFetchedOnceRef = useRef(false);
   const mountTimeRef = useRef(Date.now());
 
@@ -1731,6 +1734,33 @@ const AdminDashboard = () => {
                 </select>
                 </div>
                 <button 
+                  onClick={() => setIsCustomQueryModalOpen(true)}
+                  className="custom-query-button"
+                  style={{
+                    backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
+                    border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
+                    color: isDarkMode ? '#ffffff' : '#1f2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    cursor: 'pointer',
+                    fontWeight: '500',
+                    fontSize: '0.875rem',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode ? '#1e2633' : '#e5e7eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = isDarkMode ? '#0f141c' : '#f9fafb';
+                  }}
+                >
+                  <Database className="w-4 h-4" />
+                  Custom Query
+                </button>
+                <button 
                   onClick={async () => {
                     setLoading(true);
                     setError(null);
@@ -2442,6 +2472,12 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Custom Query Modal */}
+      <CustomQueryModal 
+        isOpen={isCustomQueryModalOpen}
+        onClose={() => setIsCustomQueryModalOpen(false)}
+      />
     </div>
   );
 };
