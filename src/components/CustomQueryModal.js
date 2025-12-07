@@ -184,7 +184,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
           {/* Main Container - Side by Side Layout */}
           <div style={{ display: 'flex', gap: '1.5rem', height: '100%', minHeight: 0 }}>
             {/* Left Side - Query Input Section */}
-            <div className="query-input-section" style={{ flex: '0 0 45%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div className="query-input-section" style={{ flex: '0 0 35%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <label 
                 className="query-label" 
                 style={{ color: isDarkMode ? '#9aa3b2' : '#1f2937' }}
@@ -239,7 +239,10 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
                   fontWeight: '500',
                   marginTop: '1rem',
                   cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
-                  flex: '0 0 auto'
+                  flex: '0 0 auto',
+                  width: 'auto',
+                  alignSelf: 'flex-start',
+                  padding: '0.75rem 1.5rem'
                 }}
               >
                 {loading ? (
