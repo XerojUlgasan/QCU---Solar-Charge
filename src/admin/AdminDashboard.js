@@ -141,11 +141,17 @@ const AdminDashboard = () => {
         
         const isDeviceRecentlyUpdated = (timestamp) => {
           if (!timestamp) return false;
-          const ts = typeof timestamp === 'number'
-            ? new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp)
-            : new Date(timestamp);
+          let ts;
+          if (typeof timestamp === 'number') {
+            ts = new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp);
+          } else if (timestamp.seconds) {
+            ts = new Date(timestamp.seconds * 1000);
+          } else {
+            ts = new Date(timestamp);
+          }
           if (Number.isNaN(ts.getTime())) return false;
-          return (Date.now() - ts.getTime()) <= 60 * 1000; // 1 minute freshness
+          const timeDiff = Date.now() - ts.getTime();
+          return timeDiff <= 60000; // Active if updated within 1 minute (60000ms)
         };
 
         if (data.devices && Array.isArray(data.devices)) {
@@ -203,11 +209,95 @@ const AdminDashboard = () => {
           }
         }
         
+        // Calculate actual daily/weekly/monthly/total values from raw transaction and energy data
+        const calculatePeriodValues = () => {
+          const now = new Date();
+          const transactions = data.transactions || [];
+          
+          // Helper to check if date is in period
+          const isInPeriod = (date, period) => {
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return false;
+            
+            switch (period) {
+              case 'daily':
+                // Today only (since midnight)
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+                return d >= todayStart;
+              case 'weekly':
+                // Last 7 days
+                const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                return d >= weekStart;
+              case 'monthly':
+                // This month
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                return d >= monthStart;
+              case 'total':
+                return true; // All time
+              default:
+                return false;
+            }
+          };
+          
+          // Calculate revenue and uses for each period
+          const periods = ['daily', 'weekly', 'monthly', 'total'];
+          const revenue = {};
+          const uses = {};
+          const energy = {};
+          
+          periods.forEach(period => {
+            // Calculate revenue and uses from transactions
+            const periodTransactions = transactions.filter(t => {
+              const tTime = t.time || t.timestamp || t.date_time;
+              if (!tTime) return false;
+              const tDate = tTime.seconds ? new Date(tTime.seconds * 1000) : new Date(tTime);
+              return isInPeriod(tDate, period);
+            });
+            
+            revenue[period] = periodTransactions.reduce((sum, t) => sum + toNumber(t.amount), 0);
+            uses[period] = periodTransactions.length;
+            
+            // Calculate energy from energy_history
+            const allEnergyData = [];
+            if (data.energy_history) allEnergyData.push(...data.energy_history);
+            devicesWithHistory.forEach(device => {
+              if (device.energy_history) allEnergyData.push(...device.energy_history);
+            });
+            
+            const periodEnergy = allEnergyData.filter(e => {
+              if (!e.date_time) return false;
+              const eDate = e.date_time.seconds ? new Date(e.date_time.seconds * 1000) : new Date(e.date_time);
+              return isInPeriod(eDate, period);
+            });
+            
+            energy[period] = periodEnergy.reduce((sum, e) => sum + toNumber(e.energy_accumulated || e.energy || 0), 0);
+          });
+          
+          return { revenue, uses, energy };
+        };
+        
+        const calculatedValues = calculatePeriodValues();
+        
+        console.log('📅 Calculated period values:', {
+          currentTime: new Date().toISOString(),
+          revenue: calculatedValues.revenue,
+          uses: calculatedValues.uses,
+          energy: calculatedValues.energy,
+          transactionCount: data.transactions?.length || 0,
+          todayTransactions: data.transactions?.filter(t => {
+            const tTime = t.time || t.timestamp || t.date_time;
+            if (!tTime) return false;
+            const tDate = tTime.seconds ? new Date(tTime.seconds * 1000) : new Date(tTime);
+            const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+            return tDate >= todayStart;
+          }).length || 0
+        });
+        
         // Map the API data to our expected format
         const mappedData = {
-          revenue: data.revenue || { daily: 0, weekly: 0, monthly: 0, total: 0 },
-          uses: data.uses || { daily: 0, weekly: 0, monthly: 0, total: 0 },
-          energy: data.energy_generated || { daily: 0, weekly: 0, monthly: 0, total: 0 },
+          revenue: calculatedValues.revenue,
+          uses: calculatedValues.uses,
+          energy: calculatedValues.energy,
           transactions: data.transactions || [],
           maintenance: [], // Not provided in API yet
           total_hours: 0, // Not provided in API yet
@@ -218,8 +308,8 @@ const AdminDashboard = () => {
           percentage: aggregatePercentage,
           // Additional data from API - use devices with energy_history if available
           devices: devicesWithHistory,
-          active_devices: data.active_devices || activeDevices,
-          total_devices: data.total_devices || (devicesWithHistory ? devicesWithHistory.length : 0),
+          active_devices: activeDevices, // Always use our calculated value based on 1-minute freshness
+          total_devices: devicesWithHistory ? devicesWithHistory.length : 0,
           power_output: aggregatePower,
           // Include energy_history from API if available at root level
           energy_history: data.energy_history || []
@@ -281,7 +371,11 @@ const AdminDashboard = () => {
         current: 0,
         power: 0,
         temperature: 0,
-        percentage: 0
+        percentage: 0,
+        devices: [],
+        active_devices: 0,
+        total_devices: 0,
+        power_output: 0
       });
       setError(`Failed to load dashboard data: ${error.message}`);
     }
@@ -395,6 +489,19 @@ const AdminDashboard = () => {
     };
   }, [isConnected, onCollectionChange, fetchOverviewData]);
 
+  // Periodically refresh device status to update active indicators
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Force re-render by refreshing data
+      if (overviewData.devices && overviewData.devices.length > 0) {
+        console.log('🔄 Refreshing device status indicators...');
+        fetchOverviewData();
+      }
+    }, 30000); // every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [overviewData.devices, fetchOverviewData]);
+
   // Fetch all data when component mounts
   useEffect(() => {
     const fetchAllData = async () => {
@@ -488,7 +595,10 @@ const AdminDashboard = () => {
 
   // Calculate percentage change between current and previous period
   const calculatePercentageChange = (current, previous) => {
-    if (!previous || previous === 0) return { change: "N/A", type: "neutral" };
+    if (previous === null || previous === undefined || previous === 0) {
+      if (current > 0) return { change: "New", type: "positive" };
+      return { change: "No data", type: "neutral" };
+    }
     
     const change = ((current - previous) / previous) * 100;
     const roundedChange = Math.round(change * 10) / 10; // Round to 1 decimal place
@@ -502,6 +612,113 @@ const AdminDashboard = () => {
     }
   };
 
+  // Calculate previous period data from historical transactions and energy data
+  const calculatePreviousPeriodData = () => {
+    const now = new Date();
+    let currentStart, currentEnd, previousStart, previousEnd;
+
+    // Define time ranges based on filter
+    switch (timeFilter) {
+      case 'daily':
+        // Current: today (00:00 to now)
+        currentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        currentEnd = now;
+        // Previous: yesterday (00:00 to 23:59)
+        previousStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+        previousEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        break;
+      case 'weekly':
+        // Current: last 7 days
+        currentStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        currentEnd = now;
+        // Previous: 7 days before that
+        previousStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+        previousEnd = currentStart;
+        break;
+      case 'monthly':
+        // Current: this month
+        currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        currentEnd = now;
+        // Previous: last month
+        previousStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        previousEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'total':
+        // For total, compare current all-time to previous 6 months ago
+        currentStart = new Date(0);
+        currentEnd = now;
+        previousStart = new Date(0);
+        previousEnd = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        return { energy: 0, revenue: 0, uses: 0 };
+    }
+
+    // Calculate previous period revenue and uses from transactions
+    let previousRevenue = 0;
+    let previousUses = 0;
+
+    if (overviewData.transactions && Array.isArray(overviewData.transactions)) {
+      overviewData.transactions.forEach(transaction => {
+        const transactionTime = transaction.time || transaction.timestamp || transaction.date_time;
+        if (!transactionTime) return;
+
+        let transactionDate;
+        if (transactionTime.seconds) {
+          transactionDate = new Date(transactionTime.seconds * 1000);
+        } else {
+          transactionDate = new Date(transactionTime);
+        }
+
+        // Check if transaction is in previous period
+        if (transactionDate >= previousStart && transactionDate < previousEnd) {
+          previousRevenue += toNumber(transaction.amount);
+          previousUses += 1;
+        }
+      });
+    }
+
+    // Calculate previous period energy from energy_history
+    let previousEnergy = 0;
+    const allEnergyData = [];
+
+    // Collect all energy history data
+    if (overviewData.energy_history && Array.isArray(overviewData.energy_history)) {
+      allEnergyData.push(...overviewData.energy_history);
+    }
+
+    if (overviewData.devices && Array.isArray(overviewData.devices)) {
+      overviewData.devices.forEach(device => {
+        if (device.energy_history && Array.isArray(device.energy_history)) {
+          allEnergyData.push(...device.energy_history);
+        }
+      });
+    }
+
+    // Sum energy from previous period
+    allEnergyData.forEach(entry => {
+      if (!entry.date_time) return;
+
+      let entryDate;
+      if (entry.date_time.seconds) {
+        entryDate = new Date(entry.date_time.seconds * 1000);
+      } else {
+        entryDate = new Date(entry.date_time);
+      }
+
+      // Check if entry is in previous period
+      if (entryDate >= previousStart && entryDate < previousEnd) {
+        previousEnergy += toNumber(entry.energy_accumulated || entry.energy || 0);
+      }
+    });
+
+    return {
+      energy: previousEnergy,
+      revenue: previousRevenue,
+      uses: previousUses
+    };
+  };
+
   // Calculate overview stats from API data and time filter
   const calculateOverviewStats = () => {
     // Get current period data (ensure numeric)
@@ -510,59 +727,29 @@ const AdminDashboard = () => {
     const currentUses = toNumber(overviewData.uses[timeFilter]);
     const currentActiveDevices = toNumber(overviewData.active_devices);
     
-    // Calculate deterministic previous period data based on filter
-    // Using fixed percentages to ensure consistent results
-    const getPreviousPeriodData = () => {
-      switch (timeFilter) {
-        case 'daily':
-          // Compare to previous day - more volatile but consistent
-          return {
-            energy: currentEnergy * 0.92, // 8% less than current
-            revenue: currentRevenue * 0.88, // 12% less than current
-            uses: currentUses * 0.85, // 15% less than current
-            activeDevices: Math.max(0, currentActiveDevices - 1) // 1 less device
-          };
-        case 'weekly':
-          // Compare to previous week - moderate variation
-          return {
-            energy: currentEnergy * 0.95, // 5% less than current
-            revenue: currentRevenue * 0.92, // 8% less than current
-            uses: currentUses * 0.90, // 10% less than current
-            activeDevices: Math.max(0, currentActiveDevices - 1) // 1 less device
-          };
-        case 'monthly':
-          // Compare to previous month - less volatile, more growth
-          return {
-            energy: currentEnergy * 0.88, // 12% less than current
-            revenue: currentRevenue * 0.85, // 15% less than current
-            uses: currentUses * 0.82, // 18% less than current
-            activeDevices: Math.max(0, currentActiveDevices - 1) // 1 less device
-          };
-        case 'total':
-          // Compare to previous period (e.g., last quarter) - steady growth
-          return {
-            energy: currentEnergy * 0.80, // 20% less than current
-            revenue: currentRevenue * 0.75, // 25% less than current
-            uses: currentUses * 0.70, // 30% less than current
-            activeDevices: Math.max(0, currentActiveDevices - 1) // 1 less device
-          };
-        default:
-          return {
-            energy: currentEnergy * 0.95,
-            revenue: currentRevenue * 0.92,
-            uses: currentUses * 0.88,
-            activeDevices: Math.max(0, currentActiveDevices - 1)
-          };
-      }
-    };
+    // Calculate real previous period data from historical data
+    const previousData = calculatePreviousPeriodData();
     
-    const previousData = getPreviousPeriodData();
+    // Debug logging
+    console.log(`📊 Period Comparison (${timeFilter}):`, {
+      current: { energy: currentEnergy, revenue: currentRevenue, uses: currentUses },
+      previous: previousData,
+      dataAvailable: {
+        transactions: overviewData.transactions?.length || 0,
+        energyHistory: overviewData.energy_history?.length || 0,
+        devicesWithHistory: overviewData.devices?.filter(d => d.energy_history).length || 0
+      }
+    });
     
     // Calculate changes
     const energyChange = calculatePercentageChange(currentEnergy, previousData.energy);
     const revenueChange = calculatePercentageChange(currentRevenue, previousData.revenue);
     const usesChange = calculatePercentageChange(currentUses, previousData.uses);
-    const activeDevicesChange = calculatePercentageChange(currentActiveDevices, previousData.activeDevices);
+    
+    console.log('📈 Calculated changes:', { energyChange, revenueChange, usesChange });
+    
+    // Active devices comparison doesn't make sense, so we'll hide it
+    const activeDevicesChange = null;
     
     return [
       {
@@ -639,6 +826,24 @@ const AdminDashboard = () => {
     return "Unknown Location";
   };
 
+  // Helper function to check if device is recently updated (active)
+  const isDeviceRecentlyUpdated = (timestamp) => {
+    if (!timestamp) return false;
+    
+    let ts;
+    if (typeof timestamp === 'number') {
+      ts = new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp);
+    } else if (timestamp.seconds) {
+      ts = new Date(timestamp.seconds * 1000);
+    } else {
+      ts = new Date(timestamp);
+    }
+    
+    if (Number.isNaN(ts.getTime())) return false;
+    const timeDiff = Date.now() - ts.getTime();
+    return timeDiff <= 60000; // Active if updated within 1 minute (60000ms)
+  };
+
   // Use devices from API data, with fallback to mock data
   const deviceStatus = overviewData.devices && overviewData.devices.length > 0 
     ? [...overviewData.devices]
@@ -655,11 +860,25 @@ const AdminDashboard = () => {
         // Calculate individual device revenue from actual transactions
         const deviceRevenue = calculateDeviceRevenue(actualDeviceId, overviewData.transactions);
         
+        // Determine actual status based on last_updated timestamp
+        const timestampToCheck = device.last_updated || device.timestamp;
+        const isActive = isDeviceRecentlyUpdated(timestampToCheck);
+        const actualStatus = isActive ? 'active' : (timestampToCheck ? 'inactive' : 'unknown');
+        
+        // Debug logging
+        console.log(`Device ${device.name}:`, {
+          timestamp: timestampToCheck,
+          isActive,
+          actualStatus,
+          now: new Date().toISOString(),
+          timestampDate: timestampToCheck?.seconds ? new Date(timestampToCheck.seconds * 1000).toISOString() : timestampToCheck
+        });
+        
         return {
           id: actualDeviceId || `Device-${Math.random()}`,
           name: device.name || "Unknown Device",
           location: formatDeviceLocation(device.location, device.building),
-          status: device.status || "unknown",
+          status: actualStatus,
           voltage: `${device.volt || 0}V`,
           power: formatPower(device.power || 0),
           usage: device.percentage || 0,
@@ -670,31 +889,47 @@ const AdminDashboard = () => {
     : [   
       ];
 
-  // Helper function to format timestamp
+  // Helper function to format timestamp in 12-hour format
   const formatTransactionTime = (timeData) => {
     if (!timeData) return "Unknown time";
     
-    // If it's already a string, return it
-    if (typeof timeData === 'string') return timeData;
+    // If it's already a formatted string with time, return it
+    if (typeof timeData === 'string' && (timeData.includes('AM') || timeData.includes('PM'))) return timeData;
+    
+    let date;
     
     // If it's a Firestore timestamp object
     if (timeData.seconds) {
-      const date = new Date(timeData.seconds * 1000);
-      return date.toLocaleString();
+      date = new Date(timeData.seconds * 1000);
     }
-    
     // If it's a Date object
-    if (timeData instanceof Date) {
-      return timeData.toLocaleString();
+    else if (timeData instanceof Date) {
+      date = timeData;
     }
-    
     // If it's a number (Unix timestamp)
-    if (typeof timeData === 'number') {
-      const date = new Date(timeData);
-      return date.toLocaleString();
+    else if (typeof timeData === 'number') {
+      date = new Date(timeData < 1e11 ? timeData * 1000 : timeData);
+    }
+    // Try to parse string
+    else if (typeof timeData === 'string') {
+      date = new Date(timeData);
+    }
+    else {
+      return "Unknown time";
     }
     
-    return "Unknown time";
+    // Validate date
+    if (isNaN(date.getTime())) return "Unknown time";
+    
+    // Format as: "Dec 8, 2025, 2:30 PM"
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   // Use transactions from API data, sort by most recent first, then limit to 6 most recent
@@ -970,7 +1205,7 @@ const AdminDashboard = () => {
 
       switch (timeFilter) {
         case 'daily':
-          periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
           fullDate = entryDate.toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -1068,7 +1303,7 @@ const AdminDashboard = () => {
         let periodKey;
         switch (timeFilter) {
           case 'daily':
-            periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             break;
           case 'weekly':
             periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -1109,7 +1344,7 @@ const AdminDashboard = () => {
         let periodKey;
         switch (timeFilter) {
           case 'daily':
-            periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             break;
           case 'weekly':
             periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -1343,7 +1578,7 @@ const AdminDashboard = () => {
 
       switch (timeFilter) {
         case 'daily':
-          periodKey = transactionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          periodKey = transactionDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
           break;
         case 'weekly':
           periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -1581,7 +1816,7 @@ const AdminDashboard = () => {
 
       switch (timeFilter) {
         case 'daily':
-          periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
           fullDate = entryDate.toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -1866,9 +2101,8 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <div className="device-stats">
-                    <div className="device-power" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{device.power}</div>
-                    <div className="device-voltage" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>{device.voltage}</div>
-                          <div className="device-usage" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{device.usage}%</div>
+                    <div className="device-power">{device.power}</div>
+                    <div className="device-usage">{device.usage}%</div>
                   </div>
                 </div>
                     ))
@@ -1877,72 +2111,6 @@ const AdminDashboard = () => {
                       <p>No device data available</p>
                     </div>
                   )}
-            </div>
-          </div>
-
-          {/* Energy Production */}
-          <div className="main-card" style={{
-            backgroundColor: isDarkMode ? '#0f141c' : '#f9fafb',
-            border: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db',
-            boxShadow: isDarkMode ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-          }}>
-            <div className="card-header">
-              <div className="card-title" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
-                <Battery className="w-5 h-5" />
-                <span>Energy Production</span>
-              </div>
-              <div className="card-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Daily energy generation across all stations</div>
-            </div>
-            <div className="card-content">
-              <div className="energy-stats">
-                <div className="energy-progress">
-                  <div className="progress-label" style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>
-                    <span>Current Power Output</span>
-                    <span className="progress-value">{overviewData.power_output?.toFixed(2) || 0}W</span>
-                  </div>
-                  <div className="progress-bar" style={{backgroundColor: isDarkMode ? '#1e2633' : '#e5e7eb'}}>
-                    <div className="progress-fill" style={{width: `${Math.min((overviewData.percentage || 0), 100)}%`}}></div>
-                  </div>
-                  <div className="progress-text" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
-                    {overviewData.percentage?.toFixed(2) || 0}% battery level
-                  </div>
-                </div>
-                
-                <div className="energy-metrics">
-                  <div className="metric-card metric-green">
-                    <div className="metric-value">{overviewData.volt?.toFixed(2)}V</div>
-                    <div className="metric-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Voltage</div>
-                  </div>
-                  <div className="metric-card metric-blue">
-                    <div className="metric-value">{overviewData.current?.toFixed(2)}A</div>
-                    <div className="metric-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Current</div>
-                  </div>
-                </div>
-                
-                <div className="energy-generation" style={{
-                  backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-                  border: isDarkMode ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(59, 130, 246, 0.15)'
-                }}>
-                  <div className="generation-header">
-                    <span className="generation-title" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Energy Generated Today</span>
-                    <span className="generation-value">{formatEnergy(overviewData.energy.daily)}</span>
-                  </div>
-                  <div className="generation-details">
-                    <div className="generation-item">
-                      <span style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>This Week:</span>
-                      <span style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{formatEnergy(overviewData.energy.weekly)}</span>
-                    </div>
-                    <div className="generation-item">
-                      <span style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>This Month:</span>
-                      <span style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{formatEnergy(overviewData.energy.monthly)}</span>
-                    </div>
-                    <div className="generation-item">
-                      <span style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Total:</span>
-                      <span style={{color: isDarkMode ? '#ffffff' : '#1f2937'}}>{formatEnergy(overviewData.energy.total)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

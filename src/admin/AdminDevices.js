@@ -277,9 +277,11 @@ const AdminDevices = () => {
   };
 
   const isDeviceRecentlyUpdated = (timestamp) => {
+    if (!timestamp) return false;
     const dt = normalizeTimestampToDate(timestamp);
     if (!dt || Number.isNaN(dt.getTime())) return false;
-    return (Date.now() - dt.getTime()) <= 60 * 1000; // 1 minute freshness
+    const timeDiff = Date.now() - dt.getTime();
+    return timeDiff <= 60000; // Active if updated within 1 minute (60000ms)
   };
 
   const mapSocketDevice = (incomingDevice, existingDevice) => {

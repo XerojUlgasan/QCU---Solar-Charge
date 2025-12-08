@@ -323,8 +323,31 @@ const DeviceDetail = () => {
       // Only update if the energy history is for this device
       if (data.data && (data.data.device_id === deviceId || data.id === deviceId)) {
         console.log('📡 Energy history change detected for device', deviceId, ':', data);
-        // Energy history changes might affect charts and analytics, so refetch
-        fetchDeviceData();
+        // Update energy history directly without refetching
+        setDeviceData(prevData => {
+          if (!prevData) return prevData;
+          
+          const updatedEnergyHistory = [...(prevData.energy_history || [])];
+          
+          if (data.type === 'added') {
+            updatedEnergyHistory.push(data.data);
+          } else if (data.type === 'modified') {
+            const index = updatedEnergyHistory.findIndex(e => e.id === data.id || (e.device_id === data.data.device_id && e.timestamp === data.data.timestamp));
+            if (index !== -1) {
+              updatedEnergyHistory[index] = data.data;
+            }
+          } else if (data.type === 'removed') {
+            const index = updatedEnergyHistory.findIndex(e => e.id === data.id);
+            if (index !== -1) {
+              updatedEnergyHistory.splice(index, 1);
+            }
+          }
+          
+          return {
+            ...prevData,
+            energy_history: updatedEnergyHistory
+          };
+        });
       }
     });
 
@@ -341,8 +364,31 @@ const DeviceDetail = () => {
       // Only update if the transaction is for this device
       if (data.data && data.data.device_id === deviceId) {
         console.log('📡 Transaction change detected for device', deviceId, ':', data);
-        // Transaction changes affect revenue calculations, so refetch
-        fetchDeviceData();
+        // Update transactions directly without refetching
+        setDeviceData(prevData => {
+          if (!prevData) return prevData;
+          
+          const updatedTransactions = [...(prevData.transactions || [])];
+          
+          if (data.type === 'added') {
+            updatedTransactions.push(data.data);
+          } else if (data.type === 'modified') {
+            const index = updatedTransactions.findIndex(t => t.id === data.id);
+            if (index !== -1) {
+              updatedTransactions[index] = data.data;
+            }
+          } else if (data.type === 'removed') {
+            const index = updatedTransactions.findIndex(t => t.id === data.id);
+            if (index !== -1) {
+              updatedTransactions.splice(index, 1);
+            }
+          }
+          
+          return {
+            ...prevData,
+            transactions: updatedTransactions
+          };
+        });
       }
     });
 
@@ -353,7 +399,7 @@ const DeviceDetail = () => {
       cleanupDeviceData();
       cleanupTransactions();
     };
-  }, [isConnected, deviceId, onCollectionChange, onDocumentChange, fetchDeviceData, fetchDeviceConfig]);
+  }, [isConnected, deviceId, onCollectionChange, onDocumentChange]);
 
   // Helper function to format Firestore timestamps
   const formatFirestoreTimestamp = (timestamp) => {
@@ -426,9 +472,11 @@ const DeviceDetail = () => {
   };
 
   const isDeviceRecentlyUpdated = (timestamp) => {
+    if (!timestamp) return false;
     const dt = normalizeTimestampToDate(timestamp);
     if (!dt || Number.isNaN(dt.getTime())) return false;
-    return (Date.now() - dt.getTime()) <= 60 * 1000; // 1 minute freshness
+    const timeDiff = Date.now() - dt.getTime();
+    return timeDiff <= 60000; // Active if updated within 1 minute (60000ms)
   };
 
   // Get all metrics data for "all" option
@@ -501,7 +549,7 @@ const DeviceDetail = () => {
 
       switch (timeFilter) {
         case 'daily':
-          periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
           fullDate = entryDate.toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -599,7 +647,7 @@ const DeviceDetail = () => {
         let periodKey;
         switch (timeFilter) {
           case 'daily':
-            periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             break;
           case 'weekly':
             periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -640,7 +688,7 @@ const DeviceDetail = () => {
         let periodKey;
         switch (timeFilter) {
           case 'daily':
-            periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             break;
           case 'weekly':
             periodKey = entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -809,7 +857,7 @@ const DeviceDetail = () => {
 
       switch (timeFilter) {
         case 'daily':
-          periodKey = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          periodKey = entryDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
           fullDate = entryDate.toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -985,7 +1033,7 @@ const DeviceDetail = () => {
 
           switch (timeFilter) {
             case 'daily':
-              periodKey = transactionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+              periodKey = transactionDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
               break;
             case 'weekly':
               periodKey = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -2378,11 +2426,8 @@ const DeviceDetail = () => {
                           }
                           
                           const improvement = ((currentRevenue - previousRevenue) / previousRevenue) * 100;
-                          
-                          // Cap extreme percentages to prevent unrealistic values
-                          const cappedImprovement = Math.max(-100, Math.min(100, improvement));
-                          const sign = cappedImprovement >= 0 ? '+' : '';
-                          return `${sign}${cappedImprovement.toFixed(1)}% vs prev period`;
+                          const sign = improvement >= 0 ? '+' : '';
+                          return `${sign}${improvement.toFixed(1)}% vs prev period`;
                         })()}</span>
                       </div>
                     </div>
@@ -2686,11 +2731,8 @@ const DeviceDetail = () => {
                           }
                           
                           const improvement = ((currentUses - previousUses) / previousUses) * 100;
-                          
-                          // Cap extreme percentages to prevent unrealistic values
-                          const cappedImprovement = Math.max(-100, Math.min(100, improvement));
-                          const sign = cappedImprovement >= 0 ? '+' : '';
-                          return `${sign}${cappedImprovement.toFixed(1)}% vs prev period`;
+                          const sign = improvement >= 0 ? '+' : '';
+                          return `${sign}${improvement.toFixed(1)}% vs prev period`;
                         })()}</span>
                 </div>
                     </div>
