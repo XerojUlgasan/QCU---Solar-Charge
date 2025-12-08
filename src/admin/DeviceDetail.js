@@ -328,6 +328,14 @@ const DeviceDetail = () => {
       }
     });
 
+    // Listen to live metrics (devicesdata table mapped to devicesData)
+    const cleanupDeviceData = onCollectionChange('devicesData', (data) => {
+      const metrics = data?.data;
+      if (!metrics || metrics.device_id !== deviceId) return;
+
+      setDeviceData(prev => mergeSocketDeviceData(metrics, prev));
+    });
+
     // Listen to transaction changes (affects this device's revenue)
     const cleanupTransactions = onCollectionChange('transactions', (data) => {
       // Only update if the transaction is for this device
@@ -342,6 +350,7 @@ const DeviceDetail = () => {
       cleanupDevice();
       cleanupDeviceConfig();
       cleanupEnergy();
+      cleanupDeviceData();
       cleanupTransactions();
     };
   }, [isConnected, deviceId, onCollectionChange, onDocumentChange, fetchDeviceData, fetchDeviceConfig]);

@@ -279,15 +279,35 @@ const AdminDevices = () => {
     const source = incomingDevice || {};
     const prev = existingDevice || {};
 
-    const actualDeviceId = source.id || source.device_id || source.deviceId || source._id || prev.id;
-    const voltageVal = safeNumber(source.volt ?? source.voltage ?? parseFloat(prev.voltage), 0);
-    const currentVal = safeNumber(source.current ?? parseFloat(prev.current), 0);
-    const powerVal = safeNumber(source.power ?? parseFloat(prev.power), 0);
-    const energyVal = safeNumber(source.energy ?? parseFloat(prev.energy), 0);
-    const batteryVal = safeNumber(source.percentage ?? source.batteryLevel ?? prev.batteryLevel, 0);
+    // We receive real-time rows from multiple tables (devices and devicesdata).
+    // devicesdata rows carry live metrics; devices rows carry identity/meta.
+    const actualDeviceId = source.device_id || source.id || source.deviceId || source._id || prev.id;
+    const voltageVal = safeNumber(source.volt ?? source.voltage ?? prev.voltage?.replace?.('V', '') ?? prev.voltage, 0);
+    const currentVal = safeNumber(source.current ?? prev.current?.replace?.('A', '') ?? prev.current, 0);
+    const powerVal = safeNumber(source.power ?? prev.power?.replace?.(/[kWWh]+/g, '') ?? prev.power, 0);
+    const energyVal = safeNumber(source.energy ?? prev.energy?.replace?.(/[kWWh]+/g, '') ?? prev.energy, 0);
+    const batteryVal = safeNumber(
+      source.percentage ??
+      source.batteryLevel ??
+      source.battVolt ?? // possible from devicesdata
+      prev.batteryLevel,
+      0
+    );
 
-    const lastUpdatedRaw = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp || prev.lastUpdateRaw;
-    const dateAddedRaw = source.date_added || source.created_at || source.added_at || source.timestamp || source.last_updated || prev._dateAddedSeconds;
+    const lastUpdatedRaw =
+      source.last_updated ||
+      source.lastUpdate ||
+      source.updated_at ||
+      source.timestamp ||
+      prev.lastUpdateRaw;
+
+    const dateAddedRaw =
+      source.date_added ||
+      source.created_at ||
+      source.added_at ||
+      source.timestamp ||
+      source.last_updated ||
+      prev._dateAddedSeconds;
     const dateAddedSeconds = normalizeTimestampToDate(dateAddedRaw)?.getTime() ? Math.floor(normalizeTimestampToDate(dateAddedRaw).getTime() / 1000) : prev._dateAddedSeconds;
 
     return {
@@ -394,6 +414,21 @@ const AdminDevices = () => {
       });
     });
 
+    // Listen to live metrics (devicesdata table mapped to devicesData)
+    const cleanupDeviceData = onCollectionChange('devicesData', (data) => {
+      setDevices(prevDevices => {
+        const { data: metrics } = data;
+        const deviceId = metrics?.device_id;
+        if (!deviceId) return prevDevices;
+
+        return prevDevices.map(dev =>
+          dev.id === deviceId
+            ? mapSocketDevice(metrics, dev)
+            : dev
+        );
+      });
+    });
+
     // Listen to transaction changes (for revenue updates)
     const cleanupTransactions = onCollectionChange('transactions', (data) => {
       console.log('📡 Transaction change detected in AdminDevices, updating revenue...', data);
@@ -429,6 +464,7 @@ const AdminDevices = () => {
 
     return () => {
       cleanupDevices();
+      cleanupDeviceData();
       cleanupTransactions();
       cleanupDeviceConfigs();
     };
