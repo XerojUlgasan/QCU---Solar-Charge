@@ -92,7 +92,6 @@ const AdminDashboard = () => {
   const [previousPeriodData, setPreviousPeriodData] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState('all');
   const [isCustomQueryModalOpen, setIsCustomQueryModalOpen] = useState(false);
-  const hasFetchedOnceRef = useRef(false);
   const mountTimeRef = useRef(Date.now());
 
   // Fetch dashboard data from API
@@ -104,10 +103,6 @@ const AdminDashboard = () => {
     }
 
     try {
-      if (hasFetchedOnceRef.current) {
-        console.log('Skipping duplicate initial fetch (already fetched once).');
-        return;
-      }
       console.log('=== FETCHING DASHBOARD DATA ===');
       console.log('Using authenticatedAdminFetch:', typeof authenticatedAdminFetch);
       
@@ -144,27 +139,23 @@ const AdminDashboard = () => {
         let aggregatePercentage = 0;
         let activeDevices = 0;
         
-        if (data.devices && Array.isArray(data.devices)) {
-          const isDeviceRecentlyUpdated = (timestamp) => {
-            if (!timestamp) return false;
-            const ts = typeof timestamp === 'number' ? new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp) : new Date(timestamp);
-            if (Number.isNaN(ts.getTime())) return false;
-            return (Date.now() - ts.getTime()) <= 60 * 1000; // 1 minute freshness
-          };
+        const isDeviceRecentlyUpdated = (timestamp) => {
+          if (!timestamp) return false;
+          const ts = typeof timestamp === 'number'
+            ? new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp)
+            : new Date(timestamp);
+          if (Number.isNaN(ts.getTime())) return false;
+          return (Date.now() - ts.getTime()) <= 60 * 1000; // 1 minute freshness
+        };
 
+        if (data.devices && Array.isArray(data.devices)) {
           // Count devices as active if last_updated within 1 minute
           activeDevices = data.devices.filter(device => isDeviceRecentlyUpdated(device.last_updated || device.timestamp)).length;
           
-          // Calculate averages from active devices
-          const activeDevicesList = data.devices.filter(device => {
-            const status = device.status?.toLowerCase();
-            return status === 'active' || 
-                   status === 'online' || 
-                   status === 'running' || 
-                   status === 'operational' ||
-                   status === 'connected' ||
-                   (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
-          });
+          // Calculate averages from active devices based on freshness, not status label
+          const activeDevicesList = data.devices.filter(device =>
+            isDeviceRecentlyUpdated(device.last_updated || device.timestamp)
+          );
           
           if (activeDevicesList.length > 0) {
             aggregateVolt = activeDevicesList.reduce((sum, device) => sum + toNumber(device.volt), 0) / activeDevicesList.length;
@@ -236,7 +227,6 @@ const AdminDashboard = () => {
         
         setOverviewData(mappedData);
         setConnectionStatus('connected');
-        hasFetchedOnceRef.current = true;
         console.log('✅ Dashboard data mapped and set successfully:', mappedData);
         console.log('📊 Device Summary:', {
           total: mappedData.total_devices,
@@ -319,37 +309,49 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!isConnected) return;
 
-    // Listen to device changes - refresh dashboard for complex calculations
+    const debouncedRefresh = (() => {
+      let timer = null;
+      return () => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          fetchOverviewData();
+          timer = null;
+        }, 800);
+      };
+    })();
+
+    // Listen to devices changes - refresh dashboard to keep counts fresh
     const cleanupDevices = onCollectionChange('devices', (data) => {
-      console.log('📡 Device change detected, refreshing dashboard...', data);
-      // Throttle immediate re-fetches right after mount to avoid double load post-login
-      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
-      hasFetchedOnceRef.current = false; // allow one refetch after socket change
-      fetchOverviewData();
+      console.log('📡 Devices change detected, refreshing dashboard...', data);
+      debouncedRefresh();
+    });
+
+    // Listen to live metrics (devicesData) to keep active count fresh
+    const cleanupDeviceData = onCollectionChange('devicesData', (data) => {
+      console.log('📡 devicesData change detected, refreshing dashboard...', data);
+      debouncedRefresh();
+    });
+    const cleanupDeviceDataLower = onCollectionChange('devicesdata', (data) => {
+      console.log('📡 devicesdata change detected, refreshing dashboard...', data);
+      debouncedRefresh();
     });
 
     // Listen to transaction changes - refresh dashboard for revenue calculations
     const cleanupTransactions = onCollectionChange('transactions', (data) => {
       console.log('📡 Transaction change detected, refreshing dashboard...', data);
-      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
-      hasFetchedOnceRef.current = false;
-      fetchOverviewData();
+      debouncedRefresh();
     });
 
     // Listen to energy history changes - refresh dashboard for energy calculations
     const cleanupEnergy = onCollectionChange('energyHistory', (data) => {
       console.log('📡 Energy history change detected, refreshing dashboard...', data);
-      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
-      hasFetchedOnceRef.current = false;
-      fetchOverviewData();
+      debouncedRefresh();
     });
 
     // Listen to device config changes - refresh dashboard
     const cleanupDeviceConfig = onCollectionChange('deviceConfig', (data) => {
       console.log('📡 Device config change detected, refreshing dashboard...', data);
-      if (Date.now() - mountTimeRef.current < 1500 && hasFetchedOnceRef.current) return;
-      hasFetchedOnceRef.current = false;
-      fetchOverviewData();
+      debouncedRefresh();
     });
 
     // Listen to report changes - update reports array directly
@@ -384,6 +386,8 @@ const AdminDashboard = () => {
 
     return () => {
       cleanupDevices();
+      cleanupDeviceData();
+      cleanupDeviceDataLower();
       cleanupTransactions();
       cleanupEnergy();
       cleanupDeviceConfig();

@@ -353,6 +353,11 @@ const AdminDevices = () => {
       return new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp);
     }
     if (typeof timestamp === 'string') {
+      // handle numeric strings
+      const numeric = Number(timestamp);
+      if (!Number.isNaN(numeric)) {
+        return new Date(numeric < 1e11 ? numeric * 1000 : numeric);
+      }
       const parsed = new Date(timestamp);
       return isNaN(parsed) ? null : parsed;
     }
@@ -404,6 +409,7 @@ const AdminDevices = () => {
           const exists = prevDevices.some(dev => dev.id === deviceId);
           if (exists) return prevDevices;
           console.log('➕ Adding new device via socket:', deviceId);
+          const baseLastRaw = deviceData?.last_updated || deviceData?.lastUpdate || deviceData?.updated_at || deviceData?.timestamp;
           const mapped = mapSocketDevice(deviceData, {
             id: deviceId,
             name: deviceData?.name || 'Unknown Device',
@@ -411,7 +417,8 @@ const AdminDevices = () => {
             building: deviceData?.building || 'Unknown Building',
             status: deviceData?.status || 'unknown',
             revenue: '₱0',
-            lastUpdate: 'Just now'
+            lastUpdateRaw: baseLastRaw,
+            lastUpdate: formatLastUpdated(baseLastRaw)
           });
           return [mapped, ...prevDevices];
         }
