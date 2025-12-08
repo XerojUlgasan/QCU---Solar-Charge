@@ -165,10 +165,12 @@ const AdminDevices = () => {
             temperature: `${device.temperature || 0}°C`,
             batteryLevel: device.percentage || 0,
             lastUpdate: formatLastUpdated(device.last_updated),
+            lastUpdateRaw: device.last_updated,
             // Keep raw date for sorting
             _dateAddedSeconds: dateAddedSeconds,
             // Add API revenue data for total calculation
-            apiRevenue: data.revenue ? data.revenue.total || 0 : 0
+            apiRevenue: data.revenue ? data.revenue.total || 0 : 0,
+            isActive: isDeviceRecentlyUpdated(device.last_updated)
           };
         });
         
@@ -274,6 +276,12 @@ const AdminDevices = () => {
     return Number.isFinite(num) ? num : fallback;
   };
 
+  const isDeviceRecentlyUpdated = (timestamp) => {
+    const dt = normalizeTimestampToDate(timestamp);
+    if (!dt || Number.isNaN(dt.getTime())) return false;
+    return (Date.now() - dt.getTime()) <= 60 * 1000; // 1 minute freshness
+  };
+
   const mapSocketDevice = (incomingDevice, existingDevice) => {
     if (!incomingDevice && !existingDevice) return null;
     const source = incomingDevice || {};
@@ -322,7 +330,8 @@ const AdminDevices = () => {
       usage: source.percentage ?? prev.usage ?? 0,
       lastUpdate: formatLastUpdated(lastUpdatedRaw),
       lastUpdateRaw: lastUpdatedRaw,
-      _dateAddedSeconds: dateAddedSeconds
+      _dateAddedSeconds: dateAddedSeconds,
+      isActive: isDeviceRecentlyUpdated(lastUpdatedRaw)
     };
   };
 
@@ -642,16 +651,7 @@ const AdminDevices = () => {
     }
   };
 
-  const totalActive = devices.filter(d => {
-    const status = d.status?.toLowerCase();
-    // Consider active if status is 'active' or any variation that indicates the device is working
-    return status === 'active' || 
-           status === 'online' || 
-           status === 'running' || 
-           status === 'operational' ||
-           status === 'connected' ||
-           (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
-  }).length;
+  const totalActive = devices.filter(d => d.isActive).length;
   
   // Calculate total power from API data (convert to kW if needed)
   const totalPower = devices.reduce((sum, d) => {
@@ -939,6 +939,7 @@ const AdminDevices = () => {
           {filteredDevices.map((device, index) => {
             const hasEnabledState = Object.prototype.hasOwnProperty.call(deviceEnabledMap, device.id);
             const enabledState = hasEnabledState ? deviceEnabledMap[device.id] : null;
+            const displayStatus = device.isActive ? 'active' : 'inactive';
 
             return (
             <div 
@@ -964,8 +965,8 @@ const AdminDevices = () => {
                   <span className={`device-enabled-badge ${enabledState === null ? 'enabled' : enabledState ? 'enabled' : 'disabled'}`}>
                     {enabledState === null ? 'Enabled' : enabledState ? 'Enabled' : 'Disabled'}
                   </span>
-                  <div className={`status-badge ${getStatusColor(device.status)}`}>
-                    {device.status}
+                  <div className={`status-badge ${getStatusColor(displayStatus)}`}>
+                    {displayStatus}
                   </div>
                   <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>ID: {device.id}</div>
                 </div>

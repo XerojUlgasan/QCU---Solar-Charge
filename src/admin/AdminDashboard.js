@@ -145,17 +145,15 @@ const AdminDashboard = () => {
         let activeDevices = 0;
         
         if (data.devices && Array.isArray(data.devices)) {
-          // Count devices that are active (handle multiple case variations)
-          activeDevices = data.devices.filter(device => {
-            const status = device.status?.toLowerCase();
-            // Consider active if status is 'active' or any variation that indicates the device is working
-            return status === 'active' || 
-                   status === 'online' || 
-                   status === 'running' || 
-                   status === 'operational' ||
-                   status === 'connected' ||
-                   (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
-          }).length;
+          const isDeviceRecentlyUpdated = (timestamp) => {
+            if (!timestamp) return false;
+            const ts = typeof timestamp === 'number' ? new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp) : new Date(timestamp);
+            if (Number.isNaN(ts.getTime())) return false;
+            return (Date.now() - ts.getTime()) <= 60 * 1000; // 1 minute freshness
+          };
+
+          // Count devices as active if last_updated within 1 minute
+          activeDevices = data.devices.filter(device => isDeviceRecentlyUpdated(device.last_updated || device.timestamp)).length;
           
           // Calculate averages from active devices
           const activeDevicesList = data.devices.filter(device => {

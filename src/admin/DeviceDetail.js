@@ -425,6 +425,12 @@ const DeviceDetail = () => {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
+  const isDeviceRecentlyUpdated = (timestamp) => {
+    const dt = normalizeTimestampToDate(timestamp);
+    if (!dt || Number.isNaN(dt.getTime())) return false;
+    return (Date.now() - dt.getTime()) <= 60 * 1000; // 1 minute freshness
+  };
+
   // Get all metrics data for "all" option
   const getAllMetricsData = (timeFilter) => {
     if (!deviceData || !deviceData.energy_history || !Array.isArray(deviceData.energy_history)) {
@@ -1469,6 +1475,8 @@ const DeviceDetail = () => {
   };
 
   const device = getFormattedDeviceData();
+  const isActive = isDeviceRecentlyUpdated(deviceData?.last_updated || deviceData?.timestamp || device?.lastUpdateRaw);
+  const derivedStatus = isActive ? 'active' : 'inactive';
 
   // Format sessions from API transactions for this specific device
   const getRecentSessions = () => {
@@ -1729,13 +1737,13 @@ const DeviceDetail = () => {
 
         {/* Device Overview */}
         <div className="device-overview">
-          <div className="device-overview-header">
+        <div className="device-overview-header">
             <div className="device-overview-title">
             <div className="device-info">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <h2 className="device-name">{device.name}</h2>
-                  <div className={`status-badge ${getStatusColor(device.status)}`}>
-                    {getStatusText(device.status)}
+                <div className={`status-badge ${getStatusColor(derivedStatus)}`}>
+                  {getStatusText(derivedStatus)}
                   </div>
                 </div>
                 <div className="device-location">
