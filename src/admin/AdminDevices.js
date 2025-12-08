@@ -294,6 +294,14 @@ const AdminDevices = () => {
     const currentVal = safeNumber(source.current ?? prev.current?.replace?.('A', '') ?? prev.current, 0);
     const powerVal = safeNumber(source.power ?? prev.power?.replace?.(/[kWWh]+/g, '') ?? prev.power, 0);
     const energyVal = safeNumber(source.energy ?? prev.energy?.replace?.(/[kWWh]+/g, '') ?? prev.energy, 0);
+    const temperatureVal = safeNumber(
+      source.temperature ??
+      source.temp ??
+      source.temperatures ??
+      prev.temperature?.replace?.('°C', '') ??
+      prev.temperature,
+      0
+    );
     const batteryVal = safeNumber(
       source.percentage ??
       source.batteryLevel ??
@@ -327,6 +335,7 @@ const AdminDevices = () => {
       power: formatPower(powerVal),
       energy: formatEnergy(energyVal),
       batteryLevel: batteryVal,
+      temperature: `${temperatureVal}°C`,
       usage: source.percentage ?? prev.usage ?? 0,
       lastUpdate: formatLastUpdated(lastUpdatedRaw),
       lastUpdateRaw: lastUpdatedRaw,
@@ -424,9 +433,9 @@ const AdminDevices = () => {
     });
 
     // Listen to live metrics (devicesdata table mapped to devicesData)
-    const cleanupDeviceData = onCollectionChange('devicesData', (data) => {
+    const handleMetricsUpdate = (data) => {
       setDevices(prevDevices => {
-        const { data: metrics } = data;
+        const metrics = data?.data;
         const deviceId = metrics?.device_id;
         if (!deviceId) return prevDevices;
 
@@ -436,7 +445,12 @@ const AdminDevices = () => {
             : dev
         );
       });
-    });
+    };
+
+    // Listen to live metrics (devicesdata table mapped to devicesData)
+    const cleanupDeviceData = onCollectionChange('devicesData', handleMetricsUpdate);
+    // Fallback in case server emits lowercase collection name
+    const cleanupDeviceDataLower = onCollectionChange('devicesdata', handleMetricsUpdate);
 
     // Listen to transaction changes (for revenue updates)
     const cleanupTransactions = onCollectionChange('transactions', (data) => {
@@ -474,10 +488,29 @@ const AdminDevices = () => {
     return () => {
       cleanupDevices();
       cleanupDeviceData();
+      cleanupDeviceDataLower();
       cleanupTransactions();
       cleanupDeviceConfigs();
     };
   }, [isConnected, onCollectionChange, fetchDevicesData, fetchDeviceConfigs]);
+
+  // Periodically refresh freshness/lastUpdate text and active flag without needing socket events
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDevices(prev =>
+        prev.map(d => {
+          const refreshedActive = isDeviceRecentlyUpdated(d.lastUpdateRaw);
+          return {
+            ...d,
+            isActive: refreshedActive,
+            lastUpdate: formatLastUpdated(d.lastUpdateRaw)
+          };
+        })
+      );
+    }, 30000); // every 30s
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch data when component mounts
   useEffect(() => {
