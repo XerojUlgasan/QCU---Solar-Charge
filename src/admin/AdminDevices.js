@@ -269,13 +269,70 @@ const AdminDevices = () => {
     return `${power.toFixed(1)}W`;
   };
 
-  const formatLastUpdated = (timestamp) => {
-    if (!timestamp || !timestamp.seconds) {
-      return 'Unknown';
+  const safeNumber = (value, fallback = 0) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  };
+
+  const mapSocketDevice = (incomingDevice, existingDevice) => {
+    if (!incomingDevice && !existingDevice) return null;
+    const source = incomingDevice || {};
+    const prev = existingDevice || {};
+
+    const actualDeviceId = source.id || source.device_id || source.deviceId || source._id || prev.id;
+    const voltageVal = safeNumber(source.volt ?? source.voltage ?? parseFloat(prev.voltage), 0);
+    const currentVal = safeNumber(source.current ?? parseFloat(prev.current), 0);
+    const powerVal = safeNumber(source.power ?? parseFloat(prev.power), 0);
+    const energyVal = safeNumber(source.energy ?? parseFloat(prev.energy), 0);
+    const batteryVal = safeNumber(source.percentage ?? source.batteryLevel ?? prev.batteryLevel, 0);
+
+    const lastUpdatedRaw = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp || prev.lastUpdateRaw;
+    const dateAddedRaw = source.date_added || source.created_at || source.added_at || source.timestamp || source.last_updated || prev._dateAddedSeconds;
+    const dateAddedSeconds = normalizeTimestampToDate(dateAddedRaw)?.getTime() ? Math.floor(normalizeTimestampToDate(dateAddedRaw).getTime() / 1000) : prev._dateAddedSeconds;
+
+    return {
+      ...prev,
+      id: actualDeviceId,
+      status: source.status ?? prev.status ?? 'unknown',
+      voltage: `${voltageVal}V`,
+      current: `${currentVal}A`,
+      power: formatPower(powerVal),
+      energy: formatEnergy(energyVal),
+      batteryLevel: batteryVal,
+      usage: source.percentage ?? prev.usage ?? 0,
+      lastUpdate: formatLastUpdated(lastUpdatedRaw),
+      lastUpdateRaw: lastUpdatedRaw,
+      _dateAddedSeconds: dateAddedSeconds
+    };
+  };
+
+  // Handle multiple timestamp shapes from API/socket (Firestore, ISO string, ms/seconds)
+  const normalizeTimestampToDate = (timestamp) => {
+    if (!timestamp) return null;
+    if (timestamp instanceof Date) return timestamp;
+    if (typeof timestamp === 'number') {
+      // Heuristic: seconds if small, otherwise milliseconds
+      return new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp);
     }
+    if (typeof timestamp === 'string') {
+      const parsed = new Date(timestamp);
+      return isNaN(parsed) ? null : parsed;
+    }
+    if (typeof timestamp === 'object') {
+      if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+      if (timestamp._seconds) return new Date(timestamp._seconds * 1000);
+      if (timestamp.nanoseconds && timestamp.seconds === 0) {
+        return new Date(timestamp.nanoseconds / 1e6);
+      }
+    }
+    return null;
+  };
+
+  const formatLastUpdated = (timestamp) => {
+    const lastUpdated = normalizeTimestampToDate(timestamp);
+    if (!lastUpdated || isNaN(lastUpdated.getTime())) return 'Unknown';
     
     const now = new Date();
-    const lastUpdated = new Date(timestamp.seconds * 1000);
     const diffInSeconds = Math.floor((now - lastUpdated) / 1000);
     
     if (diffInSeconds < 60) {
@@ -302,30 +359,37 @@ const AdminDevices = () => {
       
       setDevices(prevDevices => {
         const { type, id, data: deviceData } = data;
-        const deviceId = id || deviceData?.id || deviceData?.device_id;
-        
+        const deviceId = id || deviceData?.id || deviceData?.device_id || deviceData?.deviceId || deviceData?._id;
+        if (!deviceId) return prevDevices;
+
         if (type === 'added') {
-          // Add new device - need to calculate revenue first
-          const deviceExists = prevDevices.some(dev => dev.id === deviceId);
-          if (!deviceExists) {
-            console.log('➕ Adding new device:', deviceId);
-            // For new devices, we'll need to refetch to get proper formatting
-            // But for now, add a basic device entry
-            fetchDevicesData();
-            return prevDevices;
-          }
-        } else if (type === 'modified') {
-          // Update existing device
-          console.log('🔄 Updating device:', deviceId);
-          // For device updates, refetch to ensure revenue calculations are correct
-          fetchDevicesData();
-          return prevDevices;
-        } else if (type === 'removed') {
-          // Remove device from array
+          const exists = prevDevices.some(dev => dev.id === deviceId);
+          if (exists) return prevDevices;
+          console.log('➕ Adding new device via socket:', deviceId);
+          const mapped = mapSocketDevice(deviceData, {
+            id: deviceId,
+            name: deviceData?.name || 'Unknown Device',
+            location: deviceData?.location || 'Unknown Location',
+            building: deviceData?.building || 'Unknown Building',
+            status: deviceData?.status || 'unknown',
+            revenue: '₱0',
+            lastUpdate: 'Just now'
+          });
+          return [mapped, ...prevDevices];
+        }
+
+        if (type === 'modified') {
+          console.log('🔄 Updating device via socket:', deviceId);
+          return prevDevices.map(dev => 
+            dev.id === deviceId ? mapSocketDevice(deviceData, dev) : dev
+          );
+        }
+
+        if (type === 'removed') {
           console.log('➖ Removing device:', deviceId);
           return prevDevices.filter(dev => dev.id !== deviceId);
         }
-        
+
         return prevDevices;
       });
     });

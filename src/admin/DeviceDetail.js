@@ -60,6 +60,47 @@ const DeviceDetail = () => {
     return Number.isNaN(num) ? 0 : num;
   };
 
+  const normalizeTimestampToDate = (timestamp) => {
+    if (!timestamp) return null;
+    if (timestamp instanceof Date) return timestamp;
+    if (typeof timestamp === 'number') {
+      return new Date(timestamp < 1e11 ? timestamp * 1000 : timestamp);
+    }
+    if (typeof timestamp === 'string') {
+      const parsed = new Date(timestamp);
+      return isNaN(parsed) ? null : parsed;
+    }
+    if (typeof timestamp === 'object') {
+      if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+      if (timestamp._seconds) return new Date(timestamp._seconds * 1000);
+    }
+    return null;
+  };
+
+  const mergeSocketDeviceData = (socketData, prevData) => {
+    if (!prevData) return prevData;
+    const incoming = socketData || {};
+    return {
+      ...prevData,
+      // Preserve identifiers and metadata
+      device_id: prevData.device_id,
+      name: incoming.name ?? prevData.name,
+      location: incoming.location ?? prevData.location,
+      building: incoming.building ?? prevData.building,
+      status: incoming.status ?? prevData.status,
+      volt: toNumber(incoming.volt ?? incoming.voltage ?? prevData.volt),
+      current: toNumber(incoming.current ?? prevData.current),
+      power: toNumber(incoming.power ?? prevData.power),
+      temperature: toNumber(incoming.temperature ?? prevData.temperature),
+      percentage: toNumber(incoming.percentage ?? incoming.batteryLevel ?? prevData.percentage),
+      energy: toNumber(incoming.energy ?? prevData.energy),
+      last_updated: incoming.last_updated ?? incoming.lastUpdate ?? prevData.last_updated,
+      timestamp: incoming.timestamp ?? prevData.timestamp,
+      // Keep other payload fields if present
+      ...incoming
+    };
+  };
+
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
     const num = toNumber(value);
@@ -253,12 +294,7 @@ const DeviceDetail = () => {
         
         if (data.type === 'modified') {
           console.log('🔄 Updating device data directly from socket');
-          return {
-            ...prevData,
-            ...data.data,
-            // Preserve device_id
-            device_id: deviceId
-          };
+          return mergeSocketDeviceData(data.data, prevData);
         }
         
         // For added/removed, we might need to refetch
