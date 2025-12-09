@@ -13,6 +13,8 @@ function Overview() {
         transactions_today: 0,
         devices: []
     });
+    const [renderVersion, setRenderVersion] = useState(0);
+    const [currentTime, setCurrentTime] = useState(Date.now());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAllStations, setShowAllStations] = useState(false);
@@ -72,6 +74,29 @@ function Overview() {
         return [...devices].sort((a, b) => getDeviceTimestamp(b) - getDeviceTimestamp(a));
     };
 
+    // Check if device is active based on last_updated timestamp (within 1 minute)
+    const isDeviceActive = (device) => {
+        if (!device || !device.last_updated) return false;
+        
+        const lastUpdatedSeconds = resolveTimestampSeconds(device.last_updated);
+        if (lastUpdatedSeconds === 0) return false;
+        
+        const nowSeconds = Math.floor(currentTime / 1000);
+        const timeDiffSeconds = nowSeconds - lastUpdatedSeconds;
+        
+        return timeDiffSeconds <= 60; // Active if updated within 1 minute (60 seconds)
+    };
+
+    // Get status class for status dot: 'active' (green) or 'inactive' (red)
+    const getDeviceStatusClass = (device) => {
+        return isDeviceActive(device) ? 'active' : 'inactive';
+    };
+
+    // Get status text based on actual activity
+    const getDeviceStatusText = (device) => {
+        return isDeviceActive(device) ? 'Active' : 'Inactive';
+    };
+
     const fetchOverviewData = async () => {
         try {
             setLoading(true);
@@ -87,10 +112,8 @@ function Overview() {
                 const overview = data.overview;
                 const sortedDevices = sortDevicesByNewest(overview.devices || []);
 
-                const activeCount = overview.active ?? sortedDevices.filter(dev => {
-                    const status = (dev.status || '').toLowerCase();
-                    return status === 'active' || status === 'online';
-                }).length;
+                // Calculate active count based on last_updated timestamp
+                const activeCount = sortedDevices.filter(dev => isDeviceActive(dev)).length;
 
                 const totalPower = overview.total_power ?? sortedDevices.reduce((sum, dev) => {
                     const p = Number(dev.power);
@@ -122,6 +145,9 @@ function Overview() {
         const cleanupDevices = onCollectionChange('devices', (data) => {
             console.log('📡 Device change detected in Overview:', data);
             
+            // Update currentTime to trigger immediate status recalculation for any device change
+            setCurrentTime(Date.now());
+            
             setOverviewData(prevData => {
                 const { type, id, data: deviceData } = data;
                 const deviceId = id || deviceData?.id || deviceData?.device_id;
@@ -132,6 +158,7 @@ function Overview() {
                     const deviceExists = prevData.devices.some(dev => dev.id === deviceId || dev.device_id === deviceId);
                     if (!deviceExists) {
                         console.log('➕ Adding new device to overview:', deviceId);
+                        
                         // Normalize payload: ensure id/device_id and timestamps are present
                         const nowTs = { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
                         const normalized = {
@@ -148,9 +175,7 @@ function Overview() {
                         return {
                             ...prevData,
                             devices: updatedList,
-                            active: updatedList.filter(dev => 
-                                (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
-                            ).length,
+                            active: updatedList.filter(dev => isDeviceActive(dev)).length,
                             total_power: updatedList.reduce((sum, dev) => {
                                 const p = Number(dev.power);
                                 return sum + (isNaN(p) ? 0 : p);
@@ -158,46 +183,61 @@ function Overview() {
                         };
                     }
                 } else if (type === 'modified') {
-                    console.log('🔄 Updating device in overview:', deviceId);
-                    let updatedDevices = prevData.devices.map(dev => 
-                        (dev.id === deviceId || dev.device_id === deviceId) 
-                          ? { 
-                              ...dev, 
-                              ...deviceData,
-                              id: dev.id || deviceId,
-                              device_id: dev.device_id || deviceId,
-                              last_updated: deviceData?.last_updated || dev.last_updated,
-                              // Preserve date_added for sorting
-                              date_added: dev.date_added || deviceData?.date_added
-                            } 
-                          : dev
-                    );
-                    // Sort newest-first after modification
-                    updatedDevices = sortDevicesByNewest(updatedDevices);
-                    // Recalculate active devices and total power
-                    const activeCount = updatedDevices.filter(dev => 
-                        dev.status?.toLowerCase() === 'active' || dev.status?.toLowerCase() === 'online'
-                    ).length;
+                    console.log('🔄 Updating device in overview:', deviceId, deviceData);
+                    
+                    // Find and update the device
+                    let deviceFound = false;
+                    const updatedDevices = prevData.devices.map(dev => {
+                        if (dev.id === deviceId || dev.device_id === deviceId) {
+                            deviceFound = true;
+                            const updated = { 
+                                ...dev, 
+                                ...deviceData,
+                                id: dev.id || deviceId,
+                                device_id: dev.device_id || deviceId,
+                                last_updated: deviceData?.last_updated || dev.last_updated,
+                                date_added: dev.date_added || deviceData?.date_added
+                            };
+                            const activeStatus = isDeviceActive(updated);
+                            console.log('✅ Device updated:', dev.id || dev.device_id, '- Active:', activeStatus, '- last_updated:', updated.last_updated);
+                            return updated;
+                        }
+                        return dev;
+                    });
+                    
+                    if (!deviceFound) {
+                        console.warn('⚠️ Device not found in list:', deviceId);
+                        return prevData;
+                    }
+                    
+                    // Recalculate stats
+                    const activeCount = updatedDevices.filter(dev => isDeviceActive(dev)).length;
+                    const totalPower = updatedDevices.reduce((sum, dev) => {
+                        const p = Number(dev.power);
+                        return sum + (isNaN(p) ? 0 : p);
+                    }, 0);
+                    
+                    console.log('📊 Stats updated - Active:', activeCount, 'Power:', totalPower);
+                    
+                    // Force re-render by updating version
+                    setRenderVersion(prev => prev + 1);
+                    
                     return {
                         ...prevData,
                         devices: updatedDevices,
                         active: activeCount,
-                        total_power: updatedDevices.reduce((sum, dev) => {
-                            const p = Number(dev.power);
-                            return sum + (isNaN(p) ? 0 : p);
-                        }, 0)
+                        total_power: totalPower
                     };
                 } else if (type === 'removed') {
                     console.log('➖ Removing device from overview:', deviceId);
-                    const filteredDevices = sortDevicesByNewest(prevData.devices.filter(dev => 
+                    
+                    const filteredDevices = prevData.devices.filter(dev => 
                         dev.id !== deviceId && dev.device_id !== deviceId
-                    ));
+                    );
                     return {
                         ...prevData,
                         devices: filteredDevices,
-                        active: filteredDevices.filter(dev => 
-                            (dev.status || '').toLowerCase() === 'active' || (dev.status || '').toLowerCase() === 'online'
-                        ).length,
+                        active: filteredDevices.filter(dev => isDeviceActive(dev)).length,
                         total_power: filteredDevices.reduce((sum, dev) => {
                             const p = Number(dev.power);
                             return sum + (isNaN(p) ? 0 : p);
@@ -205,6 +245,7 @@ function Overview() {
                     };
                 }
                 
+                console.log('⚠️ Unhandled socket event type:', type);
                 return prevData;
             });
         });
@@ -236,6 +277,50 @@ function Overview() {
         };
     }, [isConnected, onCollectionChange]);
 
+    // Periodic check to recalculate active status every 10 seconds
+    // This ensures devices that haven't updated in >1 minute show as inactive
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            console.log('⏰ Periodic status check - Updating current time');
+            
+            // Update currentTime to trigger recalculation of isDeviceActive
+            setCurrentTime(now);
+            
+            // Recalculate active count based on new current time
+            setOverviewData(prevData => {
+                if (!prevData.devices || prevData.devices.length === 0) return prevData;
+                
+                // Calculate active count using the new time
+                const nowSeconds = Math.floor(now / 1000);
+                const activeCount = prevData.devices.filter(dev => {
+                    if (!dev || !dev.last_updated) return false;
+                    const lastUpdatedSeconds = resolveTimestampSeconds(dev.last_updated);
+                    if (lastUpdatedSeconds === 0) return false;
+                    const timeDiffSeconds = nowSeconds - lastUpdatedSeconds;
+                    return timeDiffSeconds <= 60;
+                }).length;
+                
+                console.log('⏰ Periodic status check - Active:', activeCount, '/', prevData.devices.length);
+                
+                // Force re-render by updating version
+                setRenderVersion(prev => prev + 1);
+                
+                if (prevData.active !== activeCount) {
+                    console.log('📊 Active count changed from', prevData.active, 'to', activeCount);
+                    return {
+                        ...prevData,
+                        active: activeCount
+                    };
+                }
+                
+                return prevData;
+            });
+        }, 10000); // Check every 10 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
     useEffect(() => {
         fetchOverviewData();
     }, []);
@@ -254,12 +339,15 @@ function Overview() {
     };
 
     const formatLastUpdated = (timestamp) => {
-        if (!timestamp || !timestamp.seconds) {
+        // Use resolveTimestampSeconds to handle all timestamp formats
+        const timestampSeconds = resolveTimestampSeconds(timestamp);
+        
+        if (!timestamp || timestampSeconds === 0) {
             return 'Unknown';
         }
         
-        const now = new Date();
-        const lastUpdated = new Date(timestamp.seconds * 1000);
+        const now = new Date(currentTime);
+        const lastUpdated = new Date(timestampSeconds * 1000);
         const diffInSeconds = Math.floor((now - lastUpdated) / 1000);
         
         if (diffInSeconds < 60) {
@@ -369,19 +457,14 @@ function Overview() {
         }
         
         return overviewData.devices.filter(device => {
-            const status = device.status?.toLowerCase();
             switch (statusFilter) {
                 case 'active':
-                    return status === 'active' || 
-                           status === 'online' || 
-                           status === 'running' || 
-                           status === 'operational' ||
-                           status === 'connected' ||
-                           (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
+                    return isDeviceActive(device);
                 case 'inactive':
-                    return status === 'inactive' || status === 'offline' || status === 'error' || status === 'failed' || status === 'disconnected';
+                    return !isDeviceActive(device);
                 case 'maintenance':
-                    return status === 'maintenance';
+                    // Keep maintenance filter based on status field
+                    return device.status?.toLowerCase() === 'maintenance';
                 default:
                     return true;
             }
@@ -433,15 +516,7 @@ function Overview() {
                         boxShadow: isDarkMode ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                     }}>
                         <div className="stat-value" style={{color: isDarkMode ? '#22c55e' : '#10b981'}}>
-                            {overviewData.devices.filter(device => {
-                                const status = device.status?.toLowerCase();
-                                return status === 'active' || 
-                                       status === 'online' || 
-                                       status === 'running' || 
-                                       status === 'operational' ||
-                                       status === 'connected' ||
-                                       (status && !['offline', 'inactive', 'maintenance', 'error', 'failed', 'disconnected'].includes(status));
-                            }).length}
+                            {overviewData.devices.filter(device => isDeviceActive(device)).length}
                         </div>
                         <div className="stat-label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Active Stations</div>
                     </div>
@@ -512,7 +587,7 @@ function Overview() {
                           })
                           .slice(0, 3).map((device, index) => (
                             <div 
-                                key={index} 
+                                key={`${device.id || device.device_id || index}-${renderVersion}`} 
                                 className={`station-card fade-in ${isDarkMode ? '' : 'light'}`} 
                                 style={{
                                     animationDelay: `${index * 0.1}s`,
@@ -524,7 +599,7 @@ function Overview() {
                                 <div className="station-header">
                                     <div className="station-info">
                                         <h3>{device.name || 'Unknown Device'}
-                                            <div className={`status-dot ${(device.status || 'offline').toLowerCase()}`}></div>
+                                            <div className={`status-dot ${getDeviceStatusClass(device)}`}></div>
                                         </h3>
                                         <div className="station-location" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -542,7 +617,7 @@ function Overview() {
                                 <div className="station-details">
                                     <div className="detail-row">
                                         <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Status</span>
-                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{getStatusText(device.status)}</span>
+                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{getDeviceStatusText(device)}</span>
                                     </div>
                                     <div className="detail-row">
                                         <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Power</span>
@@ -893,7 +968,7 @@ function Overview() {
                                   })
                                   .map((device, index) => (
                                     <div 
-                                        key={index} 
+                                        key={`${device.id || device.device_id || index}-${renderVersion}`} 
                                         className={`station-card-new ${isDarkMode ? '' : 'light'}`} 
                                         style={{
                                         backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
@@ -926,7 +1001,7 @@ function Overview() {
                                                     color: isDarkMode ? '#eaecef' : '#1f2937'
                                                 }}>
                                                     {device.name || 'Unknown Device'}
-                                                    <div className={`status-dot ${(device.status || 'offline').toLowerCase()}`}></div>
+                                                    <div className={`status-dot ${getDeviceStatusClass(device)}`}></div>
                                                 </h3>
                                                 <div className="station-location" style={{
                                                     display: 'flex',
@@ -961,7 +1036,7 @@ function Overview() {
                                                 marginBottom: '8px'
                                             }}>
                                                 <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Status</span>
-                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{getStatusText(device.status)}</span>
+                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{getDeviceStatusText(device)}</span>
                                             </div>
                                             <div className="detail-row" style={{
                                                 display: 'flex',
