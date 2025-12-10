@@ -146,7 +146,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
       >
         {/* Header */}
         <div 
-          className="modal-header"
+          className="custom-query-modal-header"
           style={{
             backgroundColor: isDarkMode ? '#0f141c' : '#ffffff',
             borderBottom: isDarkMode ? '1px solid #1e2633' : '2px solid #d1d5db'
@@ -154,12 +154,12 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Database className="w-5 h-5" style={{ color: '#3b82f6' }} />
-            <h2 className="modal-title" style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>
+            <h2 className="custom-query-modal-title" style={{ color: isDarkMode ? '#ffffff' : '#1f2937' }}>
               Custom SQL Query
             </h2>
           </div>
           <button 
-            className="close-button" 
+            className="custom-query-close-button" 
             onClick={handleClose}
             style={{
               color: isDarkMode ? '#9aa3b2' : '#1f2937',
@@ -180,7 +180,7 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="modal-content" style={{ backgroundColor: isDarkMode ? '#0f141c' : '#ffffff' }}>
+        <div className="custom-query-modal-content" style={{ backgroundColor: isDarkMode ? '#0f141c' : '#ffffff' }}>
           {/* Main Container - Side by Side Layout (Desktop) / Stacked (Mobile) */}
           <div className="query-layout-container">
             {/* Left Side - Query Input Section */}
@@ -211,21 +211,21 @@ const CustomQueryModal = ({ isOpen, onClose }) => {
                   disabled={loading}
                 />
               </div>
-              {error && (
-                <div 
-                  className="error-message"
-                  style={{
-                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
-                    color: isDarkMode ? '#fca5a5' : '#dc2626',
-                    marginTop: '0.75rem',
-                    flex: '0 0 auto'
-                  }}
-                >
-                  <AlertCircle className="w-4 h-4" />
-                  {error}
-                </div>
-              )}
+            {error && (
+              <div 
+                className="custom-query-error-message"
+                style={{
+                  backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  border: isDarkMode ? '1px solid rgba(239, 68, 68, 0.3)' : '2px solid rgba(239, 68, 68, 0.3)',
+                  color: isDarkMode ? '#fca5a5' : '#dc2626',
+                  marginTop: '0.75rem',
+                  flex: '0 0 auto'
+                }}
+              >
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
               <button
                 className="execute-button"
                 onClick={handleExecuteQuery}
