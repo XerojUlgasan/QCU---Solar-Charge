@@ -779,11 +779,6 @@ function Overview() {
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Per station</p>
                         </div>
                         <div className="spec-item">
-                            <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Charging Speed</h3>
-                            <p className={`spec-value ${isDarkMode ? 'blue' : 'blue'}`} style={{color: isDarkMode ? '#3b82f6' : '#3b82f6'}}>20 Watts</p>
-                            <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Lithium-ion</p>
-                        </div>
-                        <div className="spec-item">
                             <h3 className={isDarkMode ? 'text-white' : 'text-gray-900'}>Charging Ports</h3>
                             <p className={`spec-value ${isDarkMode ? 'purple' : 'purple'}`} style={{color: isDarkMode ? '#8b5cf6' : '#8b5cf6'}}>2</p>
                             <p className="spec-description" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Micro-USB, USB-C</p>
