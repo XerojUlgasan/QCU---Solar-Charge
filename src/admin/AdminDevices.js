@@ -156,7 +156,6 @@ const AdminDevices = () => {
             name: device.name || 'Unknown Device',
             location: device.location || 'Unknown Location',
             building: device.building || 'Unknown Building',
-            status: device.status || 'unknown',
             voltage: `${device.volt || 0}V`,
             current: `${device.current || 0}A`,
             power: formatPower(device.power || 0),
@@ -319,21 +318,34 @@ const AdminDevices = () => {
       // If this is a metrics update from devicesdata, use the timestamp from the data or current time
       const rawTimestamp = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp;
       if (rawTimestamp) {
-        // API sends Asia/Manila time without timezone offset, so add 8 hours (28800000ms) to convert to UTC
+        // Parse the timestamp and add 8 hours (28800000 milliseconds) to adjust for timezone
         const parsedDate = new Date(rawTimestamp);
         if (!isNaN(parsedDate.getTime())) {
           lastUpdatedRaw = parsedDate.getTime() + (8 * 60 * 60 * 1000); // Add 8 hours
-          console.log('🔄 Metrics update - adjusted timestamp by +8 hours:', rawTimestamp, '->', new Date(lastUpdatedRaw).toISOString());
+          console.log('🔄 Metrics update - using timestamp:', rawTimestamp, '->', new Date(lastUpdatedRaw).toISOString(), '(added 8 hours)');
         } else {
           lastUpdatedRaw = Date.now();
+          console.log('🔄 Metrics update - invalid timestamp, using current time');
         }
       } else {
         lastUpdatedRaw = Date.now();
+        console.log('🔄 Metrics update - no timestamp provided, using current time');
       }
-      console.log('🔄 Metrics update - setting last_updated to:', lastUpdatedRaw);
+      console.log('🔄 Metrics update - final last_updated:', lastUpdatedRaw, 'Current time:', Date.now(), 'Diff (ms):', Date.now() - lastUpdatedRaw);
     } else {
-      // For device updates, use the provided timestamp or keep previous
-      lastUpdatedRaw = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp || prev.lastUpdateRaw;
+      // For device updates from tbl_devices, also add 8 hours to adjust for timezone
+      const rawTimestamp = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp;
+      if (rawTimestamp) {
+        const parsedDate = new Date(rawTimestamp);
+        if (!isNaN(parsedDate.getTime())) {
+          lastUpdatedRaw = parsedDate.getTime() + (8 * 60 * 60 * 1000); // Add 8 hours
+          console.log('🔄 Device update - using timestamp:', rawTimestamp, '->', new Date(lastUpdatedRaw).toISOString(), '(added 8 hours)');
+        } else {
+          lastUpdatedRaw = prev.lastUpdateRaw;
+        }
+      } else {
+        lastUpdatedRaw = prev.lastUpdateRaw;
+      }
     }
 
     const dateAddedRaw =
@@ -348,7 +360,6 @@ const AdminDevices = () => {
     return {
       ...prev,
       id: actualDeviceId,
-      status: source.status ?? prev.status ?? 'unknown',
       voltage: `${voltageVal}V`,
       current: `${currentVal}A`,
       power: formatPower(powerVal),
@@ -453,7 +464,6 @@ const AdminDevices = () => {
             name: deviceData?.name || 'Unknown Device',
             location: deviceData?.location || 'Unknown Location',
             building: deviceData?.building || 'Unknown Building',
-            status: deviceData?.status || 'unknown',
             revenue: '₱0',
             lastUpdateRaw: baseLastRaw,
             lastUpdate: formatLastUpdated(baseLastRaw)
@@ -660,18 +670,6 @@ const AdminDevices = () => {
     fetchDeviceConfigs(deviceIds);
   }, [devices, fetchDeviceConfigs]);
 
-  const getStatusColor = (status) => {
-    // Normalize status to lowercase for comparison
-    const normalizedStatus = status?.toLowerCase();
-    switch (normalizedStatus) {
-      case 'active': return 'status-active';
-      case 'maintenance': return 'status-maintenance';
-      case 'offline': return 'status-offline';
-      case 'inactive': return 'status-inactive';
-      default: return 'status-unknown';
-    }
-  };
-
   const getBatteryColor = (level) => {
     if (level > 50) return 'battery-high';
     if (level > 20) return 'battery-medium';
@@ -684,16 +682,14 @@ const AdminDevices = () => {
                          device.building.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          device.location.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Filter by active/inactive status based on isActive property
+    // Filter by active/inactive status based on isActive property only
     let matchesFilter = true;
     if (filterStatus === 'active') {
       matchesFilter = device.isActive === true;
     } else if (filterStatus === 'inactive') {
       matchesFilter = device.isActive === false;
-    } else if (filterStatus !== 'all') {
-      // For other status filters (maintenance, offline), check device.status
-      matchesFilter = device.status?.toLowerCase() === filterStatus.toLowerCase();
     }
+    // Note: 'all' shows everything, other filters removed since we only use isActive boolean
     
     return matchesSearch && matchesFilter;
   });
@@ -711,11 +707,12 @@ const AdminDevices = () => {
   const handleConfigureDevice = (device) => {
     const hasEnabledState = Object.prototype.hasOwnProperty.call(deviceEnabledMap, device.id);
     const enabledState = hasEnabledState ? deviceEnabledMap[device.id] : null;
-    const fallbackStatus = device.status?.toLowerCase() === 'active' || device.status?.toLowerCase() === 'online';
+    // Use isActive as fallback if enabledState is not available
+    const fallbackEnabled = device.isActive || false;
 
     setConfiguringDevice({
       ...device,
-      isEnabled: typeof enabledState === 'boolean' ? enabledState : fallbackStatus
+      isEnabled: typeof enabledState === 'boolean' ? enabledState : fallbackEnabled
     });
     setIsConfigModalOpen(true);
   };
@@ -959,10 +956,9 @@ const AdminDevices = () => {
                 color: isDarkMode ? undefined : '#1f2937'
               }}
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">All Devices</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
             </select>
           </div>
           
@@ -1104,7 +1100,6 @@ const AdminDevices = () => {
           {filteredDevices.map((device, index) => {
             const hasEnabledState = Object.prototype.hasOwnProperty.call(deviceEnabledMap, device.id);
             const enabledState = hasEnabledState ? deviceEnabledMap[device.id] : null;
-            const displayStatus = device.isActive ? 'active' : 'inactive';
 
             return (
             <div 
@@ -1130,8 +1125,8 @@ const AdminDevices = () => {
                   <span className={`device-enabled-badge ${enabledState === null ? 'enabled' : enabledState ? 'enabled' : 'disabled'}`}>
                     {enabledState === null ? 'Enabled' : enabledState ? 'Enabled' : 'Disabled'}
                   </span>
-                  <div className={`status-badge ${getStatusColor(displayStatus)}`}>
-                    {displayStatus}
+                  <div className={`status-badge ${device.isActive ? 'status-active' : 'status-inactive'}`}>
+                    {device.isActive ? 'active' : 'inactive'}
                   </div>
                   <div className="device-id" style={{color: isDarkMode ? undefined : '#1f2937'}}>ID: {device.id}</div>
                 </div>
