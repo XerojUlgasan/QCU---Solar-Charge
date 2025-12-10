@@ -70,6 +70,68 @@ function Overview() {
         return Math.max(added, updated, 0);
     };
 
+    const toNumberOrNull = (value) => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : null;
+    };
+
+    const toNumberWithFallback = (value, fallback = 0) => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : fallback;
+    };
+
+    const getComparableId = (value) => {
+        if (value === null || value === undefined) return null;
+        return String(value);
+    };
+
+    const mergeDeviceData = (existing = {}, incoming = {}) => {
+        const deviceId = incoming.device_id || incoming.id || existing.device_id || existing.id;
+        const mergedPower = toNumberWithFallback(incoming.power ?? incoming.power_output, toNumberWithFallback(existing.power, 0));
+        const mergedVoltage = toNumberWithFallback(incoming.voltage ?? incoming.volt, toNumberWithFallback(existing.voltage, 0));
+        const mergedCurrent = toNumberWithFallback(incoming.current ?? incoming.amp, toNumberWithFallback(existing.current, 0));
+        const mergedEnergy = toNumberWithFallback(incoming.energy ?? incoming.energy_output, toNumberWithFallback(existing.energy, 0));
+
+        return {
+            ...existing,
+            ...incoming,
+            id: existing.id || incoming.id || deviceId,
+            device_id: existing.device_id || incoming.device_id || incoming.id || existing.id,
+            name: incoming.name || existing.name || 'Unknown Device',
+            location: incoming.location || existing.location || 'Unknown Location',
+            power: mergedPower,
+            voltage: mergedVoltage,
+            current: mergedCurrent,
+            energy: mergedEnergy,
+            temperature: incoming.temperature ?? incoming.temp ?? existing.temperature,
+            percentage: toNumberWithFallback(incoming.percentage, toNumberWithFallback(existing.percentage, 0)),
+            battVolt: toNumberWithFallback(incoming.battVolt, toNumberWithFallback(existing.battVolt, 0)),
+            last_updated: incoming.last_updated || incoming.updated_at || incoming.timestamp || existing.last_updated,
+            date_added: existing.date_added || incoming.date_added || incoming.created_at || incoming.added_at || existing.date_added
+        };
+    };
+
+    const normalizeDeviceForState = (device = {}) => mergeDeviceData({}, device);
+
+    const getDevicePowerValue = (device = {}) => {
+        const directPower = toNumberOrNull(device.power);
+        if (directPower !== null) return directPower;
+
+        const voltageNum = toNumberOrNull(device.voltage ?? device.volt);
+        const currentNum = toNumberOrNull(device.current ?? device.amp);
+
+        if (voltageNum !== null && currentNum !== null) {
+            return voltageNum * currentNum;
+        }
+        return 0;
+    };
+
+    const calculateStats = (devices = []) => {
+        const activeCount = devices.filter(dev => isDeviceActive(dev)).length;
+        const totalPower = devices.reduce((sum, dev) => sum + getDevicePowerValue(dev), 0);
+        return { activeCount, totalPower };
+    };
+
     const sortDevicesByNewest = (devices = []) => {
         return [...devices].sort((a, b) => getDeviceTimestamp(b) - getDeviceTimestamp(a));
     };
@@ -110,15 +172,8 @@ function Overview() {
             
             if (data.success && data.overview) {
                 const overview = data.overview;
-                const sortedDevices = sortDevicesByNewest(overview.devices || []);
-
-                // Calculate active count based on last_updated timestamp
-                const activeCount = sortedDevices.filter(dev => isDeviceActive(dev)).length;
-
-                const totalPower = overview.total_power ?? sortedDevices.reduce((sum, dev) => {
-                    const p = Number(dev.power);
-                    return sum + (isNaN(p) ? 0 : p);
-                }, 0);
+                const sortedDevices = sortDevicesByNewest(overview.devices || []).map(normalizeDeviceForState);
+                const { activeCount, totalPower } = calculateStats(sortedDevices);
 
                 setOverviewData({
                     ...overview,
@@ -161,25 +216,22 @@ function Overview() {
                         
                         // Normalize payload: ensure id/device_id and timestamps are present
                         const nowTs = { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
-                        const normalized = {
+                        const normalized = normalizeDeviceForState({
                             ...deviceData,
                             id: deviceId || deviceData?.device_id,
                             device_id: deviceId || deviceData?.device_id,
                             // Prefer date_added if present; fallback to created_at/last_updated, or now
                             date_added: deviceData?.date_added || deviceData?.created_at || deviceData?.added_at || deviceData?.timestamp || nowTs,
                             last_updated: deviceData?.last_updated || deviceData?.updated_at || nowTs
-                        };
+                        });
                         const deduped = prevData.devices.filter(dev => (dev.id || dev.device_id) !== normalized.id && (dev.device_id || dev.id) !== normalized.device_id);
-                        // Insert then sort newest-first
                         const updatedList = sortDevicesByNewest([normalized, ...deduped]);
+                        const { activeCount, totalPower } = calculateStats(updatedList);
                         return {
                             ...prevData,
                             devices: updatedList,
-                            active: updatedList.filter(dev => isDeviceActive(dev)).length,
-                            total_power: updatedList.reduce((sum, dev) => {
-                                const p = Number(dev.power);
-                                return sum + (isNaN(p) ? 0 : p);
-                            }, 0)
+                            active: activeCount,
+                            total_power: totalPower
                         };
                     }
                 } else if (type === 'modified') {
@@ -190,14 +242,7 @@ function Overview() {
                     const updatedDevices = prevData.devices.map(dev => {
                         if (dev.id === deviceId || dev.device_id === deviceId) {
                             deviceFound = true;
-                            const updated = { 
-                                ...dev, 
-                                ...deviceData,
-                                id: dev.id || deviceId,
-                                device_id: dev.device_id || deviceId,
-                                last_updated: deviceData?.last_updated || dev.last_updated,
-                                date_added: dev.date_added || deviceData?.date_added
-                            };
+                            const updated = mergeDeviceData(dev, deviceData);
                             const activeStatus = isDeviceActive(updated);
                             console.log('✅ Device updated:', dev.id || dev.device_id, '- Active:', activeStatus, '- last_updated:', updated.last_updated);
                             return updated;
@@ -211,11 +256,7 @@ function Overview() {
                     }
                     
                     // Recalculate stats
-                    const activeCount = updatedDevices.filter(dev => isDeviceActive(dev)).length;
-                    const totalPower = updatedDevices.reduce((sum, dev) => {
-                        const p = Number(dev.power);
-                        return sum + (isNaN(p) ? 0 : p);
-                    }, 0);
+                    const { activeCount, totalPower } = calculateStats(updatedDevices);
                     
                     console.log('📊 Stats updated - Active:', activeCount, 'Power:', totalPower);
                     
@@ -234,14 +275,12 @@ function Overview() {
                     const filteredDevices = prevData.devices.filter(dev => 
                         dev.id !== deviceId && dev.device_id !== deviceId
                     );
+                    const { activeCount, totalPower } = calculateStats(filteredDevices);
                     return {
                         ...prevData,
                         devices: filteredDevices,
-                        active: filteredDevices.filter(dev => isDeviceActive(dev)).length,
-                        total_power: filteredDevices.reduce((sum, dev) => {
-                            const p = Number(dev.power);
-                            return sum + (isNaN(p) ? 0 : p);
-                        }, 0)
+                        active: activeCount,
+                        total_power: totalPower
                     };
                 }
                 
@@ -249,6 +288,49 @@ function Overview() {
                 return prevData;
             });
         });
+
+        const handleMetricsUpdate = (data) => {
+            console.log('📡 Live metrics change detected in Overview:', data);
+            const metrics = data?.data;
+            const deviceIdRaw = data?.id || metrics?.device_id || metrics?.deviceId || metrics?.id;
+            if (!metrics || !deviceIdRaw) return;
+
+            const deviceIdComparable = getComparableId(deviceIdRaw);
+            setCurrentTime(Date.now());
+
+            setOverviewData(prevData => {
+                const prevDevices = prevData.devices || [];
+                let found = false;
+
+                const updatedDevices = prevDevices.map(dev => {
+                    const devIdComparable = getComparableId(dev.id) || getComparableId(dev.device_id);
+                    if (devIdComparable && deviceIdComparable && devIdComparable === deviceIdComparable) {
+                        found = true;
+                        return mergeDeviceData(dev, metrics);
+                    }
+                    return dev;
+                });
+
+                // Avoid auto-adding unknown devices to prevent duplicates
+                if (!found) {
+                    console.warn('⚠️ Metrics received for unknown device, ignoring:', deviceIdRaw);
+                    return prevData;
+                }
+
+                const { activeCount, totalPower } = calculateStats(updatedDevices);
+                setRenderVersion(prev => prev + 1);
+
+                return {
+                    ...prevData,
+                    devices: updatedDevices,
+                    active: activeCount,
+                    total_power: totalPower
+                };
+            });
+        };
+
+        const cleanupDeviceData = onCollectionChange('devicesData', handleMetricsUpdate);
+        const cleanupDeviceDataLower = onCollectionChange('devicesdata', handleMetricsUpdate);
 
         // Listen to transaction changes
         const cleanupTransactions = onCollectionChange('transactions', (data) => {
@@ -273,53 +355,11 @@ function Overview() {
 
         return () => {
             cleanupDevices();
+            cleanupDeviceData();
+            cleanupDeviceDataLower();
             cleanupTransactions();
         };
     }, [isConnected, onCollectionChange]);
-
-    // Periodic check to recalculate active status every 10 seconds
-    // This ensures devices that haven't updated in >1 minute show as inactive
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const now = Date.now();
-            console.log('⏰ Periodic status check - Updating current time');
-            
-            // Update currentTime to trigger recalculation of isDeviceActive
-            setCurrentTime(now);
-            
-            // Recalculate active count based on new current time
-            setOverviewData(prevData => {
-                if (!prevData.devices || prevData.devices.length === 0) return prevData;
-                
-                // Calculate active count using the new time
-                const nowSeconds = Math.floor(now / 1000);
-                const activeCount = prevData.devices.filter(dev => {
-                    if (!dev || !dev.last_updated) return false;
-                    const lastUpdatedSeconds = resolveTimestampSeconds(dev.last_updated);
-                    if (lastUpdatedSeconds === 0) return false;
-                    const timeDiffSeconds = nowSeconds - lastUpdatedSeconds;
-                    return timeDiffSeconds <= 60;
-                }).length;
-                
-                console.log('⏰ Periodic status check - Active:', activeCount, '/', prevData.devices.length);
-                
-                // Force re-render by updating version
-                setRenderVersion(prev => prev + 1);
-                
-                if (prevData.active !== activeCount) {
-                    console.log('📊 Active count changed from', prevData.active, 'to', activeCount);
-                    return {
-                        ...prevData,
-                        active: activeCount
-                    };
-                }
-                
-                return prevData;
-            });
-        }, 10000); // Check every 10 seconds
-
-        return () => clearInterval(interval);
-    }, []);
 
     useEffect(() => {
         fetchOverviewData();
@@ -336,6 +376,48 @@ function Overview() {
             return `${(numericPower / 1000).toFixed(1)}kW`;
         }
         return `${numericPower.toFixed(1)}W`;
+    };
+
+    const formatVoltage = (voltage) => {
+        const numericVoltage = toNumberOrNull(voltage);
+        if (numericVoltage === null) return 'N/A';
+        return `${numericVoltage.toFixed(1)}V`;
+    };
+
+    const formatCurrent = (current) => {
+        const numericCurrent = toNumberOrNull(current);
+        if (numericCurrent === null) return 'N/A';
+        return `${numericCurrent.toFixed(1)}A`;
+    };
+
+    const formatEnergy = (energy) => {
+        const numericEnergy = toNumberOrNull(energy);
+        if (numericEnergy === null) return 'N/A';
+        if (numericEnergy >= 1000) {
+            return `${(numericEnergy / 1000).toFixed(2)}kWh`;
+        }
+        return `${numericEnergy.toFixed(1)}Wh`;
+    };
+
+    const formatTemperatureValue = (temperature) => {
+        const numericTemp = toNumberOrNull(temperature);
+        if (numericTemp === null) {
+            return temperature ? `${temperature}` : 'N/A';
+        }
+        return `${numericTemp.toFixed(1)}°C`;
+    };
+
+    const formatBatteryVoltage = (voltage) => {
+        const numericVoltage = toNumberOrNull(voltage);
+        if (numericVoltage === null) return 'N/A';
+        return `${numericVoltage.toFixed(2)}V`;
+    };
+
+    const formatPercentageValue = (value) => {
+        const numericPercentage = toNumberOrNull(value);
+        if (numericPercentage === null) return '0%';
+        const clamped = Math.min(100, Math.max(0, numericPercentage));
+        return `${clamped.toFixed(0)}%`;
     };
 
     const formatLastUpdated = (timestamp) => {
@@ -625,12 +707,12 @@ function Overview() {
                                     </div>
                                     <div className="detail-row">
                                         <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Temperature</span>
-                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{device.temperature || 'N/A'}°C</span>
+                                        <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{formatTemperatureValue(device.temperature)}</span>
                                     </div>
                                     <div className="usage-container">
                                         <div className="detail-row">
                                             <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Battery Percentage</span>
-                                            <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{device.percentage || 0}%</span>
+                                            <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937'}}>{formatPercentageValue(device.percentage)}</span>
                                         </div>
                                         <div className="progress-bar" style={{
                                             backgroundColor: isDarkMode ? '#1e2633' : '#e5e7eb'
@@ -638,7 +720,7 @@ function Overview() {
                                             <div 
                                                 className="progress-fill" 
                                                 style={{
-                                                    width: `${device.percentage || 0}%`,
+                                                    width: `${Math.min(100, Math.max(0, toNumberWithFallback(device.percentage, 0)))}%`,
                                                     background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)'
                                                 }}
                                             ></div>
@@ -1056,7 +1138,7 @@ function Overview() {
                                                 marginBottom: '8px'
                                             }}>
                                                 <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Temperature</span>
-                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{device.temperature || 'N/A'}°C</span>
+                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{formatTemperatureValue(device.temperature)}</span>
                                             </div>
                                             <div className="usage-container" style={{
                                                 display: 'flex',
@@ -1071,7 +1153,7 @@ function Overview() {
                                                     fontSize: '13px'
                                                 }}>
                                                     <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Battery Percentage</span>
-                                                    <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{device.percentage || 0}%</span>
+                                                    <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{formatPercentageValue(device.percentage)}</span>
                                                 </div>
                                                 <div className="progress-bar" style={{
                                                     width: '100%',
@@ -1083,7 +1165,7 @@ function Overview() {
                                                     <div 
                                                         className="progress-fill" 
                                                         style={{
-                                                            width: `${device.percentage || 0}%`,
+                                                            width: `${Math.min(100, Math.max(0, toNumberWithFallback(device.percentage, 0)))}%`,
                                                             height: '100%',
                                                             background: isDarkMode ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #10b981, #3b82f6)',
                                                             borderRadius: '4px',
@@ -1091,6 +1173,16 @@ function Overview() {
                                                         }}
                                                     ></div>
                                                 </div>
+                                            </div>
+                                            <div className="detail-row" style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                fontSize: '13px',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <span className="label" style={{color: isDarkMode ? '#9aa3b2' : '#1f2937'}}>Last updated:</span>
+                                                <span className="value" style={{color: isDarkMode ? '#eaecef' : '#1f2937', fontWeight: '500'}}>{formatLastUpdated(device.last_updated)}</span>
                                             </div>
                                             <div className="last-updated" style={{
                                                 display: 'flex',
@@ -1103,7 +1195,7 @@ function Overview() {
                                                     <circle cx="12" cy="12" r="10"></circle>
                                                     <path d="M12 6v6l4 2"></path>
                                                 </svg>
-                                                <span>Last updated: {formatLastUpdated(device.last_updated)}</span>
+                                                <span>{formatLastUpdated(device.last_updated)}</span>
                                             </div>
                                         </div>
                                     </div>
