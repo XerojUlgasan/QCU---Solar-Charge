@@ -497,7 +497,7 @@ const AdminDashboard = () => {
         console.log('🔄 Refreshing device status indicators...');
         fetchOverviewData();
       }
-    }, 30000); // every 30 seconds
+    }, 10000); // every 10 seconds for more responsive status updates
 
     return () => clearInterval(interval);
   }, [overviewData.devices, fetchOverviewData]);

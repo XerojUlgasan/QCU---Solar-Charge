@@ -45,6 +45,7 @@ const AdminDevices = () => {
   const [error, setError] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('testing');
   const [deviceEnabledMap, setDeviceEnabledMap] = useState({});
+  const [updateTrigger, setUpdateTrigger] = useState(0);
 
   // Format energy values - only show 'k' when over 1000
   const formatEnergy = (value) => {
@@ -284,7 +285,7 @@ const AdminDevices = () => {
     return timeDiff <= 60000; // Active if updated within 1 minute (60000ms)
   };
 
-  const mapSocketDevice = (incomingDevice, existingDevice) => {
+  const mapSocketDevice = (incomingDevice, existingDevice, isMetricsUpdate = false) => {
     if (!incomingDevice && !existingDevice) return null;
     const source = incomingDevice || {};
     const prev = existingDevice || {};
@@ -312,12 +313,28 @@ const AdminDevices = () => {
       0
     );
 
-    const lastUpdatedRaw =
-      source.last_updated ||
-      source.lastUpdate ||
-      source.updated_at ||
-      source.timestamp ||
-      prev.lastUpdateRaw;
+    // For metrics updates (devicesdata), use current time as last_updated if no timestamp provided
+    let lastUpdatedRaw;
+    if (isMetricsUpdate) {
+      // If this is a metrics update from devicesdata, use the timestamp from the data or current time
+      const rawTimestamp = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp;
+      if (rawTimestamp) {
+        // API sends Asia/Manila time without timezone offset, so add 8 hours (28800000ms) to convert to UTC
+        const parsedDate = new Date(rawTimestamp);
+        if (!isNaN(parsedDate.getTime())) {
+          lastUpdatedRaw = parsedDate.getTime() + (8 * 60 * 60 * 1000); // Add 8 hours
+          console.log('🔄 Metrics update - adjusted timestamp by +8 hours:', rawTimestamp, '->', new Date(lastUpdatedRaw).toISOString());
+        } else {
+          lastUpdatedRaw = Date.now();
+        }
+      } else {
+        lastUpdatedRaw = Date.now();
+      }
+      console.log('🔄 Metrics update - setting last_updated to:', lastUpdatedRaw);
+    } else {
+      // For device updates, use the provided timestamp or keep previous
+      lastUpdatedRaw = source.last_updated || source.lastUpdate || source.updated_at || source.timestamp || prev.lastUpdateRaw;
+    }
 
     const dateAddedRaw =
       source.date_added ||
@@ -326,6 +343,8 @@ const AdminDevices = () => {
       prev._dateAddedSeconds;
     const dateAddedSeconds = normalizeTimestampToDate(dateAddedRaw)?.getTime() ? Math.floor(normalizeTimestampToDate(dateAddedRaw).getTime() / 1000) : prev._dateAddedSeconds;
 
+    const isActive = isDeviceRecentlyUpdated(lastUpdatedRaw);
+    
     return {
       ...prev,
       id: actualDeviceId,
@@ -340,7 +359,7 @@ const AdminDevices = () => {
       lastUpdate: formatLastUpdated(lastUpdatedRaw),
       lastUpdateRaw: lastUpdatedRaw,
       _dateAddedSeconds: dateAddedSeconds,
-      isActive: isDeviceRecentlyUpdated(lastUpdatedRaw)
+      isActive: isActive
     };
   };
 
@@ -398,7 +417,26 @@ const AdminDevices = () => {
 
     // Listen to device changes
     const cleanupDevices = onCollectionChange('devices', (data) => {
+      const currentTime = new Date();
+      const deviceData = data?.data;
+      const rawTimestamp = deviceData?.last_updated || deviceData?.lastUpdate || deviceData?.updated_at || deviceData?.timestamp;
+      const deviceLastUpdated = normalizeTimestampToDate(rawTimestamp);
+      
       console.log('📡 Device change detected in AdminDevices:', data);
+      console.log('🔍 RAW TIMESTAMP DEBUG:', {
+        rawTimestamp: rawTimestamp,
+        rawType: typeof rawTimestamp,
+        rawValue: JSON.stringify(rawTimestamp)
+      });
+      console.log('🔄 Socket Change - Device Update:', {
+        currentTime: currentTime.toLocaleString(),
+        currentTimeISO: currentTime.toISOString(),
+        deviceLastUpdated: deviceLastUpdated ? deviceLastUpdated.toLocaleString() : 'N/A',
+        deviceLastUpdatedISO: deviceLastUpdated ? deviceLastUpdated.toISOString() : 'N/A',
+        deviceId: data?.id || deviceData?.device_id || deviceData?.id,
+        operation: data?.type,
+        timeDifferenceSeconds: deviceLastUpdated ? Math.floor((currentTime - deviceLastUpdated) / 1000) : 'N/A'
+      });
       
       setDevices(prevDevices => {
         const { type, id, data: deviceData } = data;
@@ -441,17 +479,56 @@ const AdminDevices = () => {
 
     // Listen to live metrics (devicesdata table mapped to devicesData)
     const handleMetricsUpdate = (data) => {
-      setDevices(prevDevices => {
-        const metrics = data?.data;
-        const deviceId = metrics?.device_id;
-        if (!deviceId) return prevDevices;
-
-        return prevDevices.map(dev =>
-          dev.id === deviceId
-            ? mapSocketDevice(metrics, dev)
-            : dev
-        );
+      const currentTime = new Date();
+      const metrics = data?.data;
+      const rawTimestamp = metrics?.last_updated || metrics?.lastUpdate || metrics?.updated_at || metrics?.timestamp;
+      const deviceLastUpdated = normalizeTimestampToDate(rawTimestamp);
+      
+      console.log('📊 Socket Change - Metrics Update:', {
+        currentTime: currentTime.toLocaleString(),
+        currentTimeISO: currentTime.toISOString(),
+        deviceLastUpdated: deviceLastUpdated ? deviceLastUpdated.toLocaleString() : 'Using current time',
+        deviceLastUpdatedISO: deviceLastUpdated ? deviceLastUpdated.toISOString() : 'N/A',
+        deviceId: metrics?.device_id,
+        timeDifferenceSeconds: deviceLastUpdated ? Math.floor((currentTime - deviceLastUpdated) / 1000) : 0,
+        rawTimestamp: rawTimestamp,
+        willUseCurrentTime: !rawTimestamp
       });
+      
+      const deviceId = metrics?.device_id;
+      if (!deviceId) {
+        console.log('⚠️ No device_id in metrics update, ignoring');
+        return;
+      }
+
+      setDevices(prevDevices => {
+        const deviceExists = prevDevices.some(dev => dev.id === deviceId);
+        if (!deviceExists) {
+          console.log(`⚠️ Device ${deviceId} not found in devices list, ignoring metrics update`);
+          return prevDevices;
+        }
+
+        console.log(`✅ Updating device ${deviceId} with metrics (will be set to ACTIVE)`);
+        const newDevices = prevDevices.map(dev => {
+          if (dev.id === deviceId) {
+            const updated = mapSocketDevice(metrics, dev, true); // true = isMetricsUpdate
+            console.log(`✅ Device ${deviceId} updated - isActive: ${updated.isActive}, lastUpdate: ${updated.lastUpdate}`);
+            console.log(`📊 Device state after update:`, {
+              id: updated.id,
+              name: updated.name,
+              isActive: updated.isActive,
+              lastUpdate: updated.lastUpdate,
+              lastUpdateRaw: updated.lastUpdateRaw
+            });
+            return updated;
+          }
+          return dev;
+        });
+        return newDevices;
+      });
+      
+      // Force a re-render by updating trigger state
+      setUpdateTrigger(prev => prev + 1);
     };
 
     // Listen to live metrics (devicesdata table mapped to devicesData)
@@ -461,16 +538,37 @@ const AdminDevices = () => {
 
     // Listen to transaction changes (for revenue updates)
     const cleanupTransactions = onCollectionChange('transactions', (data) => {
+      const currentTime = new Date();
+      const transactionData = data?.data;
+      const transactionTime = normalizeTimestampToDate(transactionData?.time || transactionData?.timestamp || transactionData?.date_time);
+      
       console.log('📡 Transaction change detected in AdminDevices, updating revenue...', data);
+      console.log('💰 Socket Change - Transaction:', {
+        currentTime: currentTime.toLocaleString(),
+        transactionTime: transactionTime ? transactionTime.toLocaleString() : 'N/A',
+        transactionId: transactionData?.id,
+        deviceId: transactionData?.device_id || transactionData?.station
+      });
+      
       // Transactions affect revenue calculations, so refetch devices
       fetchDevicesData();
     });
 
     // Listen to device config changes (for enabled/disabled indicator)
     const cleanupDeviceConfigs = onCollectionChange('deviceConfig', (data) => {
-      console.log('📡 Device config change detected in AdminDevices:', data);
+      const currentTime = new Date();
       const configData = data?.data;
+      const configUpdated = normalizeTimestampToDate(configData?.updated_at || configData?.timestamp);
       const deviceId = data?.id || configData?.device_id;
+      
+      console.log('📡 Device config change detected in AdminDevices:', data);
+      console.log('⚙️ Socket Change - Device Config:', {
+        currentTime: currentTime.toLocaleString(),
+        configUpdated: configUpdated ? configUpdated.toLocaleString() : 'N/A',
+        deviceId: deviceId,
+        isEnabled: configData?.device_enabled
+      });
+      
       if (!deviceId) return;
 
       if (data?.type === 'removed') {
@@ -502,11 +600,24 @@ const AdminDevices = () => {
   }, [isConnected, onCollectionChange, fetchDevicesData, fetchDeviceConfigs]);
 
   // Periodically refresh freshness/lastUpdate text and active flag without needing socket events
+  // This is the watchdog that monitors the 1-minute gap
   useEffect(() => {
+    console.log('⏰ Watchdog initialized - will check device activity every 10 seconds');
+    
     const interval = setInterval(() => {
+      const now = Date.now();
+      console.log('⏰ Watchdog checking device activity status...');
+      
       setDevices(prev =>
         prev.map(d => {
           const refreshedActive = isDeviceRecentlyUpdated(d.lastUpdateRaw);
+          const lastUpdateDate = normalizeTimestampToDate(d.lastUpdateRaw);
+          const timeDiff = lastUpdateDate ? Math.floor((now - lastUpdateDate.getTime()) / 1000) : null;
+          
+          if (d.isActive !== refreshedActive) {
+            console.log(`🔄 Device ${d.id} (${d.name}) status changed: ${d.isActive ? 'ACTIVE' : 'INACTIVE'} → ${refreshedActive ? 'ACTIVE' : 'INACTIVE'} (${timeDiff}s since last update)`);
+          }
+          
           return {
             ...d,
             isActive: refreshedActive,
@@ -514,9 +625,12 @@ const AdminDevices = () => {
           };
         })
       );
-    }, 30000); // every 30s
+    }, 10000); // every 10s for more responsive status updates
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('⏰ Watchdog cleanup - stopping interval');
+      clearInterval(interval);
+    };
   }, []);
 
   // Fetch data when component mounts
@@ -569,7 +683,18 @@ const AdminDevices = () => {
                          device.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          device.building.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          device.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || device.status?.toLowerCase() === filterStatus.toLowerCase();
+    
+    // Filter by active/inactive status based on isActive property
+    let matchesFilter = true;
+    if (filterStatus === 'active') {
+      matchesFilter = device.isActive === true;
+    } else if (filterStatus === 'inactive') {
+      matchesFilter = device.isActive === false;
+    } else if (filterStatus !== 'all') {
+      // For other status filters (maintenance, offline), check device.status
+      matchesFilter = device.status?.toLowerCase() === filterStatus.toLowerCase();
+    }
+    
     return matchesSearch && matchesFilter;
   });
 

@@ -495,13 +495,31 @@ const AdminContactMessages = () => {
     return matchesSearch && matchesStatus;
   }).sort((a, b) => {
     // Sort by date based on dateFilter
-    const timestampA = a.timestamp?.seconds || 0;
-    const timestampB = b.timestamp?.seconds || 0;
+    // Get timestamp in milliseconds for accurate comparison
+    let timestampA = 0;
+    let timestampB = 0;
+    
+    // Handle Firestore timestamp format
+    if (a.timestamp?.seconds) {
+      timestampA = a.timestamp.seconds * 1000;
+    } else if (typeof a.timestamp === 'string') {
+      timestampA = new Date(a.timestamp).getTime();
+    } else if (a.timestamp instanceof Date) {
+      timestampA = a.timestamp.getTime();
+    }
+    
+    if (b.timestamp?.seconds) {
+      timestampB = b.timestamp.seconds * 1000;
+    } else if (typeof b.timestamp === 'string') {
+      timestampB = new Date(b.timestamp).getTime();
+    } else if (b.timestamp instanceof Date) {
+      timestampB = b.timestamp.getTime();
+    }
     
     if (dateFilter === 'newest') {
-      return timestampB - timestampA; // Newest first
+      return timestampB - timestampA; // Newest first (descending)
     } else if (dateFilter === 'oldest') {
-      return timestampA - timestampB; // Oldest first
+      return timestampA - timestampB; // Oldest first (ascending)
     }
     
     return 0; // No sorting
