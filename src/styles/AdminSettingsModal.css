@@ -12,7 +12,6 @@
     z-index: 9999;
     backdrop-filter: blur(8px);
     padding: 2rem;
-    padding-top: 3rem;
     box-sizing: border-box;
     min-height: 100vh;
     min-height: 100dvh;
@@ -45,9 +44,11 @@
     position: relative;
     z-index: 10000;
     margin: auto;
+    align-self: center;
 }
 
-.modal-header {
+/* Scoped to admin settings modal only */
+.admin-settings-modal .admin-settings-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -57,7 +58,7 @@
     position: relative;
 }
 
-.modal-header::after {
+.admin-settings-modal .admin-settings-modal-header::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -67,7 +68,7 @@
     background: linear-gradient(90deg, transparent, #22c55e, transparent);
 }
 
-.modal-title {
+.admin-settings-modal .admin-settings-modal-title {
     font-size: 1.125rem;
     font-weight: 600;
     color: #ffffff;
@@ -75,7 +76,7 @@
     letter-spacing: -0.025em;
 }
 
-.close-button {
+.admin-settings-modal .admin-settings-close-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -89,13 +90,13 @@
     transition: all 0.15s ease;
 }
 
-.close-button:hover {
+.admin-settings-modal .admin-settings-close-button:hover {
     background: #1e2633;
     color: #ffffff;
     transform: scale(1.05);
 }
 
-.modal-content {
+.admin-settings-modal .admin-settings-modal-content {
     display: flex;
     flex: 1;
     min-height: 0;
@@ -156,6 +157,47 @@
     min-height: 400px;
     display: flex;
     flex-direction: column;
+}
+
+/* Desktop/web-only: enforce left sidebar dashboard layout */
+@media (min-width: 768px) {
+    .admin-settings-modal .admin-settings-modal-content {
+        flex-direction: row;
+    }
+
+    .settings-sidebar {
+        flex: 0 0 200px;
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
+    }
+
+    .settings-nav {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem 0;
+    }
+
+    .settings-main {
+        flex: 1;
+        padding: 2rem 2rem 2rem 1.5rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .settings-content {
+        width: 100%;
+        max-width: 100%;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .settings-section {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 .settings-section {
@@ -389,7 +431,8 @@ input:checked + .toggle-slider:before {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-.modal-footer {
+/* Scoped to admin settings modal only */
+.admin-settings-modal .admin-settings-modal-footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -400,7 +443,7 @@ input:checked + .toggle-slider:before {
     position: relative;
 }
 
-.modal-footer::before {
+.admin-settings-modal .admin-settings-modal-footer::before {
     content: '';
     position: absolute;
     top: 0;
@@ -433,12 +476,12 @@ input:checked + .toggle-slider:before {
         position: relative;
     }
     
-    .modal-content {
+    .admin-settings-modal .admin-settings-modal-content {
         flex-direction: column;
     }
     
     /* Fix horizontal scrolling issue */
-    .settings-sidebar {
+    .admin-settings-modal .settings-sidebar {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid #1e2633;
@@ -488,12 +531,12 @@ input:checked + .toggle-slider:before {
         padding-bottom: 0.5rem;
     }
     
-    .modal-header,
-    .modal-footer {
+    .admin-settings-modal .admin-settings-modal-header,
+    .admin-settings-modal .admin-settings-modal-footer {
         padding: 0.75rem;
     }
     
-    .modal-title {
+    .admin-settings-modal .admin-settings-modal-title {
         font-size: 1rem;
     }
     
@@ -570,12 +613,12 @@ input:checked + .toggle-slider:before {
         position: relative;
     }
     
-    .modal-header,
-    .modal-footer {
+    .admin-settings-modal .admin-settings-modal-header,
+    .admin-settings-modal .admin-settings-modal-footer {
         padding: 0.5rem;
     }
     
-    .modal-title {
+    .admin-settings-modal .admin-settings-modal-title {
         font-size: 0.875rem;
     }
     
@@ -624,13 +667,13 @@ input:checked + .toggle-slider:before {
         font-size: 0.75rem;
     }
     
-    .modal-footer {
+    .admin-settings-modal .admin-settings-modal-footer {
         flex-direction: column;
         gap: 0.5rem;
     }
     
-    .modal-footer .btn-primary,
-    .modal-footer .btn-secondary {
+    .admin-settings-modal .admin-settings-modal-footer .btn-primary,
+    .admin-settings-modal .admin-settings-modal-footer .btn-secondary {
         width: 100%;
         justify-content: center;
     }
@@ -647,24 +690,24 @@ input:checked + .toggle-slider:before {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-.light .modal-header {
+.light .admin-settings-modal .admin-settings-modal-header {
     background: #ffffff;
     border-bottom-color: #e5e7eb;
 }
 
-.light .modal-header::after {
+.light .admin-settings-modal .admin-settings-modal-header::after {
     background: linear-gradient(90deg, transparent, #22c55e, transparent);
 }
 
-.light .modal-title {
+.light .admin-settings-modal .admin-settings-modal-title {
     color: #111827;
 }
 
-.light .close-button {
+.light .admin-settings-modal .admin-settings-close-button {
     color: #6b7280;
 }
 
-.light .close-button:hover {
+.light .admin-settings-modal .admin-settings-close-button:hover {
     background: #f3f4f6;
     color: #374151;
 }
@@ -778,12 +821,12 @@ input:checked + .toggle-slider:before {
     border-color: #16a34a;
 }
 
-.light .modal-footer {
+.light .admin-settings-modal .admin-settings-modal-footer {
     background: #f8fafc;
     border-top-color: #e5e7eb;
 }
 
-.light .modal-footer::before {
+.light .admin-settings-modal .admin-settings-modal-footer::before {
     background: linear-gradient(90deg, transparent, #22c55e, transparent);
 }
 
@@ -850,8 +893,8 @@ body.modal-open {
     margin-bottom: 1.5rem;
 }
 
-/* Confirmation modal */
-.confirmation-overlay {
+/* Confirmation modal - scoped to admin settings */
+.admin-settings-confirmation-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -866,7 +909,7 @@ body.modal-open {
     padding: 2rem;
 }
 
-.confirmation-modal {
+.admin-settings-confirmation-modal {
     background: #0f141c;
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -876,7 +919,7 @@ body.modal-open {
     animation: modalFadeIn 0.2s ease-out;
 }
 
-.confirmation-header {
+.admin-settings-confirmation-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -886,32 +929,32 @@ body.modal-open {
     border-radius: 16px 16px 0 0;
 }
 
-.confirmation-header h3 {
+.admin-settings-confirmation-header h3 {
     font-size: 1.125rem;
     font-weight: 600;
     color: #ffffff;
     margin: 0;
 }
 
-.confirmation-content {
+.admin-settings-confirmation-content {
     padding: 1.5rem;
 }
 
-.confirmation-content p {
+.admin-settings-confirmation-content p {
     color: #9aa3b2;
     margin: 0 0 1rem 0;
     font-size: 0.875rem;
     line-height: 1.5;
 }
 
-.confirmation-note {
+.admin-settings-confirmation-note {
     color: #6b7280 !important;
     font-size: 0.75rem !important;
     font-style: italic;
     margin-top: 0.5rem !important;
 }
 
-.confirmation-footer {
+.admin-settings-confirmation-footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -953,30 +996,30 @@ body.modal-open {
     color: #16a34a;
 }
 
-.light .confirmation-overlay {
+.light .admin-settings-confirmation-overlay {
     background: rgba(0, 0, 0, 0.5);
 }
 
-.light .confirmation-modal {
+.light .admin-settings-confirmation-modal {
     background: #ffffff;
     border-color: #e5e7eb;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-.light .confirmation-header {
+.light .admin-settings-confirmation-header {
     background: #ffffff;
     border-bottom-color: #e5e7eb;
 }
 
-.light .confirmation-header h3 {
+.light .admin-settings-confirmation-header h3 {
     color: #111827;
 }
 
-.light .confirmation-content p {
+.light .admin-settings-confirmation-content p {
     color: #6b7280;
 }
 
-.light .confirmation-footer {
+.light .admin-settings-confirmation-footer {
     background: #f8fafc;
     border-top-color: #e5e7eb;
 }
