@@ -141,8 +141,8 @@ const AdminDevices = () => {
           const actualDeviceId = device.id || device.device_id || device.deviceId || device._id;
           console.log('🔍 Using device ID:', actualDeviceId);
           
-          // Resolve date added for sorting (fallback to last_updated)
-          const dateAdded = device.date_added || device.created_at || device.added_at || device.timestamp || device.last_updated;
+          // Resolve date added for sorting (use only date_added, created_at, or added_at - NOT last_updated)
+          const dateAdded = device.date_added || device.created_at || device.added_at;
           const dateAddedSeconds = dateAdded?.seconds 
             ? dateAdded.seconds 
             : (dateAdded ? Math.floor(new Date(dateAdded).getTime() / 1000) : 0);
@@ -323,8 +323,6 @@ const AdminDevices = () => {
       source.date_added ||
       source.created_at ||
       source.added_at ||
-      source.timestamp ||
-      source.last_updated ||
       prev._dateAddedSeconds;
     const dateAddedSeconds = normalizeTimestampToDate(dateAddedRaw)?.getTime() ? Math.floor(normalizeTimestampToDate(dateAddedRaw).getTime() / 1000) : prev._dateAddedSeconds;
 
