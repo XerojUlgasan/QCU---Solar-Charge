@@ -561,13 +561,13 @@ const DeviceConfigurationModal = ({
         device_id: deviceId,
         device_alert_enabled: formData.enableDeviceAlerts,
         device_enabled: deviceEnabled,
-        max_batt: parseFloat(formData.maxBattery) || 100,
-        max_temp: parseFloat(formData.maxTemperature) || 40,
-        min_batt: parseFloat(formData.minBattery) || 50,
-        min_temp: parseFloat(formData.minTemperature) || 20,
-        minute_per_peso: parseFloat(formData.minutesPerCoinRate) || 5,
-        samples_per_hour: parseFloat(formData.samplesPerHourRate) || 60,
-        update_gap_seconds: parseFloat(formData.updateLatency) || 3
+        max_batt: formData.maxBattery !== '' ? parseFloat(formData.maxBattery) : 100,
+        max_temp: formData.maxTemperature !== '' ? parseFloat(formData.maxTemperature) : 40,
+        min_batt: formData.minBattery !== '' ? parseFloat(formData.minBattery) : 50,
+        min_temp: formData.minTemperature !== '' ? parseFloat(formData.minTemperature) : 20,
+        minute_per_peso: formData.minutesPerCoinRate !== '' ? parseFloat(formData.minutesPerCoinRate) : 5,
+        samples_per_hour: formData.samplesPerHourRate !== '' ? parseFloat(formData.samplesPerHourRate) : 60,
+        update_gap_seconds: formData.updateLatency !== '' ? parseFloat(formData.updateLatency) : 3
       };
 
       console.log('Saving device configuration:', requestData);
